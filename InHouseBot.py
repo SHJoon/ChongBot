@@ -31,7 +31,28 @@ class Queue(commands.Cog):
         ctx = bot
         self.queue = []
         self.qtoggle = True
- 
+
+    @commands.command(pass_context=True, name='commands')
+    async def _commands(self, ctx):
+        await ctx.send('**!add** = Add yourself to the queue.\
+                        \n**!remove** = Remove yourself from the queue.\
+                        \n**!queue** = See the current queue.\
+                        \n**!position** = See your current position in the queue.\
+                        \n**!next** = Call the next person in the queue.\
+                        \n**!next #** = Call the next # of people in the queue.\
+                        \n**!clear** = Clear the queue. **(Admin use only)**\
+                        \n**!toggle** = Toggle the queue On/Off. **(Admin use only)**\
+                        \n**!flip** = Heads or Tails.\
+                        \n**!choose choice1,choice2,...** = Choose randomly from your own list of choices.\
+                        \n**!roll AdX** = Roll X-sided die, A times. (Ex. 1d6 = roll 6-sided die 1 time.)\
+                        \n**!captains** = Randomly choose captain from people that are currently in the voice chat.\
+                        \n**!lulcaptains** = Same as !captains, but Danny style...\
+                        \n**!leggo** = Drop an {at}here for 10-men. Will automatically choose captain after 10 people react.\
+                        \n**!fuckchong** = Honestly, fuck him.\
+                        \n**!grime** = Important slice of in-house history...\
+                        \n**!ass** = It is the truth.\
+                        \n**!morg** = Will always be funny.')
+    
     @commands.command(pass_context=True)
     async def add(self, ctx):
         ''': Add yourself to the queue!'''
@@ -233,5 +254,5 @@ class Queue(commands.Cog):
     #    await ctx.send('Yes, the bot is cool.')
  
 bot.add_cog(Queue(bot))
- 
+
 bot.run('Token')
