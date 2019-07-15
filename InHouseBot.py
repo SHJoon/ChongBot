@@ -24,6 +24,21 @@ async def on_ready():
     print(bot.user.id)
 
 
+# What happens if you uncomment this?
+# Does it work?
+#
+# Does anything else work?
+#
+# What should you do to fix it ;)
+#
+# @bot.event
+# async def on_message(message):
+#     if message.author == bot.user:
+#         return
+#     if message.content == "W":
+#         await message.add_reaction("\U0001F1FC")
+
+
 class Queue(commands.Cog):
     def __init__(self, bot):
         self.queue = []
@@ -139,7 +154,9 @@ class Queue(commands.Cog):
         await msg.add_reaction("\U0001F1F4")
         await msg.add_reaction("\U0001F1F3")
         await msg.add_reaction("\U0001F1EC")
-        emoji = ":FuckChong:"
+        emoji = (
+            ":FuckChong:"
+        )  # You need to use discord.utils.get to fetch the ID I think
         await msg.add_reaction(emoji)
 
     @commands.command(pass_context=True)
@@ -207,7 +224,9 @@ class Queue(commands.Cog):
             name = member.nick if member.nick else member.name
             danny_name = ""
             for c in name:
-                if random.randrange(2):
+                if (
+                    random.randrange(100) <= 17
+                ):  # Danny turing test is complete @ ~ 17% of mistype
                     danny_name += c + alphabet[random.randrange(len(alphabet))]
                 else:
                     danny_name += c
