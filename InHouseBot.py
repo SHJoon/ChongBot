@@ -251,7 +251,5 @@ bot.add_cog(Queue(bot))
 with open('key', 'r') as f:
     token = f.read().strip().strip("\n")
 
-print(token)
-
 bot.run(token)
 
