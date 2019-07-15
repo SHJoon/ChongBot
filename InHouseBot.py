@@ -25,13 +25,12 @@ async def on_ready():
 
 class Queue(commands.Cog):
     def __init__(self, bot):
-        ctx = bot
         self.queue = []
         self.qtoggle = True
 
     @commands.command(pass_context=True, name='commands')
     async def _commands(self, ctx):
-        await ctx.send('**!add** = Add yourself to the queue.\
+        await ctx.send('**!add** = Add yourself to the queue. \
                         \n**!remove** = Remove yourself from the queue.\
                         \n**!queue** = See the current queue.\
                         \n**!position** = See your current position in the queue.\
