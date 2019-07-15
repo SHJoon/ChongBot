@@ -220,8 +220,7 @@ class Queue(commands.Cog):
             # Let's not hog bot thread
             await asyncio.sleep(3)
             seconds_elapsed +=3
-            # if seconds_elapsed > 5400:
-            if seconds_elapsed > 6:
+            if seconds_elapsed > 5400:
                 await ctx.send('Timing out our gaming call, try again later :(')
                 return
             # Must refetch message otherwise coroutine never revaluates msg cache
