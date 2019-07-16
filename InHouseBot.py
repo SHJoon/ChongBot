@@ -31,12 +31,13 @@ async def on_ready():
 #
 # What should you do to fix it ;)
 #
-# @bot.event
-# async def on_message(message):
-#     if message.author == bot.user:
-#         return
-#     if message.content == "W":
-#         await message.add_reaction("\U0001F1FC")
+@bot.event
+async def on_message(message):
+    if message.author == bot.user:
+        return
+    if message.content == "W":
+        await message.add_reaction("\U0001F1FC")
+    await bot.process_commands(message)
 
 
 class Queue(commands.Cog):
