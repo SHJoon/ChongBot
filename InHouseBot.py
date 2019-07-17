@@ -24,13 +24,6 @@ async def on_ready():
     print(bot.user.id)
 
 
-# What happens if you uncomment this?
-# Does it work?
-#
-# Does anything else work?
-#
-# What should you do to fix it ;)
-#
 @bot.event
 async def on_message(message):
     if message.author == bot.user:
@@ -175,6 +168,15 @@ class Queue(commands.Cog):
         await ctx.send(
             f"https://media.discordapp.net/attachments/569646728224178184/598615204288397501/unknown.png?width=1250&height=676"
         )
+
+    @commands.command(pass_context=True)
+    async def cool(self, ctx):
+        author = ctx.message.author
+        #Chong's server ID
+        if author.id == 172899191998251009:
+            await ctx.send(f"Fuck off Chong")
+        else:
+            await ctx.send(f'You are cool! {author.mention}')
 
     @commands.command(pass_context=True)
     async def flip(self, ctx):
