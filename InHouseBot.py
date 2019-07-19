@@ -58,7 +58,8 @@ class Queue(commands.Cog):
                         \n**!fuckchong** = Honestly, fuck him.\
                         \n**!grime** = Important slice of in-house history...\
                         \n**!ass** = It is the truth.\
-                        \n**!morg** = Will always be funny."
+                        \n**!morg** = Will always be funny.\
+                        \n**!cool** = See if you're cool or not!"
         )
 
     @commands.command(pass_context=True)
@@ -174,15 +175,32 @@ class Queue(commands.Cog):
         author = ctx.message.author
         #Chong's server ID
         if author.id == 172899191998251009:
-            await ctx.send(f"Fuck off Chong")
+            await ctx.send(f"You're grimey")
         else:
-            await ctx.send(f'You are cool! {author.mention}')
+            await ctx.send(f"You're cool! {author.mention}")
 
     @commands.command(pass_context=True)
     async def flip(self, ctx):
         flip = ["Heads", "Tails"]
         ranflip = random.choice(flip)
-        await ctx.send(ranflip)
+
+        embed = discord.Embed(
+            title = ranflip,
+            colour = discord.Colour.orange()
+        )
+
+        if ranflip == "Heads":
+            embed.set_image(url='https://nexus.leagueoflegends.com/wp-content/uploads/2018/08/Nunu_Bot_fqvx53j9ion1fxkr34ag.gif')
+        else:
+            embed.set_image(url='https://media0.giphy.com/media/3oz8xCXbQDReF34WWs/giphy-downsized.gif')
+        
+        #https://nexus.leagueoflegends.com/wp-content/uploads/2018/08/Nunu_Bot_fqvx53j9ion1fxkr34ag.gif
+        #https://media0.giphy.com/media/3oz8xCXbQDReF34WWs/giphy-downsized.gif
+        #https://www.ssbwiki.com/images/b/bf/Fox_SSBM.jpg
+        #https://www.ssbwiki.com/images/1/17/Falco_SSBM.jpg
+
+        await ctx.send(embed=embed)
+
 
     @commands.command(pass_context=True)
     async def choose(self, ctx, *choices: str):
