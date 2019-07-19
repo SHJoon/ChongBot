@@ -171,6 +171,12 @@ class Queue(commands.Cog):
         )
 
     @commands.command(pass_context=True)
+    async def boys(self, ctx):
+        await ctx.send(
+            f"https://i.imgflip.com/360ktl.jpg"
+        )
+
+    @commands.command(pass_context=True)
     async def cool(self, ctx):
         author = ctx.message.author
         #Chong's server ID
