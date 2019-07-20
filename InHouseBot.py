@@ -181,24 +181,34 @@ class Queue(commands.Cog):
         author = ctx.message.author
         #Chong's server ID
         if author.id == 172899191998251009:
-            await ctx.send(f"You're grimey")
+            await ctx.send(
+                f"You're grimey"
+                )
         else:
-            await ctx.send(f"You're cool! {author.mention}")
+            await ctx.send(
+                f"You're cool! {author.mention}"
+            )
 
     @commands.command(pass_context=True)
     async def flip(self, ctx):
         flip = ["Heads", "Tails"]
+        random.seed()
         ranflip = random.choice(flip)
 
         embed = discord.Embed(
-            title = ranflip,
-            colour = discord.Colour.orange()
+            title = ranflip
         )
 
         if ranflip == "Heads":
-            embed.set_image(url='https://nexus.leagueoflegends.com/wp-content/uploads/2018/08/Nunu_Bot_fqvx53j9ion1fxkr34ag.gif')
+            embed.set_image(
+                url='https://nexus.leagueoflegends.com/wp-content/uploads/2018/08/Nunu_Bot_fqvx53j9ion1fxkr34ag.gif'
+                )
+            embed.colour = discord.Colour.orange()
         else:
-            embed.set_image(url='https://media0.giphy.com/media/3oz8xCXbQDReF34WWs/giphy-downsized.gif')
+            embed.set_image(
+                url='https://media0.giphy.com/media/3oz8xCXbQDReF34WWs/giphy-downsized.gif'
+                )
+            embed.colour = discord.Colour.blue()
         
         #https://nexus.leagueoflegends.com/wp-content/uploads/2018/08/Nunu_Bot_fqvx53j9ion1fxkr34ag.gif
         #https://media0.giphy.com/media/3oz8xCXbQDReF34WWs/giphy-downsized.gif
@@ -210,6 +220,7 @@ class Queue(commands.Cog):
 
     @commands.command(pass_context=True)
     async def choose(self, ctx, *choices: str):
+        random.seed()
         await ctx.send(random.choice(choices))
 
     @commands.command()
