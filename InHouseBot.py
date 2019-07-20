@@ -20,6 +20,7 @@ def is_approved():
 
 @bot.event
 async def on_ready():
+    await bot.change_presence(activity=discord.Game(name="with Chong's feelings",))
     print(bot.user.name)
     print(bot.user.id)
 
@@ -37,6 +38,7 @@ class Queue(commands.Cog):
     def __init__(self, bot):
         self.queue = []
         self.qtoggle = True
+        #await bot.change_presence(game=discord.Game(name="with Chong's feelings", type=0))
 
     @commands.command(pass_context=True, name="commands")
     async def _commands(self, ctx):
@@ -59,6 +61,7 @@ class Queue(commands.Cog):
                         \n**!grime** = Important slice of in-house history...\
                         \n**!ass** = It is the truth.\
                         \n**!morg** = Will always be funny.\
+                        \n**!boys** = The boys are back in town. \
                         \n**!cool** = See if you're cool or not!"
         )
 
