@@ -31,7 +31,15 @@ async def on_message(message):
         return
     if message.content == "W":
         await message.add_reaction("\U0001F1FC")
-    await bot.process_commands(message)
+    elif message.content == "smH":
+        await message.add_reaction("\U0001F1F8")
+        await message.add_reaction("\U0001F1F2")
+        await message.add_reaction("\U0001F1ED")
+    elif message.content == "H town let's get it!":
+        await message.add_reaction("\U0001F680")
+        await message.add_reaction("\U0001F1FC")
+    else:
+        await bot.process_commands(message)
 
 
 class Queue(commands.Cog):
@@ -51,6 +59,7 @@ class Queue(commands.Cog):
                         \n**!next #** = Call the next # of people in the queue.\
                         \n**!clear** = Clear the queue. **(Admin use only)**\
                         \n**!toggle** = Toggle the queue On/Off. **(Admin use only)**\
+                        \n**!stream** = Usually danny streams the game he's in.\
                         \n**!flip** = Heads or Tails.\
                         \n**!choose choice1,choice2,...** = Choose randomly from your own list of choices.\
                         \n**!roll AdX** = Roll X-sided die, A times. (Ex. 1d6 = roll 6-sided die 1 time.)\
@@ -141,6 +150,10 @@ class Queue(commands.Cog):
         await ctx.send(f"Queue is now {state}")
 
     @commands.command(pass_context=True)
+    async def stream(self, ctx):
+        await ctx.send(f"https://www.twitch.tv/turbolobster")
+
+    @commands.command(pass_context=True)
     async def fuckchong(self, ctx):
         msg = await ctx.send(f"FUCK CHONG")
         await msg.add_reaction("\U0001F1EB")
@@ -191,11 +204,11 @@ class Queue(commands.Cog):
             await ctx.send(
                 f"You're cool! {author.mention}"
             )
+    
 
     @commands.command(pass_context=True)
     async def flip(self, ctx):
         flip = ["Heads", "Tails"]
-        random.seed()
         ranflip = random.choice(flip)
 
         embed = discord.Embed(
@@ -204,12 +217,12 @@ class Queue(commands.Cog):
 
         if ranflip == "Heads":
             embed.set_image(
-                url='https://nexus.leagueoflegends.com/wp-content/uploads/2018/08/Nunu_Bot_fqvx53j9ion1fxkr34ag.gif'
+                url='https://lolskinshop.com/wp-content/uploads/2015/04/Poppy_2.jpg'
                 )
             embed.colour = discord.Colour.orange()
         else:
             embed.set_image(
-                url='https://media0.giphy.com/media/3oz8xCXbQDReF34WWs/giphy-downsized.gif'
+                url='https://2.bp.blogspot.com/-_1l8obImQmA/V3F9Z8MV3_I/AAAAAAAA8FI/Kcj-ALPCPoY5cTeaAgFtgYIg6qihz4XBgCLcB/s1600/Taric_Splash_4.jpg'
                 )
             embed.colour = discord.Colour.blue()
         
@@ -217,13 +230,14 @@ class Queue(commands.Cog):
         #https://media0.giphy.com/media/3oz8xCXbQDReF34WWs/giphy-downsized.gif
         #https://www.ssbwiki.com/images/b/bf/Fox_SSBM.jpg
         #https://www.ssbwiki.com/images/1/17/Falco_SSBM.jpg
+        #https://lolskinshop.com/wp-content/uploads/2015/04/Poppy_2.jpg
+        #https://2.bp.blogspot.com/-_1l8obImQmA/V3F9Z8MV3_I/AAAAAAAA8FI/Kcj-ALPCPoY5cTeaAgFtgYIg6qihz4XBgCLcB/s1600/Taric_Splash_4.jpg
 
         await ctx.send(embed=embed)
 
 
     @commands.command(pass_context=True)
     async def choose(self, ctx, *choices: str):
-        random.seed()
         await ctx.send(random.choice(choices))
 
     @commands.command()
