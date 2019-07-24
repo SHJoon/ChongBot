@@ -29,13 +29,13 @@ async def on_ready():
 async def on_message(message):
     if message.author == bot.user:
         return
-    if message.content == "W":
+    if message.content.upper() == "W":
         await message.add_reaction("\U0001F1FC")
     elif message.content == "smH":
         await message.add_reaction("\U0001F1F8")
         await message.add_reaction("\U0001F1F2")
         await message.add_reaction("\U0001F1ED")
-    elif message.content == "H town let's get it!":
+    elif message.content.upper() == "H TOWN LET'S GET IT!":
         await message.add_reaction("\U0001F680")
         await message.add_reaction("\U0001F1FC")
     else:
@@ -46,8 +46,18 @@ class Queue(commands.Cog):
     def __init__(self, bot):
         self.queue = []
         self.qtoggle = True
-        #await bot.change_presence(game=discord.Game(name="with Chong's feelings", type=0))
-
+        keyboard_array = [
+            ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-"],\
+            ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "["],\
+            ["a", "s", "d", "f", "g", "h", "j", "k", "l", ";", '"'],\
+            ["z", "x", "c", "v", "b", "n", "m", "m", ",", ".", "/"]
+            ]
+        lookup_table = dict()
+        for row, keyboard_row in enumerate(keyboard_array):
+            for column, letter in enumerate(keyboard_row):
+                # Let record it
+                lookup_table[letter] = [row, column]
+        
     @commands.command(pass_context=True, name="commands")
     async def _commands(self, ctx):
         await ctx.send(
@@ -274,17 +284,22 @@ class Queue(commands.Cog):
         ).members
         random.shuffle(members)
         message = ""
-        alphabet = "abcdefghijklmnopqrstuvwxyz"
+        
         for place, member in enumerate(members):
             name = member.nick if member.nick else member.name
             danny_name = ""
             for c in name:
-                if (
-                    random.randrange(100) <= 17
-                ):  # Danny turing test is complete @ ~ 17% of mistype
-                    danny_name += c + alphabet[random.randrange(len(alphabet))]
-                else:
-                    danny_name += c
+                for i in len(c)-1:
+                    randhor = random.randint(-1, 1)
+                    randver = random.randint(-1, 1)
+
+                    # Danny turing test is complete @ ~ 17% of mistype
+                    if (random.randrange(100) <= 17):
+                    #    current = 
+                    #    newletter = 
+                    #    danny_name += newletter
+                    else:
+                        danny_name += c(i)
             message += f"**#{place+1}** : {danny_name}\n"
         if not message:
             message = "No voice lobby for captains draft"
