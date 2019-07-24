@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 import random
 import asyncio
+import itertools
 
 prefix = "!"  # change this to whatever prefix you'd like
 bot = commands.Bot(command_prefix=prefix)
@@ -20,7 +21,7 @@ def is_approved():
 
 @bot.event
 async def on_ready():
-    await bot.change_presence(activity=discord.Game(name="with Chong's feelings",))
+    await bot.change_presence(activity=discord.Game(name="with Chong's feelings"))
     print(bot.user.name)
     print(bot.user.id)
 
@@ -46,18 +47,22 @@ class Queue(commands.Cog):
     def __init__(self, bot):
         self.queue = []
         self.qtoggle = True
-        keyboard_array = [
-            ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-"],\
-            ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p", "["],\
-            ["a", "s", "d", "f", "g", "h", "j", "k", "l", ";", '"'],\
-            ["z", "x", "c", "v", "b", "n", "m", "m", ",", ".", "/"]
-            ]
-        lookup_table = dict()
-        for row, keyboard_row in enumerate(keyboard_array):
-            for column, letter in enumerate(keyboard_row):
-                # Let record it
-                lookup_table[letter] = [row, column]
-        
+
+        # Set up our typo structs for lulcaptains()
+        self.keyboard_array = [
+            # A string is just an array of characters
+            "1234567890-=",
+            "qwertyuiop[",
+            "asdfghjkl;'",
+            "zxcvbnm,./",
+        ]
+        # Pog syntax
+        self.lookup_table = {
+            letter: [row_idx, col_idx]
+            for row_idx, row in enumerate(self.keyboard_array)
+            for col_idx, letter in enumerate(row)
+        }
+
     @commands.command(pass_context=True, name="commands")
     async def _commands(self, ctx):
         await ctx.send(
@@ -198,53 +203,43 @@ class Queue(commands.Cog):
 
     @commands.command(pass_context=True)
     async def boys(self, ctx):
-        await ctx.send(
-            f"https://i.imgflip.com/360ktl.jpg"
-        )
+        await ctx.send(f"https://i.imgflip.com/360ktl.jpg")
 
     @commands.command(pass_context=True)
     async def cool(self, ctx):
         author = ctx.message.author
-        #Chong's server ID
+        # Chong's server ID
         if author.id == 172899191998251009:
-            await ctx.send(
-                f"You're grimey"
-                )
+            await ctx.send(f"You're grimey")
         else:
-            await ctx.send(
-                f"You're cool! {author.mention}"
-            )
-    
+            await ctx.send(f"You're cool! {author.mention}")
 
     @commands.command(pass_context=True)
     async def flip(self, ctx):
         flip = ["Heads", "Tails"]
         ranflip = random.choice(flip)
 
-        embed = discord.Embed(
-            title = ranflip
-        )
+        embed = discord.Embed(title=ranflip)
 
         if ranflip == "Heads":
             embed.set_image(
-                url='https://lolskinshop.com/wp-content/uploads/2015/04/Poppy_2.jpg'
-                )
+                url="https://lolskinshop.com/wp-content/uploads/2015/04/Poppy_2.jpg"
+            )
             embed.colour = discord.Colour.orange()
         else:
             embed.set_image(
-                url='https://2.bp.blogspot.com/-_1l8obImQmA/V3F9Z8MV3_I/AAAAAAAA8FI/Kcj-ALPCPoY5cTeaAgFtgYIg6qihz4XBgCLcB/s1600/Taric_Splash_4.jpg'
-                )
+                url="https://2.bp.blogspot.com/-_1l8obImQmA/V3F9Z8MV3_I/AAAAAAAA8FI/Kcj-ALPCPoY5cTeaAgFtgYIg6qihz4XBgCLcB/s1600/Taric_Splash_4.jpg"
+            )
             embed.colour = discord.Colour.blue()
-        
-        #https://nexus.leagueoflegends.com/wp-content/uploads/2018/08/Nunu_Bot_fqvx53j9ion1fxkr34ag.gif
-        #https://media0.giphy.com/media/3oz8xCXbQDReF34WWs/giphy-downsized.gif
-        #https://www.ssbwiki.com/images/b/bf/Fox_SSBM.jpg
-        #https://www.ssbwiki.com/images/1/17/Falco_SSBM.jpg
-        #https://lolskinshop.com/wp-content/uploads/2015/04/Poppy_2.jpg
-        #https://2.bp.blogspot.com/-_1l8obImQmA/V3F9Z8MV3_I/AAAAAAAA8FI/Kcj-ALPCPoY5cTeaAgFtgYIg6qihz4XBgCLcB/s1600/Taric_Splash_4.jpg
+
+        # https://nexus.leagueoflegends.com/wp-content/uploads/2018/08/Nunu_Bot_fqvx53j9ion1fxkr34ag.gif
+        # https://media0.giphy.com/media/3oz8xCXbQDReF34WWs/giphy-downsized.gif
+        # https://www.ssbwiki.com/images/b/bf/Fox_SSBM.jpg
+        # https://www.ssbwiki.com/images/1/17/Falco_SSBM.jpg
+        # https://lolskinshop.com/wp-content/uploads/2015/04/Poppy_2.jpg
+        # https://2.bp.blogspot.com/-_1l8obImQmA/V3F9Z8MV3_I/AAAAAAAA8FI/Kcj-ALPCPoY5cTeaAgFtgYIg6qihz4XBgCLcB/s1600/Taric_Splash_4.jpg
 
         await ctx.send(embed=embed)
-
 
     @commands.command(pass_context=True)
     async def choose(self, ctx, *choices: str):
@@ -260,6 +255,37 @@ class Queue(commands.Cog):
 
         result = ", ".join(str(random.randint(1, limit)) for r in range(rolls))
         await ctx.send(result)
+
+    async def generate_typo(self, letter):
+        """: Typo helper function """
+        # Remember our case
+        holdShift = letter.isupper()
+        # Standardize
+        letter = letter.lower()
+        row, col = self.lookup_table[letter]
+
+        # Handle our edge cases for when we can't go up (above our row idx)
+        # or past the end of our row charecters  (col idx)
+        # Worth looking into this and figuring out whats going on! I wrote it as
+        # if I would normally write code so a lot of new concepts
+        new_row = random.choice(
+            [
+                idx
+                for idx in (lambda row=row: [row + i for i in range(-1, 2)])()
+                if idx >= 0 and idx < len(self.keyboard_array)
+            ]
+        )
+
+        new_col = random.choice(
+            [
+                idx
+                for idx in (lambda col=col: [col + i for i in range(-1, 2)])()
+                if idx >= 0 and idx < len(self.keyboard_array[row])
+            ]
+        )
+
+        typo = self.keyboard_array[new_row][new_col]
+        return typo.upper() if holdShift else typo
 
     @commands.command(pass_context=True)
     async def captains(self, ctx):
@@ -284,25 +310,28 @@ class Queue(commands.Cog):
         ).members
         random.shuffle(members)
         message = ""
-        
+
         for place, member in enumerate(members):
             name = member.nick if member.nick else member.name
             danny_name = ""
-            for c in name:
-                for i in len(c)-1:
-                    randhor = random.randint(-1, 1)
-                    randver = random.randint(-1, 1)
+            # Lets typo our name
+            for letter_substring in ["".join(g) for _, g in itertools.groupby(name)]:
+                if random.randrange(100) <= 5:  # 5% to REPLACE w/ typo, play around!
+                    typo = await self.generate_typo(letter_substring[0])  # Get the typo
+                    danny_name += typo * len(letter_substring)  #
+                else:
+                    danny_name += letter_substring  # this already is stretched out
 
-                    # Danny turing test is complete @ ~ 17% of mistype
-                    if (random.randrange(100) <= 17):
-                    #    current = 
-                    #    newletter = 
-                    #    danny_name += newletter
-                    else:
-                        danny_name += c(i)
+                if random.randrange(100) <= 17:  # 17% to ADD w/ typo, play around!
+                    # I only want to add like 1 extra character, so don't need
+                    # to handle sequences!
+                    danny_name += await self.generate_typo(letter_substring[0])
+
             message += f"**#{place+1}** : {danny_name}\n"
+
         if not message:
             message = "No voice lobby for captains draft"
+
         await ctx.send(message)
 
     @commands.command(pass_context=True)
