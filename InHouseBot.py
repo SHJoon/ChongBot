@@ -89,6 +89,10 @@ class Queue(commands.Cog):
                         \n**!cool** = See if you're cool or not!"
         )
 
+        for i in range(1,1001):
+            x = []
+            x += i
+
     @commands.command(pass_context=True)
     async def add(self, ctx):
         """: Add yourself to the queue!"""
@@ -141,7 +145,7 @@ class Queue(commands.Cog):
     async def _next(self, ctx, num=1):
         """: Call the next member in the queue"""
         if len(self.queue) > 0:
-            for x in range(num):
+            for _ in range(num):
                 member = discord.utils.get(ctx.guild.members, id=self.queue[0])
                 await ctx.send(f"You are up **{member.mention}**! Have fun!")
                 self.queue.remove(self.queue[0])
@@ -167,6 +171,7 @@ class Queue(commands.Cog):
     @commands.command(pass_context=True)
     async def stream(self, ctx):
         await ctx.send(f"https://www.twitch.tv/turbolobster")
+        await ctx.send(f"https://www.twitch.tv/siked")
 
     @commands.command(pass_context=True)
     async def fuckchong(self, ctx):
@@ -223,12 +228,12 @@ class Queue(commands.Cog):
 
         if ranflip == "Heads":
             embed.set_image(
-                url="https://lolskinshop.com/wp-content/uploads/2015/04/Poppy_2.jpg"
+                url="https://nexus.leagueoflegends.com/wp-content/uploads/2018/08/Nunu_Bot_fqvx53j9ion1fxkr34ag.gif"
             )
             embed.colour = discord.Colour.orange()
         else:
             embed.set_image(
-                url="https://2.bp.blogspot.com/-_1l8obImQmA/V3F9Z8MV3_I/AAAAAAAA8FI/Kcj-ALPCPoY5cTeaAgFtgYIg6qihz4XBgCLcB/s1600/Taric_Splash_4.jpg"
+                url="https://media0.giphy.com/media/3oz8xCXbQDReF34WWs/giphy-downsized.gif"
             )
             embed.colour = discord.Colour.blue()
 
@@ -316,16 +321,17 @@ class Queue(commands.Cog):
             danny_name = ""
             # Lets typo our name
             for letter_substring in ["".join(g) for _, g in itertools.groupby(name)]:
-                if random.randrange(100) <= 5:  # 5% to REPLACE w/ typo, play around!
+                if not letter_substring:
+                    danny_name += " "
+                elif random.randrange(100) <= 10:  # 5% to REPLACE w/ typo, play around!
                     typo = await self.generate_typo(letter_substring[0])  # Get the typo
                     danny_name += typo * len(letter_substring)  #
-                else:
-                    danny_name += letter_substring  # this already is stretched out
-
-                if random.randrange(100) <= 17:  # 17% to ADD w/ typo, play around!
+                elif random.randrange(100) <= 10: # 5% to ADD w/ typo, play around!
                     # I only want to add like 1 extra character, so don't need
                     # to handle sequences!
                     danny_name += await self.generate_typo(letter_substring[0])
+                else:
+                    danny_name += letter_substring  # this already is stretched out
 
             message += f"**#{place+1}** : {danny_name}\n"
 
