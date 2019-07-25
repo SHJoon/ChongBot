@@ -89,10 +89,6 @@ class Queue(commands.Cog):
                         \n**!cool** = See if you're cool or not!"
         )
 
-        for i in range(1,1001):
-            x = []
-            x += i
-
     @commands.command(pass_context=True)
     async def add(self, ctx):
         """: Add yourself to the queue!"""
