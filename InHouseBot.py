@@ -39,6 +39,10 @@ async def on_message(message):
     elif message.content.upper() == "H TOWN LET'S GET IT!":
         await message.add_reaction("\U0001F680")
         await message.add_reaction("\U0001F1FC")
+    elif message.content.upper() == "L":
+        await message.add_reaction("\U0001F1F1")
+    elif message.content.upper() == "F":
+        await message.add_reaction("\U0001F1EB")
     else:
         await bot.process_commands(message)
 
@@ -62,6 +66,8 @@ class Queue(commands.Cog):
             for row_idx, row in enumerate(self.keyboard_array)
             for col_idx, letter in enumerate(row)
         }
+        self.typo_replace_chance = 10
+        self.typo_add_chance = 10
 
     @commands.command(pass_context=True, name="commands")
     async def _commands(self, ctx):
@@ -80,12 +86,14 @@ class Queue(commands.Cog):
                         \n**!roll AdX** = Roll X-sided die, A times. (Ex. 1d6 = roll 6-sided die 1 time.)\
                         \n**!captains** = Randomly choose captain from people that are currently in the voice chat.\
                         \n**!lulcaptains** = Same as !captains, but Danny style...\
+                        \n**typo** = Change randomness of lulcaptains command.\
                         \n**!leggo** = Drop an {at}here for 10-men. Will automatically choose captain after 10 people react.\
                         \n**!fuckchong** = Honestly, fuck him.\
                         \n**!grime** = Important slice of in-house history...\
                         \n**!ass** = It is the truth.\
                         \n**!morg** = Will always be funny.\
                         \n**!boys** = The boys are back in town. \
+                        \n**!boys2** = The boys are back in town again.\
                         \n**!cool** = See if you're cool or not!"
         )
 
@@ -206,6 +214,10 @@ class Queue(commands.Cog):
     async def boys(self, ctx):
         await ctx.send(f"https://i.imgflip.com/360ktl.jpg")
 
+    @commands.command(pass_contect=True)
+    async def boys2(self, ctx):
+        await ctx.send("https://i.imgflip.com/36j064.jpg")
+        
     @commands.command(pass_context=True)
     async def cool(self, ctx):
         author = ctx.message.author
@@ -287,6 +299,19 @@ class Queue(commands.Cog):
 
         typo = self.keyboard_array[new_row][new_col]
         return typo.upper() if holdShift else typo
+    
+    @commands.command(pass_context=True)
+    async def typo(self, ctx, chance_replace: int, chance_add: int):
+        if (chance_replace > 100) or (chance_replace < 0)\
+             or (chance_add > 100) or (chance_add < 0):
+            await ctx.send("The chances have to be between 0~100%!")
+        else:
+            await ctx.send(f"lulcaptains settings:\
+            \nReplace chance set to {chance_replace}%.\
+            \nAdd chance set to {chance_add}%.")
+            self.typo_replace_chance = chance_replace - 1
+            self.typo_add_chance = chance_add - 1
+
 
     @commands.command(pass_context=True)
     async def captains(self, ctx):
@@ -319,10 +344,10 @@ class Queue(commands.Cog):
             for letter_substring in ["".join(g) for _, g in itertools.groupby(name)]:
                 if letter_substring.isspace():
                     danny_name += " "
-                elif random.randrange(100) <= 10:  # 5% to REPLACE w/ typo, play around!
+                elif random.randrange(100) <= self.typo_replace_chance:  # 5% to REPLACE w/ typo, play around!
                     typo = await self.generate_typo(letter_substring[0])  # Get the typo
                     danny_name += typo * len(letter_substring)  #
-                elif random.randrange(100) <= 10: # 5% to ADD w/ typo, play around!
+                elif random.randrange(100) <= self.typo_add_chance: # 5% to ADD w/ typo, play around!
                     # I only want to add like 1 extra character, so don't need
                     # to handle sequences!
                     danny_name += await self.generate_typo(letter_substring[0])
