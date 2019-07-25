@@ -317,7 +317,7 @@ class Queue(commands.Cog):
             danny_name = ""
             # Lets typo our name
             for letter_substring in ["".join(g) for _, g in itertools.groupby(name)]:
-                if not letter_substring:
+                if letter_substring.isspace():
                     danny_name += " "
                 elif random.randrange(100) <= 10:  # 5% to REPLACE w/ typo, play around!
                     typo = await self.generate_typo(letter_substring[0])  # Get the typo
