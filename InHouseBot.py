@@ -344,13 +344,15 @@ class Queue(commands.Cog):
             for letter_substring in ["".join(g) for _, g in itertools.groupby(name)]:
                 if letter_substring.isspace():
                     danny_name += " "
+                elif letter_substring == '"':
+                    danny_name += '"'
                 elif random.randrange(100) <= self.typo_replace_chance:  # 5% to REPLACE w/ typo, play around!
                     typo = await self.generate_typo(letter_substring[0])  # Get the typo
                     danny_name += typo * len(letter_substring)  #
                 elif random.randrange(100) <= self.typo_add_chance: # 5% to ADD w/ typo, play around!
                     # I only want to add like 1 extra character, so don't need
                     # to handle sequences!
-                    typo = await.self.generate_typo(letter_substring[0])
+                    typo = await self.generate_typo(letter_substring[0])
                     danny_name += letter_substring + typo
                 else:
                     danny_name += letter_substring  # this already is stretched out
