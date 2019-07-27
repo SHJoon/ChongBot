@@ -37,7 +37,7 @@ async def change_status():
         await bot.change_presence(activity = discord.Activity(type = discord.ActivityType.streaming, name = phrase))
     elif set_type == 2:
         phrases = ["Truc yelling",\
-            "Worst Mecaniks", "Jackzilla casting", "the inner voice"\
+            "Worst Mecaniks", "Jackzilla casting", "the inner voice",\
             "Fuck Truc by the Boys", "Boyz II Men"]
         phrase = random.choice(phrases)
         await bot.change_presence(activity = discord.Activity(type = discord.ActivityType.listening, name = phrase))
