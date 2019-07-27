@@ -22,35 +22,31 @@ def is_approved():
 @tasks.loop(seconds=30)
 async def change_status():
     await bot.wait_until_ready()
-    set_type = random.randint(0,3)
+    set_type = random.randint(0,2)
     if set_type == 0:
         phrases = ["with Chong's feelings",\
         "with Nunu", "Truc Simulator 2019", "with the boys",\
-        "tank-abuser meta", "League In-House"]
+        "tank-abuser meta", "League In-House", "wadetendo Garen"\
+        ]
         phrase = random.choice(phrases)
         await bot.change_presence(activity = discord.Activity(type = discord.ActivityType.playing, name = phrase))
     elif set_type == 1:
         phrases = ["WWE Smackdown",\
-            "Chong's toilet", "not much", "League In-House"\
-            "from a cave", "furry convention"]
+            "Chong's toilet", "not much", "League In-House",\
+            "from a cave", "furry convention","cute anime girls"\
+            "the boys", "Danny pooping", "chair porn", "RuPaul's Drag Race"\
+            "missed Morgana Q's"]
         phrase = random.choice(phrases)
-        await bot.change_presence(activity = discord.Activity(type = discord.ActivityType.streaming, name = phrase))
-    elif set_type == 2:
+        await bot.change_presence(activity = discord.Activity(type = discord.ActivityType.watching, name = phrase))
+    else:
         phrases = ["Truc yelling",\
-            "Worst Mecaniks", "Jackzilla casting", "the inner voice",\
+            "Worst Mecaniks reading", "Jackzilla casting", "the inner voice",\
             "Fuck Truc by the Boys", "Boyz II Men"]
         phrase = random.choice(phrases)
         await bot.change_presence(activity = discord.Activity(type = discord.ActivityType.listening, name = phrase))
-    else:
-        phrases = ["cute anime girls",\
-        "League In-House", "the boys", "Danny pooping"\
-        "chair porn", "RuPaul's Drag Race"]
-        phrase = random.choice(phrases)
-        await bot.change_presence(activity = discord.Activity(type = discord.ActivityType.watching, name = phrase))
 
 @bot.event
 async def on_ready():
-    #await bot.change_presence(activity=discord.Game(name="with Chong's feelings"))
     print(bot.user.name)
     print(bot.user.id)
     change_status.start()
@@ -374,6 +370,8 @@ class Queue(commands.Cog):
             for letter_substring in ["".join(g) for _, g in itertools.groupby(name)]:
                 if letter_substring.isspace():
                     danny_name += " "
+                elif letter_substring == '"':
+                    danny_name += '"'
                 elif random.randrange(100) <= self.typo_replace_chance:  # 10% to REPLACE w/ typo by default
                     typo = await self.generate_typo(letter_substring[0])  # Get the typo
                     danny_name += typo * len(letter_substring)  #
