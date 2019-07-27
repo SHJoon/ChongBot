@@ -1,8 +1,9 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 import random
 import asyncio
 import itertools
+from itertools import cycle
 
 prefix = "!"  # change this to whatever prefix you'd like
 bot = commands.Bot(command_prefix=prefix)
@@ -18,12 +19,41 @@ def is_approved():
 
     return commands.check(predicate)
 
+@tasks.loop(seconds=30)
+async def change_status():
+    await bot.wait_until_ready()
+    set_type = random.randint(0,3)
+    if set_type == 0:
+        phrases = ["with Chong's feelings",\
+        "with Nunu", "Truc Simulator 2019", "with the boys",\
+        "tank-abuser meta", "League In-House"]
+        phrase = random.choice(phrases)
+        await bot.change_presence(activity = discord.Activity(type = discord.ActivityType.playing, name = phrase))
+    elif set_type == 1:
+        phrases = ["WWE Smackdown",\
+            "Chong's toilet", "not much", "League In-House"\
+            "from a cave", "furry convention"]
+        phrase = random.choice(phrases)
+        await bot.change_presence(activity = discord.Activity(type = discord.ActivityType.streaming, name = phrase))
+    elif set_type == 2:
+        phrases = ["Truc yelling",\
+            "Worst Mecaniks", "Jackzilla casting", "the inner voice"\
+            "Fuck Truc by the Boys", "Boyz II Men"]
+        phrase = random.choice(phrases)
+        await bot.change_presence(activity = discord.Activity(type = discord.ActivityType.listening, name = phrase))
+    else:
+        phrases = ["cute anime girls",\
+        "League In-House", "the boys", "Danny pooping"\
+        "chair porn", "RuPaul's Drag Race"]
+        phrase = random.choice(phrases)
+        await bot.change_presence(activity = discord.Activity(type = discord.ActivityType.watching, name = phrase))
 
 @bot.event
 async def on_ready():
-    await bot.change_presence(activity=discord.Game(name="with Chong's feelings"))
+    #await bot.change_presence(activity=discord.Game(name="with Chong's feelings"))
     print(bot.user.name)
     print(bot.user.id)
+    change_status.start()
 
 
 @bot.event
@@ -86,7 +116,7 @@ class Queue(commands.Cog):
                         \n**!roll AdX** = Roll X-sided die, A times. (Ex. 1d6 = roll 6-sided die 1 time.)\
                         \n**!captains** = Randomly choose captain from people that are currently in the voice chat.\
                         \n**!lulcaptains** = Same as !captains, but Danny style...\
-                        \n**typo** = Change randomness of lulcaptains command.\
+                        \n**!typo** = Change randomness of lulcaptains command.\
                         \n**!leggo** = Drop an {at}here for 10-men. Will automatically choose captain after 10 people react.\
                         \n**!fuckchong** = Honestly, fuck him.\
                         \n**!grime** = Important slice of in-house history...\
@@ -217,7 +247,7 @@ class Queue(commands.Cog):
     @commands.command(pass_contect=True)
     async def boys2(self, ctx):
         await ctx.send("https://i.imgflip.com/36j064.jpg")
-        
+
     @commands.command(pass_context=True)
     async def cool(self, ctx):
         author = ctx.message.author
@@ -344,12 +374,10 @@ class Queue(commands.Cog):
             for letter_substring in ["".join(g) for _, g in itertools.groupby(name)]:
                 if letter_substring.isspace():
                     danny_name += " "
-                elif letter_substring == '"':
-                    danny_name += '"'
-                elif random.randrange(100) <= self.typo_replace_chance:  # 5% to REPLACE w/ typo, play around!
+                elif random.randrange(100) <= self.typo_replace_chance:  # 10% to REPLACE w/ typo by default
                     typo = await self.generate_typo(letter_substring[0])  # Get the typo
                     danny_name += typo * len(letter_substring)  #
-                elif random.randrange(100) <= self.typo_add_chance: # 5% to ADD w/ typo, play around!
+                elif random.randrange(100) <= self.typo_add_chance: # 10% to ADD w/ typo by default
                     # I only want to add like 1 extra character, so don't need
                     # to handle sequences!
                     typo = await self.generate_typo(letter_substring[0])
@@ -407,7 +435,7 @@ class Queue(commands.Cog):
 
         await ctx.send(message)
 
-
+#bot.loop.create_task(change_status())
 bot.add_cog(Queue(bot))
 
 # Place your token in a file called 'key' next to the script
