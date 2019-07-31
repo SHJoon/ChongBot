@@ -4,6 +4,7 @@ import random
 import asyncio
 import itertools
 import httpx
+import os
 
 prefix = "!"  # change this to whatever prefix you'd like
 bot = commands.Bot(command_prefix=prefix)
@@ -529,7 +530,15 @@ class Queue(commands.Cog):
 bot.add_cog(Queue(bot))
 
 # Place your token in a file called 'key' next to the script
-with open("key", "r") as f:
-    token = f.read().strip().strip("\n")
 
-bot.run(token)
+token = None
+if os.environ['BOT_KEY']:
+    token = os.environ['BOT_KEY']
+elif os.path.isfile("key"):
+    with open("key", "r") as f:
+        token = f.read().strip().strip("\n")
+
+if token is not None:
+    bot.run(token)
+else:
+    print("Failed to find token in `key` file or `BOT_KEY` environment variable")
