@@ -3,7 +3,7 @@ from discord.ext import commands, tasks
 import random
 import asyncio
 import itertools
-from itertools import cycle
+import httpx
 
 prefix = "!"  # change this to whatever prefix you'd like
 bot = commands.Bot(command_prefix=prefix)
@@ -19,31 +19,56 @@ def is_approved():
 
     return commands.check(predicate)
 
+
 @tasks.loop(seconds=30)
 async def change_status():
     await bot.wait_until_ready()
-    set_type = random.randint(0,2)
+    set_type = random.randint(0, 2)
     if set_type == 0:
-        phrases = ["with Chong's feelings",\
-        "with Nunu", "Truc Simulator 2019", "with the boys",\
-        "tank-abuser meta", "League In-House", "wadetendo Garen"\
+        phrases = [
+            "with Chong's feelings",
+            "with Nunu",
+            "Truc Simulator 2019",
+            "with the boys",
+            "tank-abuser meta",
+            "League In-House",
+            "wadetendo Garen",
         ]
         phrase = random.choice(phrases)
-        await bot.change_presence(activity = discord.Activity(type = discord.ActivityType.playing, name = phrase))
+        await bot.change_presence(
+            activity=discord.Activity(type=discord.ActivityType.playing, name=phrase)
+        )
     elif set_type == 1:
-        phrases = ["WWE Smackdown",\
-            "Chong's toilet", "not much", "League In-House",\
-            "from a cave", "furry convention","cute anime girls"\
-            "the boys", "Danny pooping", "chair porn", "RuPaul's Drag Race"\
-            "missed Morgana Q's"]
+        phrases = [
+            "WWE Smackdown",
+            "Chong's toilet",
+            "not much",
+            "League In-House",
+            "from a cave",
+            "furry convention",
+            "cute anime girls" "the boys",
+            "Danny pooping",
+            "chair porn",
+            "RuPaul's Drag Race" "missed Morgana Q's",
+        ]
         phrase = random.choice(phrases)
-        await bot.change_presence(activity = discord.Activity(type = discord.ActivityType.watching, name = phrase))
+        await bot.change_presence(
+            activity=discord.Activity(type=discord.ActivityType.watching, name=phrase)
+        )
     else:
-        phrases = ["Truc yelling",\
-            "Worst Mecaniks reading", "Jackzilla casting", "the inner voice",\
-            "Fuck Truc by the Boys", "Boyz II Men"]
+        phrases = [
+            "Truc yelling",
+            "Worst Mecaniks reading",
+            "Jackzilla casting",
+            "the inner voice",
+            "Fuck Truc by the Boys",
+            "Boyz II Men",
+        ]
         phrase = random.choice(phrases)
-        await bot.change_presence(activity = discord.Activity(type = discord.ActivityType.listening, name = phrase))
+        await bot.change_presence(
+            activity=discord.Activity(type=discord.ActivityType.listening, name=phrase)
+        )
+
 
 @bot.event
 async def on_ready():
@@ -75,6 +100,7 @@ async def on_message(message):
 
 class Queue(commands.Cog):
     def __init__(self, bot):
+        self.client = client = httpx.AsyncClient()
         self.queue = []
         self.qtoggle = True
 
@@ -94,6 +120,10 @@ class Queue(commands.Cog):
         }
         self.typo_replace_chance = 10
         self.typo_add_chance = 10
+
+        self.broke = (
+            False
+        )  # break is a keyword so we can't define it on class, interesting
 
     @commands.command(pass_context=True, name="commands")
     async def _commands(self, ctx):
@@ -325,19 +355,24 @@ class Queue(commands.Cog):
 
         typo = self.keyboard_array[new_row][new_col]
         return typo.upper() if holdShift else typo
-    
+
     @commands.command(pass_context=True)
     async def typo(self, ctx, chance_replace: int, chance_add: int):
-        if (chance_replace > 100) or (chance_replace < 0)\
-             or (chance_add > 100) or (chance_add < 0):
+        if (
+            (chance_replace > 100)
+            or (chance_replace < 0)
+            or (chance_add > 100)
+            or (chance_add < 0)
+        ):
             await ctx.send("The chances have to be between 0~100%!")
         else:
-            await ctx.send(f"lulcaptains settings:\
+            await ctx.send(
+                f"lulcaptains settings:\
             \nReplace chance set to {chance_replace}%.\
-            \nAdd chance set to {chance_add}%.")
+            \nAdd chance set to {chance_add}%."
+            )
             self.typo_replace_chance = chance_replace - 1
             self.typo_add_chance = chance_add - 1
-
 
     @commands.command(pass_context=True)
     async def captains(self, ctx):
@@ -372,10 +407,14 @@ class Queue(commands.Cog):
                     danny_name += " "
                 elif letter_substring == '"':
                     danny_name += '"'
-                elif random.randrange(100) <= self.typo_replace_chance:  # 10% to REPLACE w/ typo by default
+                elif (
+                    random.randrange(100) <= self.typo_replace_chance
+                ):  # 10% to REPLACE w/ typo by default
                     typo = await self.generate_typo(letter_substring[0])  # Get the typo
                     danny_name += typo * len(letter_substring)  #
-                elif random.randrange(100) <= self.typo_add_chance: # 10% to ADD w/ typo by default
+                elif (
+                    random.randrange(100) <= self.typo_add_chance
+                ):  # 10% to ADD w/ typo by default
                     # I only want to add like 1 extra character, so don't need
                     # to handle sequences!
                     typo = await self.generate_typo(letter_substring[0])
@@ -389,6 +428,49 @@ class Queue(commands.Cog):
             message = "No voice lobby for captains draft"
 
         await ctx.send(message)
+
+    @commands.command(
+        name="break"
+    )  # remember, its keyworded so we can't define it as is
+    async def _break(self, ctx):
+
+        blue_channel = discord.utils.get(
+            ctx.guild.channels, name="Blue Team 1", type=discord.ChannelType.voice
+        )
+        red_channel = discord.utils.get(
+            ctx.guild.channels, name="Red Team 2", type=discord.ChannelType.voice
+        )
+
+        # We don't have to intialize these since they are only in scope if we
+        # invoke this command
+
+        self.blue_team = blue_channel.members
+        self.red_team = red_channel.members
+
+        draft_lobby_req = await self.client.post(
+            "http://prodraft.leagueoflegends.com/draft",
+            json={
+                "team1Name": "Blue Side",
+                "team2Name": "Red Side",
+                "matchName": "Inhouse Lobby",
+            },
+        )
+
+        draft_lobby_resp = draft_lobby_req.json()
+
+        _id = draft_lobby_resp['id']
+        _blue_auth, _red_auth = draft_lobby_resp['auth']
+        blue_url = f"http://prodraft.leagueoflegends.com?draft={_id}&auth={_blue_auth}&locale=en_US"
+        red_url = f"http://prodraft.leagueoflegends.com?draft={_id}&auth={_red_auth}&locale=en_US"
+        spec_url = f"http://prodraft.leagueoflegends.com?draft={_id}&locale=en_US"
+
+        message = f"BLUE TEAM:\n{blue_url}\n\nRED TEAM:\n{red_url}\n\nSPEC:\n{spec_url}\n"
+
+        await ctx.send(message)
+
+        # for place, member in enumerate(members):
+        #     name = member.nick if member.nick else member.name
+        #     danny_name = ""
 
     @commands.command(pass_context=True)
     async def leggo(self, ctx):
@@ -433,7 +515,8 @@ class Queue(commands.Cog):
 
         await ctx.send(message)
 
-#bot.loop.create_task(change_status())
+
+# bot.loop.create_task(change_status())
 bot.add_cog(Queue(bot))
 
 # Place your token in a file called 'key' next to the script
