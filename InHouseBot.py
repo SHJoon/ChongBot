@@ -100,7 +100,7 @@ async def on_message(message):
 
 class Queue(commands.Cog):
     def __init__(self, bot):
-        self.client = client = httpx.AsyncClient()
+        self.client = httpx.AsyncClient()
         self.queue = []
         self.qtoggle = True
 
@@ -447,6 +447,8 @@ class Queue(commands.Cog):
         self.blue_team = blue_channel.members
         self.red_team = red_channel.members
 
+        # Lets do some fun custom team names :)
+
         draft_lobby_req = await self.client.post(
             "http://prodraft.leagueoflegends.com/draft",
             json={
@@ -458,19 +460,24 @@ class Queue(commands.Cog):
 
         draft_lobby_resp = draft_lobby_req.json()
 
-        _id = draft_lobby_resp['id']
-        _blue_auth, _red_auth = draft_lobby_resp['auth']
+        _id = draft_lobby_resp["id"]
+        _blue_auth, _red_auth = draft_lobby_resp["auth"]
         blue_url = f"http://prodraft.leagueoflegends.com?draft={_id}&auth={_blue_auth}&locale=en_US"
         red_url = f"http://prodraft.leagueoflegends.com?draft={_id}&auth={_red_auth}&locale=en_US"
         spec_url = f"http://prodraft.leagueoflegends.com?draft={_id}&locale=en_US"
 
-        message = f"BLUE TEAM:\n{blue_url}\n\nRED TEAM:\n{red_url}\n\nSPEC:\n{spec_url}\n"
+        message = (
+            f"BLUE TEAM:\n{blue_url}\n\nRED TEAM:\n{red_url}\n\nSPEC:\n{spec_url}\n"
+        )
+
+        self.broke = True
 
         await ctx.send(message)
 
         # for place, member in enumerate(members):
         #     name = member.nick if member.nick else member.name
         #     danny_name = ""
+        #
 
     @commands.command(pass_context=True)
     async def leggo(self, ctx):
