@@ -50,7 +50,8 @@ async def change_status():
             "the boys",
             "Danny pooping",
             "chair porn",
-            "RuPaul's Drag Race" "missed Morgana Q's",
+            "RuPaul's Drag Race",
+            "missed Morgana Q's",
         ]
         phrase = random.choice(phrases)
         await bot.change_presence(
