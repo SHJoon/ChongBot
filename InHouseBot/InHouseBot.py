@@ -101,7 +101,7 @@ async def on_message(message):
         await bot.process_commands(message)
 
 
-class Queue(commands.Cog):
+class InhouseCog(commands.Cog):
     def __init__(self, bot):
         self.client = httpx.AsyncClient()
         self.queue = []
@@ -294,8 +294,11 @@ class Queue(commands.Cog):
         embed = discord.Embed(title=ranflip)
 
         if ranflip == "Heads":
+            # embed.set_image(
+            #     url="https://nexus.leagueoflegends.com/wp-content/uploads/2018/08/Nunu_Bot_fqvx53j9ion1fxkr34ag.gif"
+            # )
             embed.set_image(
-                url="https://nexus.leagueoflegends.com/wp-content/uploads/2018/08/Nunu_Bot_fqvx53j9ion1fxkr34ag.gif"
+                url="https://i.imgur.com/lDlR54a.gif"
             )
             embed.colour = discord.Colour.orange()
         else:
@@ -477,11 +480,6 @@ class Queue(commands.Cog):
 
         await ctx.send(message)
 
-        # for place, member in enumerate(members):
-        #     name = member.nick if member.nick else member.name
-        #     danny_name = ""
-        #
-
     @commands.command(pass_context=True)
     async def leggo(self, ctx):
         """Tries to get a game ready"""
@@ -527,7 +525,7 @@ class Queue(commands.Cog):
 
 
 # bot.loop.create_task(change_status())
-bot.add_cog(Queue(bot))
+bot.add_cog(InhouseCog(bot))
 
 # Place your token in a file called 'key' where you want to
 # launch the script from
