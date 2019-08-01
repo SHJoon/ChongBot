@@ -406,10 +406,10 @@ class Queue(commands.Cog):
             danny_name = ""
             # Lets typo our name
             for letter_substring in ["".join(g) for _, g in itertools.groupby(name)]:
-                if letter_substring.isspace():
-                    danny_name += " "
-                elif letter_substring == '"':
-                    danny_name += '"'
+                # No support for shift+char typos or other non present keys atm, so just pass them to stop
+                # us key error indexing on our table
+                if letter_substring[0] not in self.lookup_table:
+                    danny_name += letter_substring
                 elif (
                     random.randrange(100) <= self.typo_replace_chance
                 ):  # 10% to REPLACE w/ typo by default
@@ -533,9 +533,11 @@ bot.add_cog(Queue(bot))
 # launch the script from
 
 token = None
-if os.environ['BOT_KEY']:
+if 'BOT_KEY' in os.environ:
     token = os.environ['BOT_KEY']
+    print('Using environment var for key')
 elif os.path.isfile("key"):
+    print('Using file for key')
     with open("key", "r") as f:
         token = f.read().strip().strip("\n")
 
