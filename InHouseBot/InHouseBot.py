@@ -529,7 +529,8 @@ class Queue(commands.Cog):
 # bot.loop.create_task(change_status())
 bot.add_cog(Queue(bot))
 
-# Place your token in a file called 'key' next to the script
+# Place your token in a file called 'key' where you want to
+# launch the script from
 
 token = None
 if os.environ['BOT_KEY']:
