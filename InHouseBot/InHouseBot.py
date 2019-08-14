@@ -139,7 +139,7 @@ class InhouseCog(commands.Cog):
                         \n**!next #** = Call the next # of people in the queue.\
                         \n**!clear** = Clear the queue. **(Admin use only)**\
                         \n**!toggle** = Toggle the queue On/Off. **(Admin use only)**\
-                        \n**!stream** = Usually danny streams the game he's in.\
+                        \n**!stream** = Directory of our streamers.\
                         \n**!flip** = Heads or Tails.\
                         \n**!choose choice1,choice2,...** = Choose randomly from your own list of choices.\
                         \n**!roll AdX** = Roll X-sided die, A times. (Ex. 1d6 = roll 6-sided die 1 time.)\
@@ -153,7 +153,8 @@ class InhouseCog(commands.Cog):
                         \n**!morg** = Will always be funny.\
                         \n**!boys** = The boys are back in town. \
                         \n**!boys2** = The boys are back in town again.\
-                        \n**!cool** = See if you're cool or not!"
+                        \n**!cool** = See if you're cool or not!\
+                        \n**!ape** = Current state of our in-house drafts."
         )
 
     @commands.command(pass_context=True)
@@ -230,11 +231,47 @@ class InhouseCog(commands.Cog):
         else:
             state = "CLOSED"
         await ctx.send(f"Queue is now {state}")
+    
+    @commands.command(pass_contxt=True)
+    async def stream(self, ctx):
+        await ctx.send(
+            "Use !stream# for the stream link.\
+            \n1. turbonunu\
+            \n2. siked\
+            \n3. Fuck\
+            \n4. Ksaper\
+            \n5. Tank Abuser\
+            \n6. kr4zykilla\
+            \n7. Ethan"
+        )
 
     @commands.command(pass_context=True)
-    async def stream(self, ctx):
+    async def stream1(self, ctx):
         await ctx.send(f"https://www.twitch.tv/turbolobster")
+    
+    @commands.command(pass_context=True)
+    async def stream2(self, ctx):
         await ctx.send(f"https://www.twitch.tv/siked")
+
+    @commands.command(pass_context=True)
+    async def stream3(self, ctx):
+        await ctx.send(f"https://www.twitch.tv/americandragondavidchong")
+    
+    @commands.command(pass_context=True)
+    async def stream4(self, ctx):
+        await ctx.send(f"https://www.twitch.tv/Ksaper3")
+
+    @commands.command(pass_context=True)
+    async def stream5(self, ctx):
+        await ctx.send(f"https://www.twitch.tv/rainbowmonkeysss")
+    
+    @commands.command(pass_context=True)
+    async def stream6(self, ctx):
+        await ctx.send(f"https://www.twitch.tv/kr4zykilla")
+    
+    @commands.command(pass_context=True)
+    async def stream7(self, ctx):
+        await ctx.send(f"https://www.twitch.tv/e_t_j")
 
     @commands.command(pass_context=True)
     async def fuckchong(self, ctx):
@@ -249,8 +286,8 @@ class InhouseCog(commands.Cog):
         await msg.add_reaction("\U0001F1F3")
         await msg.add_reaction("\U0001F1EC")
         emoji = (
-            ":FuckChong:"
-        )  # You need to use discord.utils.get to fetch the ID I think
+            "<:FuckChong:598605265641930757>"
+        )
         await msg.add_reaction(emoji)
 
     @commands.command(pass_context=True)
@@ -285,6 +322,18 @@ class InhouseCog(commands.Cog):
             await ctx.send(f"You're grimey")
         else:
             await ctx.send(f"You're cool! {author.mention}")
+
+    @commands.command(pass_context=True)
+    async def ape(self, ctx):
+        await ctx.send(
+            "https://media.discordapp.net/attachments/569646728224178184/611036013715783710/In-House_meme.png?width=902&height=866"
+            )
+
+    @commands.command(pass_context=True)
+    async def ksaper(self, ctx):
+        await ctx.send(
+            f"beep boop :robot: 4fun4 :robot: beep boop"
+        )
 
     @commands.command(pass_context=True)
     async def flip(self, ctx):
