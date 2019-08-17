@@ -5,12 +5,19 @@ import asyncio
 import itertools
 import httpx
 import os
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
 prefix = "!"  # change this to whatever prefix you'd like
 bot = commands.Bot(command_prefix=prefix)
 # add roles that can use some commands
 approved_roles = ["Admin", "Bot", "Mod"]
 
+scope = ["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/spreadsheets',"https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
+creds = ServiceAccountCredentials.from_json_keyfile_name("InHouseData-43dcb8cebcde.json", scope)
+clients = gspread.authorize(creds)
+sheet = clients.open("InHouseData").sheet1
+data = sheet.get_all_records()
 
 def is_approved():
     def predicate(ctx):
@@ -107,6 +114,13 @@ class InhouseCog(commands.Cog):
         self.queue = []
         self.qtoggle = True
 
+        #variables for gsheets
+        self.numindex = 1
+        self.nameindex = 2
+        self.idindex = 3
+        self.urlindex = 4
+        self.found = False
+
         # Set up our typo structs for lulcaptains()
         self.keyboard_array = [
             # A string is just an array of characters
@@ -159,6 +173,19 @@ class InhouseCog(commands.Cog):
 
     @commands.command(pass_context=True)
     async def add(self, ctx):
+        """: Add yourself to the queue!"""
+        author = ctx.message.author
+        if self.qtoggle:
+            if author.id not in self.queue:
+                self.queue.append(author.id)
+                await ctx.send("you have been added to the queue.")
+            else:
+                await ctx.send("you are already in the queue!")
+        else:
+            await ctx.send("The queue is closed.")
+
+    @commands.command(pass_context=True)
+    async def join(self, ctx):
         """: Add yourself to the queue!"""
         author = ctx.message.author
         if self.qtoggle:
@@ -232,46 +259,42 @@ class InhouseCog(commands.Cog):
             state = "CLOSED"
         await ctx.send(f"Queue is now {state}")
     
-    @commands.command(pass_contxt=True)
+    @commands.command()
+    async def addstream(self, ctx, url = ""):
+        user = ctx.message.author
+        usernick = user.nick
+        userid = user.id
+        if len(data) == 0:
+            sheet.update_cell(2, self.numindex, 1)
+            sheet.update_cell(2, self.nameindex,usernick)
+            sheet.update_cell(2, self.idindex,userid)
+            sheet.update_cell(2, self.urlindex,url)
+        else:
+            for i in range(1, len(data)):
+                if(sheet.cell(i + 1, self.idindex).value == userid):
+                    sheet.update_cell(i + 1, self.urlindex, url)
+                    self.found = True
+                    break
+                else:
+                    self.found = False
+
+            if not self.found:
+                sheet.update_cell(len(data) + 2, self.numindex, len(data) + 1)
+                sheet.update_cell(len(data) + 2, self.nameindex, usernick)
+                sheet.update_cell(len(data) + 2, self.idindex, userid)
+                sheet.update_cell(len(data) + 2, self.urlindex, url)
+
+    @commands.command()
     async def stream(self, ctx):
-        await ctx.send(
-            "Use !stream# for the stream link.\
-            \n1. turbonunu\
-            \n2. siked\
-            \n3. Fuck\
-            \n4. Ksaper\
-            \n5. Tank Abuser\
-            \n6. kr4zykilla\
-            \n7. Ethan"
-        )
-
-    @commands.command(pass_context=True)
-    async def stream1(self, ctx):
-        await ctx.send(f"https://www.twitch.tv/turbolobster")
-    
-    @commands.command(pass_context=True)
-    async def stream2(self, ctx):
-        await ctx.send(f"https://www.twitch.tv/siked")
-
-    @commands.command(pass_context=True)
-    async def stream3(self, ctx):
-        await ctx.send(f"https://www.twitch.tv/americandragondavidchong")
-    
-    @commands.command(pass_context=True)
-    async def stream4(self, ctx):
-        await ctx.send(f"https://www.twitch.tv/Ksaper3")
-
-    @commands.command(pass_context=True)
-    async def stream5(self, ctx):
-        await ctx.send(f"https://www.twitch.tv/rainbowmonkeysss")
-    
-    @commands.command(pass_context=True)
-    async def stream6(self, ctx):
-        await ctx.send(f"https://www.twitch.tv/kr4zykilla")
-    
-    @commands.command(pass_context=True)
-    async def stream7(self, ctx):
-        await ctx.send(f"https://www.twitch.tv/e_t_j")
+        user = ctx.message.author
+        userid = user.id
+        for i in range(len(data)):
+            if(sheet.cell(i + 1, self.idindex) == userid):
+                self.found = True
+            else:
+                self.found = False
+            if self.found:
+                await ctx.send(sheet.cell(i + 1, self.urlindex).value)
 
     @commands.command(pass_context=True)
     async def fuckchong(self, ctx):
@@ -333,6 +356,18 @@ class InhouseCog(commands.Cog):
     async def ksaper(self, ctx):
         await ctx.send(
             f"beep boop :robot: 4fun4 :robot: beep boop"
+        )
+
+    @commands.command()
+    async def wade(self, ctx):
+        await ctx.send(
+            f"im wade top lane blows dick and i dont think anyone can be good at league of legends except me"
+        )
+    
+    @commands.command()
+    async def danny(self, ctx):
+        await ctx.send(
+            f"https://i.imgflip.com/384zeu.jpg"
         )
 
     @commands.command(pass_context=True)
