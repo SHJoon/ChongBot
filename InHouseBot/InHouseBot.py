@@ -10,8 +10,16 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 prefix = "!"  # change this to whatever prefix you'd like
 bot = commands.Bot(command_prefix=prefix)
+
 # add roles that can use some commands
 approved_roles = ["Admin", "Bot", "Mod"]
+
+
+# Figuring out how the !help command gets automatically registered and invoked
+# is actually a good excercise in reading source code Howard
+class AliasHelpCommand(commands.DefaultHelpCommand):
+    def __init__(self):
+        super().__init__(command_attrs={'name': 'help', 'aliases': ['commands', 'command']})
 
 # I'm going to keep this out of main branch for now since its a WIP
 # scope = [
@@ -119,6 +127,9 @@ async def on_message(message):
 
 class InhouseCog(commands.Cog):
     def __init__(self, bot):
+        bot.help_command = AliasHelpCommand()
+        bot.help_command.cog = self
+
         self.client = httpx.AsyncClient()
         self.queue = []
         self.qtoggle = True
@@ -151,51 +162,24 @@ class InhouseCog(commands.Cog):
             False
         )  # break is a keyword so we can't define it on class, interesting
 
-    @commands.command(pass_context=True, name="commands")
-    async def _commands(self, ctx):
-        await ctx.send(
-            "**!add** = Add yourself to the queue. \
-                        \n**!remove** = Remove yourself from the queue.\
-                        \n**!queue** = See the current queue.\
-                        \n**!position** = See your current position in the queue.\
-                        \n**!next** = Call the next person in the queue.\
-                        \n**!next #** = Call the next # of people in the queue.\
-                        \n**!clear** = Clear the queue. **(Admin use only)**\
-                        \n**!toggle** = Toggle the queue On/Off. **(Admin use only)**\
-                        \n**!stream** = Directory of our streamers.\
-                        \n**!flip** = Heads or Tails.\
-                        \n**!choose choice1,choice2,...** = Choose randomly from your own list of choices.\
-                        \n**!roll AdX** = Roll X-sided die, A times. (Ex. 1d6 = roll 6-sided die 1 time.)\
-                        \n**!captains** = Randomly choose captain from people that are currently in the voice chat.\
-                        \n**!lulcaptains** = Same as !captains, but Danny style...\
-                        \n**!typo** = Change randomness of lulcaptains command.\
-                        \n**!leggo** = Drop an {at}here for 10-men. Will automatically choose captain after 10 people react.\
-                        \n**!fuckchong** = Honestly, fuck him.\
-                        \n**!grime** = Important slice of in-house history...\
-                        \n**!ass** = It is the truth.\
-                        \n**!morg** = Will always be funny.\
-                        \n**!boys** = The boys are back in town. \
-                        \n**!boys2** = The boys are back in town again.\
-                        \n**!cool** = See if you're cool or not!\
-                        \n**!ape** = Current state of our in-house drafts."
-        )
-
     @commands.command(aliases=["join"])
     async def add(self, ctx):
-        """: Add yourself to the queue!"""
+        """ Add yourself to the queue! """
         author = ctx.message.author
         if self.qtoggle:
             if author.id not in self.queue:
                 self.queue.append(author.id)
-                await ctx.send("you have been added to the queue.")
+                await ctx.send(
+                    f"You have been added to the queue at position {self.queue.index(author.id)+1}."
+                )
             else:
-                await ctx.send("you are already in the queue!")
+                await ctx.send("You are already in the queue!")
         else:
             await ctx.send("The queue is closed.")
 
     @commands.command(aliases=["leave", "drop"])
     async def remove(self, ctx):
-        """: Remove yourself from the queue"""
+        """ Remove yourself from the queue """
         author = ctx.message.author
         if author.id in self.queue:
             self.queue.remove(author.id)
@@ -205,7 +189,7 @@ class InhouseCog(commands.Cog):
 
     @commands.command(name="queue", pass_context=True)
     async def _queue(self, ctx):
-        """: See who's up next!"""
+        """ See who's up next!"""
         server = ctx.guild
         message = ""
         for place, member_id in enumerate(self.queue):
@@ -218,7 +202,7 @@ class InhouseCog(commands.Cog):
 
     @commands.command(pass_context=True)
     async def position(self, ctx):
-        """: Check your position in the queue"""
+        """ Check your position in the queue """
         author = ctx.message.author
         if author.id in self.queue:
             _position = self.queue.index(author.id) + 1
@@ -230,7 +214,7 @@ class InhouseCog(commands.Cog):
 
     @commands.command(pass_context=True, name="next")
     async def _next(self, ctx, num=1):
-        """: Call the next member in the queue"""
+        """ Call the next member in the queue """
         if len(self.queue) > 0:
             for _ in range(num):
                 member = discord.utils.get(ctx.guild.members, id=self.queue[0])
@@ -240,14 +224,14 @@ class InhouseCog(commands.Cog):
     @is_approved()
     @commands.command(pass_context=True)
     async def clear(self, ctx):
-        """: Clears the queue"""
+        """ Clears the queue """
         self.queue = []
         await ctx.send("Queue has been cleared")
 
     @is_approved()
     @commands.command(pass_context=True)
     async def toggle(self, ctx):
-        """: Toggles the queue"""
+        """ Toggles the queue. **(Admin only)** """
         self.qtoggle = not self.qtoggle
         if self.qtoggle:
             state = "OPEN"
@@ -294,6 +278,7 @@ class InhouseCog(commands.Cog):
 
     @commands.command(pass_context=True)
     async def fuckchong(self, ctx):
+        """ Self explanatory """
         msg = await ctx.send(f"FUCK CHONG")
         await msg.add_reaction("\U0001F1EB")
         await msg.add_reaction("\U0001F1FA")
@@ -309,30 +294,36 @@ class InhouseCog(commands.Cog):
 
     @commands.command(pass_context=True)
     async def ass(self, ctx):
+        """ It is the truth """
         await ctx.send(f"CHONG IS AN ASS EATER")
 
     @commands.command(pass_context=True)
     async def grime(self, ctx):
+        """ Important slice of in-house history... """
         await ctx.send(
             f"On May 6th, 2019, Chong invited an ex-LCS player to the server..."
         )
 
     @commands.command(pass_context=True)
     async def morg(self, ctx):
+        """ Everyone misses a skill shot occasionally, even you """
         await ctx.send(
             f"https://media.discordapp.net/attachments/569646728224178184/598615204288397501/unknown.png?width=1250&height=676"
         )
 
     @commands.command(pass_context=True)
     async def boys(self, ctx):
+        """ The boys are back in town """
         await ctx.send(f"https://i.imgflip.com/360ktl.jpg")
 
     @commands.command(pass_contect=True)
     async def boys2(self, ctx):
+        """ The boys are back in town again """
         await ctx.send("https://i.imgflip.com/36j064.jpg")
 
     @commands.command(pass_context=True)
     async def cool(self, ctx):
+        """ See if you are cool or not! """
         author = ctx.message.author
         # Chong's server ID
         if author.id == 172899191998251009:
@@ -342,26 +333,31 @@ class InhouseCog(commands.Cog):
 
     @commands.command(pass_context=True)
     async def ape(self, ctx):
+        """ Current state of inhouse drafts """
         await ctx.send(
             "https://media.discordapp.net/attachments/569646728224178184/611036013715783710/In-House_meme.png?width=902&height=866"
         )
 
     @commands.command(pass_context=True)
     async def ksaper(self, ctx):
+        """ Stats telling me no, but my body telling me YES """
         await ctx.send(f"beep boop :robot: 4fun4 :robot: beep boop")
 
     @commands.command()
     async def wade(self, ctx):
+        """ Self-loathing tank abuse """
         await ctx.send(
             f"im wade top lane blows dick and i dont think anyone can be good at league of legends except me"
         )
 
     @commands.command()
     async def danny(self, ctx):
+        """ KING """
         await ctx.send(f"https://i.imgflip.com/384zeu.jpg")
 
     @commands.command(pass_context=True)
     async def flip(self, ctx):
+        """ Heads or Tails """
         flip = ["Heads", "Tails"]
         ranflip = random.choice(flip)
 
@@ -390,10 +386,12 @@ class InhouseCog(commands.Cog):
 
     @commands.command(pass_context=True)
     async def choose(self, ctx, *choices: str):
+        """ Randomly choose from your own provided list of choices """
         await ctx.send(random.choice(choices))
 
     @commands.command()
     async def roll(self, ctx, dice: str):
+        """ AdX format only(A=number of die, X=number of faces) """
         try:
             rolls, limit = map(int, dice.split("d"))
         except Exception:
@@ -404,7 +402,7 @@ class InhouseCog(commands.Cog):
         await ctx.send(result)
 
     async def generate_typo(self, letter):
-        """: Typo helper function """
+        """ Typo helper function """
         # Remember our case
         holdShift = letter.isupper()
         # Standardize
@@ -436,6 +434,7 @@ class InhouseCog(commands.Cog):
 
     @commands.command(pass_context=True)
     async def typo(self, ctx, chance_replace: int, chance_add: int):
+        """ Modify settings for lulcaptains typo"""
         if (
             (chance_replace > 100)
             or (chance_replace < 0)
@@ -454,7 +453,7 @@ class InhouseCog(commands.Cog):
 
     @commands.command(pass_context=True)
     async def captains(self, ctx):
-        """: Randomizes captains list from General Voice channel"""
+        """ Randomizes captains list from General Voice channel"""
         members = discord.utils.get(
             ctx.guild.channels, name="General", type=discord.ChannelType.voice
         ).members
@@ -469,7 +468,7 @@ class InhouseCog(commands.Cog):
 
     @commands.command(pass_context=True)
     async def lulcaptains(self, ctx):
-        """: Randomizes captains list from General Voice channel"""
+        """ Like !captains, but like when Danny drinks"""
         members = discord.utils.get(
             ctx.guild.channels, name="General", type=discord.ChannelType.voice
         ).members
@@ -511,6 +510,7 @@ class InhouseCog(commands.Cog):
         name="break"
     )  # remember, its keyworded so we can't define it as is
     async def _break(self, ctx):
+        """ Generates a prodraft lobby and records blue/red team memebers """
 
         blue_channel = discord.utils.get(
             ctx.guild.channels, name="Blue Team 1", type=discord.ChannelType.voice
@@ -554,7 +554,7 @@ class InhouseCog(commands.Cog):
 
     @commands.command(pass_context=True)
     async def leggo(self, ctx):
-        """Tries to get a game ready"""
+        """ Tries to get a game ready """
 
         _message = await ctx.send("Who gaming, react @here")
         react_count = 0
@@ -597,6 +597,9 @@ class InhouseCog(commands.Cog):
 
 
 # bot.loop.create_task(change_status())
+#
+# We are adding it back with aliases later
+# bot.remove_command('help')
 bot.add_cog(InhouseCog(bot))
 
 # Place your token in a file called 'key' where you want to
