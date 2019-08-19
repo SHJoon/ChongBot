@@ -13,11 +13,20 @@ bot = commands.Bot(command_prefix=prefix)
 # add roles that can use some commands
 approved_roles = ["Admin", "Bot", "Mod"]
 
-scope = ["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/spreadsheets',"https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_name("InHouseData-43dcb8cebcde.json", scope)
-clients = gspread.authorize(creds)
-sheet = clients.open("InHouseData").sheet1
-data = sheet.get_all_records()
+# I'm going to keep this out of main branch for now since its a WIP
+# scope = [
+#     "https://spreadsheets.google.com/feeds",
+#     "https://www.googleapis.com/auth/spreadsheets",
+#     "https://www.googleapis.com/auth/drive.file",
+#     "https://www.googleapis.com/auth/drive",
+# ]
+# creds = ServiceAccountCredentials.from_json_keyfile_name(
+#     "InHouseData-43dcb8cebcde.json", scope
+# )
+# clients = gspread.authorize(creds)
+# sheet = clients.open("InHouseData").sheet1
+# data = sheet.get_all_records()
+
 
 def is_approved():
     def predicate(ctx):
@@ -114,7 +123,7 @@ class InhouseCog(commands.Cog):
         self.queue = []
         self.qtoggle = True
 
-        #variables for gsheets
+        # variables for gsheets
         self.numindex = 1
         self.nameindex = 2
         self.idindex = 3
@@ -171,7 +180,7 @@ class InhouseCog(commands.Cog):
                         \n**!ape** = Current state of our in-house drafts."
         )
 
-    @commands.command(pass_context=True)
+    @commands.command(aliases=["join"])
     async def add(self, ctx):
         """: Add yourself to the queue!"""
         author = ctx.message.author
@@ -184,20 +193,7 @@ class InhouseCog(commands.Cog):
         else:
             await ctx.send("The queue is closed.")
 
-    @commands.command(pass_context=True)
-    async def join(self, ctx):
-        """: Add yourself to the queue!"""
-        author = ctx.message.author
-        if self.qtoggle:
-            if author.id not in self.queue:
-                self.queue.append(author.id)
-                await ctx.send("you have been added to the queue.")
-            else:
-                await ctx.send("you are already in the queue!")
-        else:
-            await ctx.send("The queue is closed.")
-
-    @commands.command(pass_context=True)
+    @commands.command(aliases=["leave", "drop"])
     async def remove(self, ctx):
         """: Remove yourself from the queue"""
         author = ctx.message.author
@@ -258,20 +254,20 @@ class InhouseCog(commands.Cog):
         else:
             state = "CLOSED"
         await ctx.send(f"Queue is now {state}")
-    
+
     @commands.command()
-    async def addstream(self, ctx, url = ""):
+    async def addstream(self, ctx, url=""):
         user = ctx.message.author
         usernick = user.nick
         userid = user.id
         if len(data) == 0:
             sheet.update_cell(2, self.numindex, 1)
-            sheet.update_cell(2, self.nameindex,usernick)
-            sheet.update_cell(2, self.idindex,userid)
-            sheet.update_cell(2, self.urlindex,url)
+            sheet.update_cell(2, self.nameindex, usernick)
+            sheet.update_cell(2, self.idindex, userid)
+            sheet.update_cell(2, self.urlindex, url)
         else:
             for i in range(1, len(data)):
-                if(sheet.cell(i + 1, self.idindex).value == userid):
+                if sheet.cell(i + 1, self.idindex).value == userid:
                     sheet.update_cell(i + 1, self.urlindex, url)
                     self.found = True
                     break
@@ -289,7 +285,7 @@ class InhouseCog(commands.Cog):
         user = ctx.message.author
         userid = user.id
         for i in range(len(data)):
-            if(sheet.cell(i + 1, self.idindex) == userid):
+            if sheet.cell(i + 1, self.idindex) == userid:
                 self.found = True
             else:
                 self.found = False
@@ -308,9 +304,7 @@ class InhouseCog(commands.Cog):
         await msg.add_reaction("\U0001F1F4")
         await msg.add_reaction("\U0001F1F3")
         await msg.add_reaction("\U0001F1EC")
-        emoji = (
-            "<:FuckChong:598605265641930757>"
-        )
+        emoji = "<:FuckChong:598605265641930757>"
         await msg.add_reaction(emoji)
 
     @commands.command(pass_context=True)
@@ -350,25 +344,21 @@ class InhouseCog(commands.Cog):
     async def ape(self, ctx):
         await ctx.send(
             "https://media.discordapp.net/attachments/569646728224178184/611036013715783710/In-House_meme.png?width=902&height=866"
-            )
+        )
 
     @commands.command(pass_context=True)
     async def ksaper(self, ctx):
-        await ctx.send(
-            f"beep boop :robot: 4fun4 :robot: beep boop"
-        )
+        await ctx.send(f"beep boop :robot: 4fun4 :robot: beep boop")
 
     @commands.command()
     async def wade(self, ctx):
         await ctx.send(
             f"im wade top lane blows dick and i dont think anyone can be good at league of legends except me"
         )
-    
+
     @commands.command()
     async def danny(self, ctx):
-        await ctx.send(
-            f"https://i.imgflip.com/384zeu.jpg"
-        )
+        await ctx.send(f"https://i.imgflip.com/384zeu.jpg")
 
     @commands.command(pass_context=True)
     async def flip(self, ctx):
@@ -381,9 +371,7 @@ class InhouseCog(commands.Cog):
             # embed.set_image(
             #     url="https://nexus.leagueoflegends.com/wp-content/uploads/2018/08/Nunu_Bot_fqvx53j9ion1fxkr34ag.gif"
             # )
-            embed.set_image(
-                url="https://i.imgur.com/lDlR54a.gif"
-            )
+            embed.set_image(url="https://i.imgur.com/lDlR54a.gif")
             embed.colour = discord.Colour.orange()
         else:
             embed.set_image(
@@ -615,11 +603,11 @@ bot.add_cog(InhouseCog(bot))
 # launch the script from
 
 token = None
-if 'BOT_KEY' in os.environ:
-    token = os.environ['BOT_KEY']
-    print('Using environment var for key')
+if "BOT_KEY" in os.environ:
+    token = os.environ["BOT_KEY"]
+    print("Using environment var for key")
 elif os.path.isfile("key"):
-    print('Using file for key')
+    print("Using file for key")
     with open("key", "r") as f:
         token = f.read().strip().strip("\n")
 
