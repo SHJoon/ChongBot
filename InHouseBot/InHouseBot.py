@@ -174,6 +174,11 @@ class InhouseCog(commands.Cog):
                 )
             else:
                 await ctx.send("You are already in the queue!")
+            await self.queue()
+            #Use queue to replace !leggo
+            if len(self.queue) == 10:
+                await ctx.send("10 MEN TIME LESGOO")
+                self.queue = []
         else:
             await ctx.send("The queue is closed.")
 
@@ -183,9 +188,10 @@ class InhouseCog(commands.Cog):
         author = ctx.message.author
         if author.id in self.queue:
             self.queue.remove(author.id)
-            await ctx.send("you have been removed from the queue.")
+            await ctx.send("You have been removed from the queue.")
+            await self.queue()
         else:
-            await ctx.send("you were not in the queue.")
+            await ctx.send("You were not in the queue.")
 
     @commands.command(name="queue", pass_context=True)
     async def _queue(self, ctx):
@@ -206,10 +212,10 @@ class InhouseCog(commands.Cog):
         author = ctx.message.author
         if author.id in self.queue:
             _position = self.queue.index(author.id) + 1
-            await ctx.send(f"you are **#{_position}** in the queue.")
+            await ctx.send(f"You are **#{_position}** in the queue.")
         else:
             await ctx.send(
-                f"you are not in the queue, please use {prefix}add to add yourself to the queue."
+                f"You are not in the queue, please use {prefix}add to add yourself to the queue."
             )
 
     @commands.command(pass_context=True, name="next")
@@ -240,41 +246,40 @@ class InhouseCog(commands.Cog):
         await ctx.send(f"Queue is now {state}")
 
     @commands.command()
-    async def addstream(self, ctx, url=""):
+    async def addstream(self, ctx, url = ""):
+        """ Configure your stream to our database """
         user = ctx.message.author
-        usernick = user.nick
-        userid = user.id
-        if len(data) == 0:
-            sheet.update_cell(2, self.numindex, 1)
-            sheet.update_cell(2, self.nameindex, usernick)
-            sheet.update_cell(2, self.idindex, userid)
-            sheet.update_cell(2, self.urlindex, url)
-        else:
-            for i in range(1, len(data)):
-                if sheet.cell(i + 1, self.idindex).value == userid:
-                    sheet.update_cell(i + 1, self.urlindex, url)
-                    self.found = True
-                    break
-                else:
-                    self.found = False
-
-            if not self.found:
-                sheet.update_cell(len(data) + 2, self.numindex, len(data) + 1)
-                sheet.update_cell(len(data) + 2, self.nameindex, usernick)
-                sheet.update_cell(len(data) + 2, self.idindex, userid)
-                sheet.update_cell(len(data) + 2, self.urlindex, url)
+        values_list = sheet.get_all_values()
+        for idx, element in enumerate(values_list):
+            if element[2] == str(user.id):
+                sheet.update_cell(idx+1, self.urlindex, url)
+                return
+        userlist = [len(values_list), user.name, str(user.id), url]
+        sheet.append_row(userlist)
 
     @commands.command()
     async def stream(self, ctx):
+        """ Post your own stream """
         user = ctx.message.author
-        userid = user.id
-        for i in range(len(data)):
-            if sheet.cell(i + 1, self.idindex) == userid:
-                self.found = True
+        values_list = sheet.get_all_values()
+        for idx, element in enumerate(values_list):
+            if element[2] == str(user.id):
+                msg = sheet.cell(idx+1, element).value
+                await ctx.send(f"{msg}")
+                return
+        await ctx.send("You do not have any stream set up yet. Use !addstream to configure.")
+
+    @commands.command()
+    async def streams(self, ctx):
+        """ Show list of streams """
+        values_list = sheet.get_all_values()
+        msg = ""
+        for idx, element in enumerate(values_list):
+            if idx == 0:
+                continue
             else:
-                self.found = False
-            if self.found:
-                await ctx.send(sheet.cell(i + 1, self.urlindex).value)
+                msg += f"**{element[1]}**: {element[3]}\n"
+        await ctx.send(msg)
 
     @commands.command(pass_context=True)
     async def fuckchong(self, ctx):
