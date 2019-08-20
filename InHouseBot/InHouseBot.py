@@ -14,7 +14,15 @@ bot = commands.Bot(command_prefix=prefix)
 # add roles that can use some commands
 approved_roles = ["Admin", "Bot", "Mod"]
 
-
+api_key = None
+if 'API_KEY' in os.environ:
+    token = os.environ['API_KEY']
+    print('Using environment var for api key')
+elif os.path.isfile("api_key"):
+    print('Using file for api key')
+    with open("api_key", "r") as f:
+        token = f.read().strip().strip("\n")
+        
 # Figuring out how the !help command gets automatically registered and invoked
 # is actually a good excercise in reading source code Howard
 class AliasHelpCommand(commands.DefaultHelpCommand):
@@ -139,7 +147,6 @@ class InhouseCog(commands.Cog):
         self.nameindex = 2
         self.idindex = 3
         self.urlindex = 4
-        self.found = False
 
         # Set up our typo structs for lulcaptains()
         self.keyboard_array = [
@@ -166,6 +173,8 @@ class InhouseCog(commands.Cog):
     async def add(self, ctx):
         """ Add yourself to the queue! """
         author = ctx.message.author
+        server = ctx.guild
+        message = ""
         if self.qtoggle:
             if author.id not in self.queue:
                 self.queue.append(author.id)
@@ -174,9 +183,12 @@ class InhouseCog(commands.Cog):
                 )
             else:
                 await ctx.send("You are already in the queue!")
-            await self.queue()
+            for place, member_id in enumerate(self.queue):
+                member = discord.utils.get(server.members, id=member_id)
+                message += f"**#{place+1}** : {member.name}\n"
+            await ctx.send(message)
             #Use queue to replace !leggo
-            if len(self.queue) == 10:
+            if len(self.queue) == 3:
                 await ctx.send("10 MEN TIME LESGOO")
                 self.queue = []
         else:
@@ -186,10 +198,16 @@ class InhouseCog(commands.Cog):
     async def remove(self, ctx):
         """ Remove yourself from the queue """
         author = ctx.message.author
+        server = ctx.guild
+        message = ""
         if author.id in self.queue:
             self.queue.remove(author.id)
             await ctx.send("You have been removed from the queue.")
-            await self.queue()
+            for place, member_id in enumerate(self.queue):
+                member = discord.utils.get(server.members, id=member_id)
+                message += f"**#{place+1}** : {member.name}\n"
+            if message != "":
+                await ctx.send(message)
         else:
             await ctx.send("You were not in the queue.")
 
@@ -223,9 +241,14 @@ class InhouseCog(commands.Cog):
         """ Call the next member in the queue """
         if len(self.queue) > 0:
             for _ in range(num):
+                if len(self.queue) == 0:
+                    await ctx.send("No one left in  the queue :(")
+                    return
                 member = discord.utils.get(ctx.guild.members, id=self.queue[0])
                 await ctx.send(f"You are up **{member.mention}**! Have fun!")
                 self.queue.remove(self.queue[0])
+        else:
+            await ctx.send("No one left in  the queue :(")
 
     @is_approved()
     @commands.command(pass_context=True)
@@ -264,7 +287,7 @@ class InhouseCog(commands.Cog):
         values_list = sheet.get_all_values()
         for idx, element in enumerate(values_list):
             if element[2] == str(user.id):
-                msg = sheet.cell(idx+1, element).value
+                msg = element[3]
                 await ctx.send(f"{msg}")
                 return
         await ctx.send("You do not have any stream set up yet. Use !addstream to configure.")
