@@ -7,6 +7,16 @@ import httpx
 import os
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+from gspread.utils import (
+    a1_to_rowcol,
+    rowcol_to_a1,
+    cast_to_a1_notation,
+    numericise_all,
+    finditem,
+    fill_gaps,
+    cell_list_to_rect,
+    quote
+)
 
 prefix = "!"  # change this to whatever prefix you'd like
 bot = commands.Bot(command_prefix=prefix)
@@ -16,7 +26,7 @@ approved_roles = ["Admin", "Bot", "Mod"]
 
 api_key = None
 if 'API_KEY' in os.environ:
-    token = os.environ['API_KEY']
+    api_key = os.environ['API_KEY']
     print('Using environment var for api key')
 elif os.path.isfile("api_key"):
     print('Using file for api key')
@@ -173,8 +183,6 @@ class InhouseCog(commands.Cog):
     async def add(self, ctx):
         """ Add yourself to the queue! """
         author = ctx.message.author
-        server = ctx.guild
-        message = ""
         if self.qtoggle:
             if author.id not in self.queue:
                 self.queue.append(author.id)
@@ -183,12 +191,14 @@ class InhouseCog(commands.Cog):
                 )
             else:
                 await ctx.send("You are already in the queue!")
-            for place, member_id in enumerate(self.queue):
-                member = discord.utils.get(server.members, id=member_id)
-                message += f"**#{place+1}** : {member.name}\n"
-            await ctx.send(message)
+            await ctx.invoke(self._queue)
+            
             #Use queue to replace !leggo
-            if len(self.queue) == 3:
+            if len(self.queue) == 10:
+                server = ctx.guild
+                for _, member_id in enumerate(self.queue):
+                    member = discord.utils(server.members, id=member_id)
+                    await ctx.send(member.mention)
                 await ctx.send("10 MEN TIME LESGOO")
                 self.queue = []
         else:
@@ -198,20 +208,17 @@ class InhouseCog(commands.Cog):
     async def remove(self, ctx):
         """ Remove yourself from the queue """
         author = ctx.message.author
-        server = ctx.guild
         message = ""
         if author.id in self.queue:
             self.queue.remove(author.id)
             await ctx.send("You have been removed from the queue.")
-            for place, member_id in enumerate(self.queue):
-                member = discord.utils.get(server.members, id=member_id)
-                message += f"**#{place+1}** : {member.name}\n"
+            await ctx.invoke(self._queue)
             if message != "":
                 await ctx.send(message)
         else:
             await ctx.send("You were not in the queue.")
 
-    @commands.command(name="queue", pass_context=True)
+    @commands.command(name="queue", aliases=["lobby"], pass_context=True)
     async def _queue(self, ctx):
         """ See who's up next!"""
         server = ctx.guild
@@ -270,22 +277,58 @@ class InhouseCog(commands.Cog):
 
     @commands.command()
     async def addstream(self, ctx, url = ""):
-        """ Configure your stream to our database """
+        """ Configure your stream to our database! """
         user = ctx.message.author
-        values_list = sheet.get_all_values()
+        #values_list = sheet.get_all_values()
+        values_list = sheet.spreadsheet.values_get(sheet.title), {'key': api_key}
+
+        try:
+            #Error for fill_gaps; Not sure what the alternative for 'values' can be 
+            return fill_gaps(values_list['values'])
+        except KeyError:
+            return []
+
         for idx, element in enumerate(values_list):
             if element[2] == str(user.id):
-                sheet.update_cell(idx+1, self.urlindex, url)
-                return
+                #sheet.update_cell(idx+1, self.urlindex, url)
+                range_label = '%s!%s' % (sheet.title, rowcol_to_a1(idx+1, self.urlindex))
+                data = sheet.spreadsheet.values_update(
+                    range_label,
+                    params={
+                    'valueInputOption': 'USER_ENTERED',
+                    'key': api_key
+                    },
+                    body={
+                    'values': [[url]]
+                    }
+                )
+                return data
+
         userlist = [len(values_list), user.name, str(user.id), url]
-        sheet.append_row(userlist)
+        #sheet.append_row(userlist)
+        params = {
+            'valueInputOption': 'RAW',
+            'key': api_key
+        }
+
+        body = {
+            'values': [userlist]
+        }
+        sheet.spreadsheet.values_append(sheet.title, params, body)
 
     @commands.command()
     async def stream(self, ctx):
         """ Post your own stream """
         user = ctx.message.author
-        values_list = sheet.get_all_values()
-        for idx, element in enumerate(values_list):
+        #values_list = sheet.get_all_values()
+        values_list = sheet.spreadsheet.values_get(sheet.title), {'key': api_key}
+
+        try:
+            return fill_gaps(values_list['values'])
+        except KeyError:
+            return []
+
+        for _, element in enumerate(values_list):
             if element[2] == str(user.id):
                 msg = element[3]
                 await ctx.send(f"{msg}")
@@ -295,7 +338,14 @@ class InhouseCog(commands.Cog):
     @commands.command()
     async def streams(self, ctx):
         """ Show list of streams """
-        values_list = sheet.get_all_values()
+        #values_list = sheet.get_all_values()
+        values_list = sheet.spreadsheet.values_get(sheet.title), {'key': api_key}
+
+        try:
+            return fill_gaps(values_list['values'])
+        except KeyError:
+            return []
+            
         msg = ""
         for idx, element in enumerate(values_list):
             if idx == 0:
@@ -370,6 +420,11 @@ class InhouseCog(commands.Cog):
     async def ksaper(self, ctx):
         """ Stats telling me no, but my body telling me YES """
         await ctx.send(f"beep boop :robot: 4fun4 :robot: beep boop")
+    
+    @commands.command()
+    async def flames(self, ctx):
+        """ 'ConsTRUCtive flaming """
+        await ctx.send("https://i.imgflip.com/38i4t9.jpg")
 
     @commands.command()
     async def wade(self, ctx):
