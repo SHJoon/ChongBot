@@ -1,14 +1,36 @@
 import discord
 import httpx
-from discord.ext import commands
+from functools import wraps
 import gspread
+
+from discord.ext import commands
 from oauth2client.service_account import ServiceAccountCredentials
-from gspread.utils import rowcol_to_a1, fill_gaps
 
 SHEET_NUM_IDX = 1
 SHEET_NAME_IDX = 2
 SHEET_ID_IDX = 3
 SHEET_URL_IDX = 4
+
+
+# Using this later for our reauth
+def retry_authorize(exceptions, tries=4):
+    def deco_retry(f):
+        @wraps(f)
+        async def f_retry(*args, **kwargs):
+            mtries = tries
+            while mtries > 1:
+                try:
+                    return await f(*args, **kwargs)
+                except exceptions as e:
+                    msg = f"{e}, Reauthorizing and retrying ..."
+                    gspread.login()
+                    print(msg)
+                    mtries -= 1
+            return await f(*args, **kwargs)
+
+        return f_retry  # true decorator
+
+    return deco_retry
 
 
 class LeagueCog(commands.Cog):
@@ -33,30 +55,40 @@ class LeagueCog(commands.Cog):
         )
         self.clients = gspread.authorize(self.creds)
         self.sheet = self.clients.open("InHouseData").sheet1
+
+        # Lets cache on init
+        self.cache = self.sheet.get_all_values()
         # data = self.sheet.get_all_records()
 
     @commands.command()
+    @retry_authorize(gspread.exceptions.APIError)
     async def addstream(self, ctx, url=""):
         """ Configure your stream to our database! """
         user = ctx.message.author
-        values_list = self.sheet.get_all_values()
 
         # If user exists, just update stream and exit
-        for idx, element in enumerate(values_list):
-            if element[2] == str(user.id):
+        # We can cache since if we add a new user, we update anyways
+        for idx, row in enumerate(self.cache):
+            if row[2] == str(user.id):
                 self.sheet.update_cell(idx + 1, SHEET_URL_IDX, url)
+                # Update our cache
+                row[3] = url
+
                 return
 
         # Otherwise add an entire new row for the user
-        userlist = [len(values_list), user.name, str(user.id), url]
+        userlist = [len(self.cache), user.name, str(user.id), url]
         self.sheet.append_row(userlist)
 
+        # Update cache
+        self.cache.append(userlist)
+
     @commands.command()
+    @retry_authorize(gspread.exceptions.APIError)
     async def stream(self, ctx):
         """ Post your own stream """
         user = ctx.message.author
-        values_list = self.sheet.get_all_values()
-        for row in values_list:
+        for row in self.cache:
             # We are not using SHEET_* constants becuase this is a python array
             # representation of the data, not indexing remotely
             if row[2] == str(user.id):
@@ -69,15 +101,19 @@ class LeagueCog(commands.Cog):
         )
 
     @commands.command()
+    @retry_authorize(gspread.exceptions.APIError)
     async def streams(self, ctx):
         """ Show list of streams """
-        values_list = self.sheet.get_all_values()
-
-        max_name_len = max([len(x[1]) for x in values_list[1:]])
+        max_name_len = max([len(x[1]) for x in self.cache[1:]])
 
         # We are not using SHEET_* constants becuase this is a python array
         # representation of the data, not indexing remotely
-        msg = "".join(["**{0: <{pad}}**:\t{1}\n".format(row[1], row[3], pad=max_name_len) for row in values_list[1:]])
+        msg = "".join(
+            [
+                "{0: <{pad}} :\t{1}\n".format(row[1], row[3], pad=max_name_len)
+                for row in self.cache[1:]
+            ]
+        )
         await ctx.send(msg)
 
     @commands.command(
