@@ -1,13 +1,44 @@
 import discord
 import httpx
+import os
 from functools import wraps
+from tempfile import NamedTemporaryFile
+
 import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
 from discord.ext import commands
 
 SHEET_NAME_IDX = 1
 SHEET_ID_IDX = 2
 SHEET_URL_IDX = 3
+creds = None
+
+if "GOOGLE_OAUTH_JSON" in os.environ:
+    print("Succesfully grabbed Google OAUTH creds")
+    google_oauth_json = os.environ["GOOGLE_OAUTH_JSON"]
+    
+    # Ugh, why can't open work on the StringIO class
+    f = NamedTemporaryFile(mode="w+", delete=False)
+    f.write(google_oauth_json)
+    f.flush()
+
+    scope = [
+            "https://spreadsheets.google.com/feeds",
+            "https://www.googleapis.com/auth/spreadsheets",
+            "https://www.googleapis.com/auth/drive.file",
+            "https://www.googleapis.com/auth/drive",
+        ]
+        
+    creds = ServiceAccountCredentials.from_json_keyfile_name(
+            f.name, scope
+        )
+else:
+    print(
+        "Could not find api_key credentials for backend, launching with those features disabled"
+    )
+
+
 
 # Using this later for our reauth
 def retry_authorize(exceptions, tries=4):
@@ -20,7 +51,7 @@ def retry_authorize(exceptions, tries=4):
                     return await f(*args, **kwargs)
                 except exceptions as e:
                     msg = f"{e}, Reauthorizing and retrying ..."
-                    gspread.login()
+                    gspread.authorize(creds)
                     print(msg)
                     mtries -= 1
             return await f(*args, **kwargs)
@@ -31,7 +62,7 @@ def retry_authorize(exceptions, tries=4):
 
 
 class LeagueCog(commands.Cog):
-    def __init__(self, bot, creds):
+    def __init__(self, bot):
 
         self.creds = creds
         self._init_sheet()
@@ -42,7 +73,7 @@ class LeagueCog(commands.Cog):
         self.broke = False
 
     def _init_sheet(self):
-        self.clients = gspread.authorize(self.creds)
+        self.clients = gspread.authorize(creds)
         self.sheet = self.clients.open("InHouseData").sheet1
 
         # Lets cache on init
