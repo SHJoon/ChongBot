@@ -12,7 +12,9 @@ from discord.ext import commands
 SHEET_NAME_IDX = 1
 SHEET_ID_IDX = 2
 SHEET_URL_IDX = 3
+
 creds = None
+gclient = None
 
 if "GOOGLE_OAUTH_JSON" in os.environ:
     print("Succesfully grabbed Google OAUTH creds")
@@ -33,6 +35,8 @@ if "GOOGLE_OAUTH_JSON" in os.environ:
     creds = ServiceAccountCredentials.from_json_keyfile_name(
             f.name, scope
         )
+    
+    gclient = gspread.authorize(creds)
 else:
     print(
         "Could not find api_key credentials for backend, launching with those features disabled"
@@ -51,7 +55,7 @@ def retry_authorize(exceptions, tries=4):
                     return await f(*args, **kwargs)
                 except exceptions as e:
                     msg = f"{e}, Reauthorizing and retrying ..."
-                    gspread.authorize(creds)
+                    gclient.login()
                     print(msg)
                     mtries -= 1
             return await f(*args, **kwargs)
@@ -65,6 +69,7 @@ class LeagueCog(commands.Cog):
     def __init__(self, bot):
 
         self.creds = creds
+        self.gclient = gclient
         self._init_sheet()
 
         self.client = httpx.AsyncClient()
@@ -73,8 +78,7 @@ class LeagueCog(commands.Cog):
         self.broke = False
 
     def _init_sheet(self):
-        self.clients = gspread.authorize(creds)
-        self.sheet = self.clients.open("InHouseData").sheet1
+        self.sheet = gclient.open("InHouseData").sheet1
 
         # Lets cache on init
         self.cache = self.sheet.get_all_values()
