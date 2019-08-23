@@ -5,10 +5,9 @@ import gspread
 
 from discord.ext import commands
 
-SHEET_NUM_IDX = 1
-SHEET_NAME_IDX = 2
-SHEET_ID_IDX = 3
-SHEET_URL_IDX = 4
+SHEET_NAME_IDX = 1
+SHEET_ID_IDX = 2
+SHEET_URL_IDX = 3
 
 # Using this later for our reauth
 def retry_authorize(exceptions, tries=4):
@@ -36,7 +35,7 @@ class LeagueCog(commands.Cog):
 
         self.creds = creds
         self._init_sheet()
-        
+
         self.client = httpx.AsyncClient()
     
         # break is a keyword so we can't define it on class, interesting
@@ -59,15 +58,15 @@ class LeagueCog(commands.Cog):
         # If user exists, just update stream and exit
         # We can cache since if we add a new user, we update anyways
         for idx, row in enumerate(self.cache):
-            if row[2] == str(user.id):
+            if row[SHEET_ID_IDX - 1] == str(user.id):
                 self.sheet.update_cell(idx + 1, SHEET_URL_IDX, url)
                 # Update our cache
-                row[3] = url
+                row[SHEET_URL_IDX - 1] = url
 
                 return
 
         # Otherwise add an entire new row for the user
-        userlist = [len(self.cache), user.name, str(user.id), url]
+        userlist = [user.name, str(user.id), url]
         self.sheet.append_row(userlist)
 
         # Update cache
@@ -81,8 +80,8 @@ class LeagueCog(commands.Cog):
         for row in self.cache:
             # We are not using SHEET_* constants becuase this is a python array
             # representation of the data, not indexing remotely
-            if row[2] == str(user.id):
-                msg = row[3]
+            if row[SHEET_ID_IDX - 1] == str(user.id):
+                msg = row[SHEET_URL_IDX-1]
                 return await ctx.send(msg)
 
         # User not found
@@ -100,7 +99,9 @@ class LeagueCog(commands.Cog):
         # representation of the data, not indexing remotely
         msg = "".join(
             [
-                "{0: <{pad}} :\t{1}\n".format(row[1], row[3], pad=max_name_len)
+                "**{0: <{pad}}** :\t{1}\n".format(
+                    row[SHEET_NAME_IDX-1], f"<{row[SHEET_URL_IDX-1]}>", pad=max_name_len
+                )
                 for row in self.cache[1:]
             ]
         )
