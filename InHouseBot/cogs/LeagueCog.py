@@ -4,13 +4,11 @@ from functools import wraps
 import gspread
 
 from discord.ext import commands
-from oauth2client.service_account import ServiceAccountCredentials
 
 SHEET_NUM_IDX = 1
 SHEET_NAME_IDX = 2
 SHEET_ID_IDX = 3
 SHEET_URL_IDX = 4
-
 
 # Using this later for our reauth
 def retry_authorize(exceptions, tries=4):
@@ -34,25 +32,17 @@ def retry_authorize(exceptions, tries=4):
 
 
 class LeagueCog(commands.Cog):
-    def __init__(self, bot, api_key=None):
+    def __init__(self, bot, creds):
 
+        self.creds = creds
         self._init_sheet()
+        
         self.client = httpx.AsyncClient()
-        self.api_key = api_key
-
+    
         # break is a keyword so we can't define it on class, interesting
         self.broke = False
 
     def _init_sheet(self):
-        scope = [
-            "https://spreadsheets.google.com/feeds",
-            "https://www.googleapis.com/auth/spreadsheets",
-            "https://www.googleapis.com/auth/drive.file",
-            "https://www.googleapis.com/auth/drive",
-        ]
-        self.creds = ServiceAccountCredentials.from_json_keyfile_name(
-            "InHouseData-43dcb8cebcde.json", scope
-        )
         self.clients = gspread.authorize(self.creds)
         self.sheet = self.clients.open("InHouseData").sheet1
 
