@@ -16,6 +16,7 @@ class QueueCog(commands.Cog):
     def __init__(self, bot):
         self.queue = []
         self.qtoggle = True
+        self.qtime = "None set yet"
 
     @commands.command(aliases=["join"])
     async def add(self, ctx):
@@ -56,11 +57,11 @@ class QueueCog(commands.Cog):
         else:
             await ctx.send("You were not in the queue.")
 
-    @commands.command(name="queue", aliases=["lobby"], pass_context=True)
+    @commands.command(name="queue", aliases=["lobby", "q"], pass_context=True)
     async def _queue(self, ctx):
-        """ See who's up next!"""
+        """ See who's up next! """
         server = ctx.guild
-        message = ""
+        message = f"**Gaming time**: {self.qtime}\n"
         for place, member_id in enumerate(self.queue):
             member = discord.utils.get(server.members, id=member_id)
             message += f"**#{place+1}** : {member.name}\n"
@@ -68,6 +69,11 @@ class QueueCog(commands.Cog):
             await ctx.send(message)
         else:
             await ctx.send("Queue is empty")
+    
+    @commands.command(aliases=["qtime","settime","time"])
+    async def queuetime(self, ctx, *, _time):
+        """ Set gaming time """
+        self.qtime = _time
 
     @commands.command(pass_context=True)
     async def position(self, ctx):
@@ -101,11 +107,22 @@ class QueueCog(commands.Cog):
         """ Clears the queue """
         self.queue = []
         await ctx.send("Queue has been cleared")
+    
+    @is_approved()
+    @commands.command(pass_context=True)
+    async def toggle(self, ctx):
+        """: Toggles the queue"""
+        self.qtoggle = not self.qtoggle
+        if self.qtoggle:
+            state = 'OPEN'
+        else:
+            state = 'CLOSED'
+        await ctx.send(f'Queue is now {state}')
 
     @commands.command(pass_context=True)
-    async def leggo(self, ctx):
+    async def leggo(self, ctx, *, _time):
         """ Tries to get a game ready """
-
+        self.qtime = _time
         _message = await ctx.send("Who gaming, react @here")
         react_count = 0
         reactions = []
