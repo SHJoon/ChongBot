@@ -35,7 +35,7 @@ class QueueCog(commands.Cog):
             if len(self.queue) == 10:
                 server = ctx.guild
                 for _, member_id in enumerate(self.queue):
-                    member = discord.utils(server.members, id=member_id)
+                    member = discord.utils.get(server.members, id=member_id)
                     await ctx.send(member.mention)
                 await ctx.send("10 MEN TIME LESGOO")
                 self.queue = []
