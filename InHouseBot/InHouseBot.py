@@ -2,10 +2,8 @@ import discord
 import os
 import random
 import json
-from tempfile import NamedTemporaryFile
-from discord.ext import commands, tasks
-from oauth2client.service_account import ServiceAccountCredentials
 
+from discord.ext import commands, tasks
 
 from cogs.WillumpCog import WillumpCog
 from cogs.QueueCog import QueueCog
@@ -107,36 +105,11 @@ elif os.path.isfile("key"):
     with open("key", "r") as f:
         token = f.read().strip().strip("\n")
 
-if "GOOGLE_OAUTH_JSON" in os.environ:
-    print("Succesfully grabbed Google OAUTH creds")
-    google_oauth_json = os.environ["GOOGLE_OAUTH_JSON"]
-    
-    # Ugh, why can't open work on the StringIO class
-    f = NamedTemporaryFile(mode="w+", delete=False)
-    f.write(google_oauth_json)
-    f.flush()
-
-    scope = [
-            "https://spreadsheets.google.com/feeds",
-            "https://www.googleapis.com/auth/spreadsheets",
-            "https://www.googleapis.com/auth/drive.file",
-            "https://www.googleapis.com/auth/drive",
-        ]
-        
-    creds = ServiceAccountCredentials.from_json_keyfile_name(
-            f.name, scope
-        )
-else:
-    print(
-        "Could not find api_key credentials for backend, launching with those features disabled"
-    )
-
-
 # Add in our cogs
-#
+
 bot.add_cog(WillumpCog(bot))
 bot.add_cog(QueueCog(bot))
-bot.add_cog(LeagueCog(bot, creds))
+bot.add_cog(LeagueCog(bot))
 
 if token is not None:
     bot.run(token)
