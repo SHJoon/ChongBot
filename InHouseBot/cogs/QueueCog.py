@@ -33,16 +33,32 @@ class QueueCog(commands.Cog):
             await ctx.invoke(self._queue)
 
             # Use queue to replace !leggo
-            if len(self.queue) == 10:
-                server = ctx.guild
-                for _, member_id in enumerate(self.queue):
-                    member = discord.utils.get(server.members, id=member_id)
-                    await ctx.send(member.mention)
-                await ctx.send("10 MEN TIME LESGOO")
-                self.queue = []
+            await self._ready(ctx)
         else:
             await ctx.send("The queue is closed.")
-
+    
+    @commands.command(aliases=["forceadd","fjoin", "fadd"])
+    async def forcejoin(self, ctx, member: discord.Member):
+        """ Force another user to join the queue with an @"""
+        name = member.nick if member.nick else member.name
+        if member.id not in self.queue:
+            self.queue.append(member.id)
+            await ctx.invoke(self._queue)
+            await self._ready(ctx)
+        else:
+            await ctx.send(f"{name} is already in the queue!")
+            await ctx.invoke(self._queue)
+    
+    async def _ready(self, ctx):
+        if len(self.queue) == 10:
+            server = ctx.guild
+            for member_id in self.queue:
+                member = discord.utils.get(server.members, id=member_id)
+                await ctx.send(member.mention)
+            await ctx.send("10 MEN TIME LESGOO")
+            self.queue = []
+        return
+    
     @commands.command(aliases=["leave", "drop"])
     async def remove(self, ctx):
         """ Remove yourself from the queue """
@@ -57,6 +73,18 @@ class QueueCog(commands.Cog):
         else:
             await ctx.send("You were not in the queue.")
 
+    @commands.command(aliases=["forcedrop","forceleave","fremove","fdrop","fleave"])
+    async def forceremove(self, ctx, member: discord.Member):
+        """ Force another user to drop from the queue with an @"""
+        name = member.nick if member.nick else member.name
+        if member.id in self.queue:
+            self.queue.remove(member.id)
+            await ctx.send(f"{name} has been removed from the queue.")
+            await ctx.invoke(self._queue)
+        else:
+            await ctx.send(f"{name} was not in the queue!")
+            await ctx.invoke(self._queue)
+
     @commands.command(name="queue", aliases=["lobby", "q"], pass_context=True)
     async def _queue(self, ctx):
         """ See who's up next! """
@@ -65,9 +93,8 @@ class QueueCog(commands.Cog):
         for place, member_id in enumerate(self.queue):
             member = discord.utils.get(server.members, id=member_id)
             message += f"**#{place+1}** : {member.name}\n"
-        if message != "":
-            await ctx.send(message)
-        else:
+        await ctx.send(message)
+        if len(self.queue) == 0:
             await ctx.send("Queue is empty")
     
     @commands.command(aliases=["qtime","settime","time"])
@@ -120,10 +147,12 @@ class QueueCog(commands.Cog):
         await ctx.send(f'Queue is now {state}')
 
     @commands.command(pass_context=True)
-    async def leggo(self, ctx, *, _time):
+    async def leggo(self, ctx, *, _time = "None set yet"):
         """ Tries to get a game ready """
         self.qtime = _time
-        _message = await ctx.send("Who gaming, react @here")
+        _message = await ctx.send("Time for some 10 mens! Join the lobby @here")
+        # Since the queue is used as lobby now, commenting out the rest of code for now
+        """
         react_count = 0
         reactions = []
         # open our queue for spill
@@ -136,7 +165,7 @@ class QueueCog(commands.Cog):
             await asyncio.sleep(3)
             seconds_elapsed += 3
             if seconds_elapsed > 5400:
-                await ctx.send("Timing out our gaming call, try again later :(")
+                #await ctx.send("Timing out our gaming call, try again later :(")
                 return
             # Must refetch message otherwise coroutine never revaluates msg cache
             message = await ctx.fetch_message(_message.id)
@@ -161,3 +190,4 @@ class QueueCog(commands.Cog):
                 message += f"**#{place+1}** : {name}\n"
 
         await ctx.send(message)
+        """

@@ -110,7 +110,7 @@ class LeagueCog(commands.Cog):
     @commands.command()
     @retry_authorize(gspread.exceptions.APIError)
     async def stream(self, ctx):
-        """ Post your own stream """
+        """ Post your own stream. """
         user = ctx.message.author
         for row in self.cache:
             # We are not using SHEET_* constants becuase this is a python array
@@ -127,7 +127,7 @@ class LeagueCog(commands.Cog):
     @commands.command()
     @retry_authorize(gspread.exceptions.APIError)
     async def streams(self, ctx):
-        """ Show list of streams """
+        """ Show the list of streams. """
         max_name_len = max([len(x[1]) for x in self.cache[1:]])
 
         # We are not using SHEET_* constants becuase this is a python array
@@ -146,7 +146,7 @@ class LeagueCog(commands.Cog):
         name="break"
     )  # remember, its keyworded so we can't define it as is
     async def _break(self, ctx):
-        """ Generates a prodraft lobby and records blue/red team memebers """
+        """ Generates a prodraft lobby and records blue/red team memebers. """
 
         blue_channel = discord.utils.get(
             ctx.guild.channels, name="Blue Team 1", type=discord.ChannelType.voice
