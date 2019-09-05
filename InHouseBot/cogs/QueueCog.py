@@ -31,7 +31,6 @@ class QueueCog(commands.Cog):
             else:
                 await ctx.send("You are already in the queue!")
             await ctx.invoke(self._queue)
-
             # Use queue to replace !leggo
             await self._ready(ctx)
         else:
@@ -108,7 +107,9 @@ class QueueCog(commands.Cog):
         author = ctx.message.author
         if author.id in self.queue:
             _position = self.queue.index(author.id) + 1
-            await ctx.send(f"You are **#{_position}** in the queue.")
+            await ctx.send(
+                f"You are **#{_position}** in the queue."
+                )
         else:
             await ctx.send(
                 f"You are not in the queue, please use {ctx.prefix}add to add yourself to the queue."
@@ -131,14 +132,15 @@ class QueueCog(commands.Cog):
     @is_approved()
     @commands.command(pass_context=True)
     async def clear(self, ctx):
-        """ Clears the queue """
+        """ Clears the queue (ADMIN ONLY) """
         self.queue = []
+        self.qtime = "None set yet"
         await ctx.send("Queue has been cleared")
     
     @is_approved()
     @commands.command(pass_context=True)
     async def toggle(self, ctx):
-        """: Toggles the queue"""
+        """ Toggles the queue (ADMIN ONLY) """
         self.qtoggle = not self.qtoggle
         if self.qtoggle:
             state = 'OPEN'

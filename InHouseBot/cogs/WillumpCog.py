@@ -1,6 +1,7 @@
 import random
 import itertools
 import discord
+import asyncio
 from discord.ext import commands
 
 # Figuring out how the !help command gets automatically registered and invoked
@@ -129,14 +130,11 @@ class WillumpCog(commands.Cog):
         embed = discord.Embed(title=ranflip)
 
         if ranflip == "Heads":
-            # embed.set_image(
-            #     url="https://nexus.leagueoflegends.com/wp-content/uploads/2018/08/Nunu_Bot_fqvx53j9ion1fxkr34ag.gif"
-            # )
             embed.set_image(url="https://i.imgur.com/lDlR54a.gif")
             embed.colour = discord.Colour.orange()
         else:
             embed.set_image(
-                url="https://media0.giphy.com/media/3oz8xCXbQDReF34WWs/giphy-downsized.gif"
+                url="https://media0.giphy.com/media/uWcNWtfqzySDYqkORw/source.gif"
             )
             embed.colour = discord.Colour.blue()
 
@@ -146,6 +144,9 @@ class WillumpCog(commands.Cog):
         # https://www.ssbwiki.com/images/1/17/Falco_SSBM.jpg
         # https://lolskinshop.com/wp-content/uploads/2015/04/Poppy_2.jpg
         # https://2.bp.blogspot.com/-_1l8obImQmA/V3F9Z8MV3_I/AAAAAAAA8FI/Kcj-ALPCPoY5cTeaAgFtgYIg6qihz4XBgCLcB/s1600/Taric_Splash_4.jpg
+        # https://i.imgur.com/lDlR54a.gif
+        # https://media0.giphy.com/media/3oz8xCXbQDReF34WWs/giphy-downsized.gif
+        # https://media0.giphy.com/media/uWcNWtfqzySDYqkORw/source.gif
 
         await ctx.send(embed=embed)
 
@@ -165,6 +166,13 @@ class WillumpCog(commands.Cog):
 
         result = ", ".join(str(random.randint(1, limit)) for r in range(rolls))
         await ctx.send(result)
+    
+    @commands.command()
+    async def timer(self, ctx, sec: int):
+        """ Set a timer (Only in seconds) """
+        author = ctx.message.author
+        await asyncio.sleep(sec)
+        await ctx.send(f"Time's up!!! {author.mention}")
 
     async def generate_typo(self, letter):
         """ Typo helper function """
