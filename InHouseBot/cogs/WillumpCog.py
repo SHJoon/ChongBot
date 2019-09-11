@@ -52,6 +52,20 @@ class WillumpCog(commands.Cog):
         await msg.add_reaction("\U0001F1EC")
         emoji = "<:FuckChong:598605265641930757>"
         await msg.add_reaction(emoji)
+    
+    @commands.command()
+    async def fucktruc(self,ctx):
+        """ He deserves it """
+        msg = await ctx.send("FUCK TRUC")
+        await msg.add_reaction("\U0001F1EB")
+        await msg.add_reaction("\U0001F1FA")
+        await msg.add_reaction("\U0001F1E8")
+        await msg.add_reaction("\U0001F1F0")
+        await msg.add_reaction("\U0001F1F9")
+        await msg.add_reaction("\U0001F1F7")
+        await msg.add_reaction("\U000026CE")
+        await msg.add_reaction("\U000021AA")
+        await msg.add_reaction("\U0001F69A")
 
     @commands.command(pass_context=True)
     async def ass(self, ctx):
@@ -113,7 +127,7 @@ class WillumpCog(commands.Cog):
     async def wade(self, ctx):
         """ Self-loathing tank abuse """
         await ctx.send(
-            f"im wade top lane blows dick and i dont think anyone can be good at league of legends except me"
+            f"im wade, top lane blows dick and i dont think anyone can be good at league of legends except me"
         )
 
     @commands.command()
@@ -126,17 +140,28 @@ class WillumpCog(commands.Cog):
         """ Heads or Tails """
         flip = ["Heads", "Tails"]
         ranflip = random.choice(flip)
+        if random.randrange(99) == 84:
+            ranflip = "Sides"
 
         embed = discord.Embed(title=ranflip)
 
         if ranflip == "Heads":
-            embed.set_image(url="https://i.imgur.com/lDlR54a.gif")
+            embed.set_image(
+                url="https://i.imgur.com/lDlR54a.gif"
+                )
             embed.colour = discord.Colour.orange()
-        else:
+        elif ranflip == "Tails":
             embed.set_image(
                 url="https://media0.giphy.com/media/uWcNWtfqzySDYqkORw/source.gif"
             )
             embed.colour = discord.Colour.blue()
+        else:
+            embed.set_image(
+                url="https://lolskinshop.com/wp-content/uploads/2015/04/Poppy_2.jpg"
+            )
+            embed.colour = discord.Colour.green()
+            
+        await ctx.send(embed=embed)
 
         # https://nexus.leagueoflegends.com/wp-content/uploads/2018/08/Nunu_Bot_fqvx53j9ion1fxkr34ag.gif
         # https://media0.giphy.com/media/3oz8xCXbQDReF34WWs/giphy-downsized.gif
@@ -147,8 +172,6 @@ class WillumpCog(commands.Cog):
         # https://i.imgur.com/lDlR54a.gif
         # https://media0.giphy.com/media/3oz8xCXbQDReF34WWs/giphy-downsized.gif
         # https://media0.giphy.com/media/uWcNWtfqzySDYqkORw/source.gif
-
-        await ctx.send(embed=embed)
 
     @commands.command(pass_context=True)
     async def choose(self, ctx, *choices: str):
@@ -207,22 +230,17 @@ class WillumpCog(commands.Cog):
 
     @commands.command(pass_context=True)
     async def typo(self, ctx, chance_replace: int, chance_add: int):
-        """ Modify settings for lulcaptains typo"""
-        if (
-            (chance_replace > 100)
-            or (chance_replace < 0)
-            or (chance_add > 100)
-            or (chance_add < 0)
-        ):
-            await ctx.send("The chances have to be between 0~100%!")
-        else:
-            await ctx.send(
-                f"lulcaptains settings:\
-            \nReplace chance set to {chance_replace}%.\
-            \nAdd chance set to {chance_add}%."
-            )
-            self.typo_replace_chance = chance_replace - 1
-            self.typo_add_chance = chance_add - 1
+        """ Modify settings for lulcaptains typo """
+        if not (0 <= chance_replace <= 100 and 0 <= chance_add <= 100):
+            return ctx.send("The chances have to be between 0~100%!")
+        
+        await ctx.send(
+            f"lulcaptains settings:\
+        \nReplace chance set to {chance_replace}%.\
+        \nAdd chance set to {chance_add}%."
+        )
+        self.typo_replace_chance = chance_replace - 1
+        self.typo_add_chance = chance_add - 1
 
     @commands.command(pass_context=True)
     async def captains(self, ctx):
@@ -261,7 +279,7 @@ class WillumpCog(commands.Cog):
                     random.randrange(100) <= self.typo_replace_chance
                 ):  # 10% to REPLACE w/ typo by default
                     typo = await self.generate_typo(letter_substring[0])  # Get the typo
-                    danny_name += typo * len(letter_substring)  #
+                    danny_name += typo * len(letter_substring)
                 elif (
                     random.randrange(100) <= self.typo_add_chance
                 ):  # 10% to ADD w/ typo by default

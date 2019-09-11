@@ -38,15 +38,18 @@ class QueueCog(commands.Cog):
     
     @commands.command(aliases=["forceadd","fjoin", "fadd"])
     async def forcejoin(self, ctx, member: discord.Member):
-        """ Force another user to join the queue with an @"""
-        name = member.nick if member.nick else member.name
-        if member.id not in self.queue:
-            self.queue.append(member.id)
-            await ctx.invoke(self._queue)
-            await self._ready(ctx)
+        """ Force another user to join the queue with an @ """
+        if self.qtoggle:
+            name = member.nick if member.nick else member.name
+            if member.id not in self.queue:
+                self.queue.append(member.id)
+                await ctx.invoke(self._queue)
+                await self._ready(ctx)
+            else:
+                await ctx.send(f"{name} is already in the queue!")
+                await ctx.invoke(self._queue)
         else:
-            await ctx.send(f"{name} is already in the queue!")
-            await ctx.invoke(self._queue)
+            await ctx.send("The queue is closed.")
     
     async def _ready(self, ctx):
         if len(self.queue) == 10:
@@ -107,13 +110,11 @@ class QueueCog(commands.Cog):
         author = ctx.message.author
         if author.id in self.queue:
             _position = self.queue.index(author.id) + 1
-            await ctx.send(
-                f"You are **#{_position}** in the queue."
-                )
-        else:
-            await ctx.send(
-                f"You are not in the queue, please use {ctx.prefix}add to add yourself to the queue."
-            )
+            return ctx.send(f"You are **#{_position}** in the queue.")
+        
+        await ctx.send(
+            f"You are not in the queue, please use {ctx.prefix}add to add yourself to the queue."
+        )
 
     @commands.command(pass_context=True, name="next")
     async def _next(self, ctx, num=1):
