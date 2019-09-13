@@ -54,7 +54,7 @@ class WillumpCog(commands.Cog):
         await msg.add_reaction(emoji)
     
     @commands.command()
-    async def fucktruc(self,ctx):
+    async def fucktruc(self, ctx):
         """ He deserves it """
         msg = await ctx.send("FUCK TRUC")
         await msg.add_reaction("\U0001F1EB")
@@ -66,6 +66,17 @@ class WillumpCog(commands.Cog):
         await msg.add_reaction("\U000026CE")
         await msg.add_reaction("\U000021AA")
         await msg.add_reaction("\U0001F69A")
+    
+    @commands.command()
+    async def fuckme(self, ctx):
+        author = ctx.message.author
+        if author.id == 172899191998251009:
+            await ctx.invoke(self.fuckchong)
+        elif author.id == 132709848864391170:
+            await ctx.invoke(self.fucktruc)
+        else:
+            return
+
 
     @commands.command(pass_context=True)
     async def ass(self, ctx):

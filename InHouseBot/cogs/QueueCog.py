@@ -17,7 +17,7 @@ class QueueCog(commands.Cog):
         self.queue = []
         self.qtoggle = True
         self.qtime = "None set yet"
-        self.queueid = None
+        self.queuemsg = None
 
     @commands.command(aliases=["join"])
     async def add(self, ctx):
@@ -37,7 +37,7 @@ class QueueCog(commands.Cog):
     @commands.command(aliases=["forceadd","fjoin", "fadd"])
     async def forcejoin(self, ctx, member: discord.Member):
         """ Force another user to join the queue with an @"""
-        if self.toggle:
+        if self.qtoggle:
             name = member.nick if member.nick else member.name
             if member.id not in self.queue:
                 self.queue.append(member.id)
@@ -89,8 +89,8 @@ class QueueCog(commands.Cog):
     async def _queue(self, ctx):
         """ See who's up next! """
         server = ctx.guild
-        if self.queueid is not None:
-            await self.delete_prev_q(ctx)
+        if self.queuemsg is not None:
+            await self.queuemsg.delete()
         message = f"**Gaming time**: {self.qtime}\n"
         for place, member_id in enumerate(self.queue):
             member = discord.utils.get(server.members, id=member_id)
@@ -98,12 +98,7 @@ class QueueCog(commands.Cog):
         if len(self.queue) == 0:
             message += f"Queue is empty."
         embed = discord.Embed(title=message, colour=discord.Colour.green())
-        messages = await ctx.send(embed=embed)
-        self.queueid = messages.id
-    
-    async def delete_prev_q(self, ctx):
-        queuemessage = await ctx.fetch_message(self.queueid)
-        await queuemessage.delete()
+        self.queuemsg = await ctx.send(embed=embed)
     
     @commands.command(aliases=["qtime","settime","time"])
     async def queuetime(self, ctx, *, _time):
