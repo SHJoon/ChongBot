@@ -17,6 +17,7 @@ class QueueCog(commands.Cog):
         self.queue = []
         self.qtoggle = True
         self.qtime = "None set yet"
+        self.queueid = None
 
     @commands.command(aliases=["join"])
     async def add(self, ctx):
@@ -25,9 +26,6 @@ class QueueCog(commands.Cog):
         if self.qtoggle:
             if author.id not in self.queue:
                 self.queue.append(author.id)
-                await ctx.send(
-                    f"You have been added to the queue at position {self.queue.index(author.id)+1}."
-                )
             else:
                 await ctx.send("You are already in the queue!")
             await ctx.invoke(self._queue)
@@ -38,18 +36,15 @@ class QueueCog(commands.Cog):
     
     @commands.command(aliases=["forceadd","fjoin", "fadd"])
     async def forcejoin(self, ctx, member: discord.Member):
-        """ Force another user to join the queue with an @ """
-        if self.qtoggle:
-            name = member.nick if member.nick else member.name
-            if member.id not in self.queue:
-                self.queue.append(member.id)
-                await ctx.invoke(self._queue)
-                await self._ready(ctx)
-            else:
-                await ctx.send(f"{name} is already in the queue!")
-                await ctx.invoke(self._queue)
+        """ Force another user to join the queue with an @"""
+        name = member.nick if member.nick else member.name
+        if member.id not in self.queue:
+            self.queue.append(member.id)
+            await ctx.invoke(self._queue)
+            await self._ready(ctx)
         else:
-            await ctx.send("The queue is closed.")
+            await ctx.send(f"{name} is already in the queue!")
+            await ctx.invoke(self._queue)
     
     async def _ready(self, ctx):
         if len(self.queue) == 10:
@@ -60,6 +55,18 @@ class QueueCog(commands.Cog):
             await ctx.send("10 MEN TIME LESGOO")
             self.queue = []
         return
+    
+    @commands.command(aliases=["forcedrop","forceleave","fremove","fdrop","fleave"])
+    async def forceremove(self, ctx, member: discord.Member):
+        """ Force another user to drop from the queue with an @"""
+        name = member.nick if member.nick else member.name
+        if member.id in self.queue:
+            self.queue.remove(member.id)
+            await ctx.send(f"{name} has been removed from the queue.")
+            await ctx.invoke(self._queue)
+        else:
+            await ctx.send(f"{name} was not in the queue!")
+            await ctx.invoke(self._queue)
     
     @commands.command(aliases=["leave", "drop"])
     async def remove(self, ctx):
@@ -74,30 +81,26 @@ class QueueCog(commands.Cog):
                 await ctx.send(message)
         else:
             await ctx.send("You were not in the queue.")
-
-    @commands.command(aliases=["forcedrop","forceleave","fremove","fdrop","fleave"])
-    async def forceremove(self, ctx, member: discord.Member):
-        """ Force another user to drop from the queue with an @"""
-        name = member.nick if member.nick else member.name
-        if member.id in self.queue:
-            self.queue.remove(member.id)
-            await ctx.send(f"{name} has been removed from the queue.")
-            await ctx.invoke(self._queue)
-        else:
-            await ctx.send(f"{name} was not in the queue!")
-            await ctx.invoke(self._queue)
-
+    
     @commands.command(name="queue", aliases=["lobby", "q"], pass_context=True)
     async def _queue(self, ctx):
         """ See who's up next! """
         server = ctx.guild
+        if self.queueid is not None:
+            await self.delete_prev_q(ctx)
         message = f"**Gaming time**: {self.qtime}\n"
         for place, member_id in enumerate(self.queue):
             member = discord.utils.get(server.members, id=member_id)
             message += f"**#{place+1}** : {member.name}\n"
-        await ctx.send(message)
         if len(self.queue) == 0:
-            await ctx.send("Queue is empty")
+            message += f"Queue is empty."
+        embed = discord.Embed(title=message, colour=discord.Colour.green())
+        messages = await ctx.send(embed=embed)
+        self.queueid = messages.id
+    
+    async def delete_prev_q(self, ctx):
+        queuemessage = await ctx.fetch_message(self.queueid)
+        await queuemessage.delete()
     
     @commands.command(aliases=["qtime","settime","time"])
     async def queuetime(self, ctx, *, _time):
