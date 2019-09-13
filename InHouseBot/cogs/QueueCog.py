@@ -37,14 +37,17 @@ class QueueCog(commands.Cog):
     @commands.command(aliases=["forceadd","fjoin", "fadd"])
     async def forcejoin(self, ctx, member: discord.Member):
         """ Force another user to join the queue with an @"""
-        name = member.nick if member.nick else member.name
-        if member.id not in self.queue:
-            self.queue.append(member.id)
-            await ctx.invoke(self._queue)
-            await self._ready(ctx)
+        if self.toggle:
+            name = member.nick if member.nick else member.name
+            if member.id not in self.queue:
+                self.queue.append(member.id)
+                await ctx.invoke(self._queue)
+                await self._ready(ctx)
+            else:
+                await ctx.send(f"{name} is already in the queue!")
+                await ctx.invoke(self._queue)
         else:
-            await ctx.send(f"{name} is already in the queue!")
-            await ctx.invoke(self._queue)
+            await ctx.send("The queue is closed.")
     
     async def _ready(self, ctx):
         if len(self.queue) == 10:
