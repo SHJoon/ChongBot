@@ -82,7 +82,6 @@ class LeagueCog(commands.Cog):
 
         # Lets cache on init
         self.cache = self.sheet.get_all_values()
-        # data = self.sheet.get_all_records()
 
     @commands.command()
     @retry_authorize(gspread.exceptions.APIError)
@@ -109,20 +108,29 @@ class LeagueCog(commands.Cog):
 
     @commands.command()
     @retry_authorize(gspread.exceptions.APIError)
-    async def stream(self, ctx):
+    async def stream(self, ctx, member:discord.Member = None):
         """ Post your own stream. """
         user = ctx.message.author
+        personid = None
+        if member is not None:
+            personid = member.id
+        else:
+            personid = user.id
+
         for row in self.cache:
-            # We are not using SHEET_* constants becuase this is a python array
-            # representation of the data, not indexing remotely
-            if row[SHEET_ID_IDX - 1] == str(user.id):
+            if row[SHEET_ID_IDX - 1] == str(personid):
                 msg = row[SHEET_URL_IDX-1]
                 return await ctx.send(msg)
 
         # User not found
-        await ctx.send(
+        if member is not None:
+            await ctx.send(
+                f"{member.name} does not have any stream set up yet!"
+                )
+        else:
+            await ctx.send(
             "You do not have any stream set up yet. Use !addstream to configure."
-        )
+            )
 
     @commands.command()
     @retry_authorize(gspread.exceptions.APIError)

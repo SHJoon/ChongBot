@@ -69,6 +69,7 @@ class WillumpCog(commands.Cog):
     
     @commands.command()
     async def fuckme(self, ctx):
+        """ Chong and Truc use only """
         author = ctx.message.author
         if author.id == 172899191998251009:
             await ctx.invoke(self.fuckchong)
@@ -131,7 +132,7 @@ class WillumpCog(commands.Cog):
 
     @commands.command()
     async def flames(self, ctx):
-        """ 'ConsTRUCtive flaming """
+        """ ConsTRUCtive flaming """
         await ctx.send("https://i.imgflip.com/38i4t9.jpg")
 
     @commands.command()

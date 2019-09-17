@@ -70,6 +70,9 @@ async def change_status():
 async def on_ready():
     print(bot.user.name)
     print(bot.user.id)
+    #I want to get notified when the bot resets
+    user = bot.get_user(219726815663620096)
+    await user.send('Bot has been reset.')
     change_status.start()
 
 
