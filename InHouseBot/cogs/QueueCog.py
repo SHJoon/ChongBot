@@ -99,6 +99,7 @@ class QueueCog(commands.Cog):
             message += f"Queue is empty."
         embed = discord.Embed(title=message, colour=discord.Colour.green())
         self.queuemsg = await ctx.send(embed=embed)
+        await ctx.message.delete()
     
     @commands.command(aliases=["qtime","settime","time"])
     async def queuetime(self, ctx, *, _time):
