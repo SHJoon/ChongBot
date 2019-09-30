@@ -34,8 +34,8 @@ class QueueCog(commands.Cog):
         else:
             await ctx.send("The queue is closed.")
     
-    @commands.command(aliases=["forceadd","fjoin", "fadd"])
-    async def forcejoin(self, ctx, member: discord.Member):
+    @commands.command(aliases=["forcejoin","fjoin", "fadd"])
+    async def forceadd(self, ctx, member: discord.Member):
         """ Force another user to join the queue with an @"""
         if self.qtoggle:
             name = member.nick if member.nick else member.name
@@ -59,6 +59,20 @@ class QueueCog(commands.Cog):
             self.queue = []
         return
     
+    @commands.command(aliases=["leave", "drop"])
+    async def remove(self, ctx):
+        """ Remove yourself from the queue """
+        author = ctx.message.author
+        message = ""
+        if author.id in self.queue:
+            self.queue.remove(author.id)
+            await ctx.send(f"{author.name} has been removed from the queue.")
+            await ctx.invoke(self._queue)
+            if message != "":
+                await ctx.send(message)
+        else:
+            await ctx.send("You were not in the queue.")
+    
     @commands.command(aliases=["forcedrop","forceleave","fremove","fdrop","fleave"])
     async def forceremove(self, ctx, member: discord.Member):
         """ Force another user to drop from the queue with an @"""
@@ -70,20 +84,6 @@ class QueueCog(commands.Cog):
         else:
             await ctx.send(f"{name} was not in the queue!")
             await ctx.invoke(self._queue)
-    
-    @commands.command(aliases=["leave", "drop"])
-    async def remove(self, ctx):
-        """ Remove yourself from the queue """
-        author = ctx.message.author
-        message = ""
-        if author.id in self.queue:
-            self.queue.remove(author.id)
-            await ctx.send("You have been removed from the queue.")
-            await ctx.invoke(self._queue)
-            if message != "":
-                await ctx.send(message)
-        else:
-            await ctx.send("You were not in the queue.")
     
     @commands.command(name="queue", aliases=["lobby", "q"], pass_context=True)
     async def _queue(self, ctx):

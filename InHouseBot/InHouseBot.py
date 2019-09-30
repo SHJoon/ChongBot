@@ -82,7 +82,7 @@ async def on_message(message):
         return
     if message.content.upper() == "W":
         await message.add_reaction("\U0001F1FC")
-    elif message.content == "smH":
+    elif "smH" in message.content:
         await message.add_reaction("\U0001F1F8")
         await message.add_reaction("\U0001F1F2")
         await message.add_reaction("\U0001F1ED")

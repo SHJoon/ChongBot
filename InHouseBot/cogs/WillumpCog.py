@@ -54,7 +54,7 @@ class WillumpCog(commands.Cog):
         await msg.add_reaction(emoji)
     
     @commands.command()
-    async def fucktruc(self, ctx):
+    async def fucktruc(self,ctx):
         """ He deserves it """
         msg = await ctx.send("FUCK TRUC")
         await msg.add_reaction("\U0001F1EB")
@@ -66,7 +66,7 @@ class WillumpCog(commands.Cog):
         await msg.add_reaction("\U000026CE")
         await msg.add_reaction("\U000021AA")
         await msg.add_reaction("\U0001F69A")
-    
+
     @commands.command()
     async def fuckme(self, ctx):
         """ Chong and Truc use only """
@@ -77,8 +77,7 @@ class WillumpCog(commands.Cog):
             await ctx.invoke(self.fucktruc)
         else:
             return
-
-
+    
     @commands.command(pass_context=True)
     async def ass(self, ctx):
         """ It is the truth """
@@ -115,6 +114,9 @@ class WillumpCog(commands.Cog):
         # Chong's server ID
         if author.id == 172899191998251009:
             await ctx.send(f"You're grimey")
+        # Truc's server ID
+        elif author.id == 132709848864391170:
+            await ctx.send(f"You're a dad")
         else:
             await ctx.send(f"You're cool! {author.mention}")
 
@@ -138,14 +140,17 @@ class WillumpCog(commands.Cog):
     @commands.command()
     async def wade(self, ctx):
         """ Self-loathing tank abuse """
-        await ctx.send(
-            f"im wade, top lane blows dick and i dont think anyone can be good at league of legends except me"
-        )
+        await ctx.send(f"im wade, top lane blows dick and i dont think anyone can be good at league of legends except me")
 
     @commands.command()
     async def danny(self, ctx):
         """ KING """
         await ctx.send(f"https://i.imgflip.com/384zeu.jpg")
+    
+    @commands.command()
+    async def valley(self, ctx):
+        """ Meme KING """
+        await ctx.send(f"https://www.youtube.com/channel/UCLlFPxjfcwQAT9XWOLpi0KQ")
 
     @commands.command(pass_context=True)
     async def flip(self, ctx):
@@ -174,16 +179,6 @@ class WillumpCog(commands.Cog):
             embed.colour = discord.Colour.green()
             
         await ctx.send(embed=embed)
-
-        # https://nexus.leagueoflegends.com/wp-content/uploads/2018/08/Nunu_Bot_fqvx53j9ion1fxkr34ag.gif
-        # https://media0.giphy.com/media/3oz8xCXbQDReF34WWs/giphy-downsized.gif
-        # https://www.ssbwiki.com/images/b/bf/Fox_SSBM.jpg
-        # https://www.ssbwiki.com/images/1/17/Falco_SSBM.jpg
-        # https://lolskinshop.com/wp-content/uploads/2015/04/Poppy_2.jpg
-        # https://2.bp.blogspot.com/-_1l8obImQmA/V3F9Z8MV3_I/AAAAAAAA8FI/Kcj-ALPCPoY5cTeaAgFtgYIg6qihz4XBgCLcB/s1600/Taric_Splash_4.jpg
-        # https://i.imgur.com/lDlR54a.gif
-        # https://media0.giphy.com/media/3oz8xCXbQDReF34WWs/giphy-downsized.gif
-        # https://media0.giphy.com/media/uWcNWtfqzySDYqkORw/source.gif
 
     @commands.command(pass_context=True)
     async def choose(self, ctx, *choices: str):
