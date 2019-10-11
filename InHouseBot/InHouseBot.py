@@ -2,6 +2,7 @@ import discord
 import os
 import random
 import json
+import numpy
 
 from discord.ext import commands, tasks
 
@@ -75,27 +76,52 @@ async def on_ready():
     await user.send('Bot has been reset.')
     change_status.start()
 
+def levenshtein(msg1, msg2):
+    rows = len(msg1) + 1
+    cols = len(msg2) + 1
+    distance = numpy.zeros((rows,cols),dtype = int)
+    # Populate matrix of zeros with the indeces of each character of both strings
+    for i in range(1, rows):
+        for k in range(1,cols):
+            distance[i][0] = i
+            distance[0][k] = k
+
+    # Compute the cost of deletions,insertions and/or substitutions    
+    for col in range(1, cols):
+        for row in range(1, rows):
+            if msg1[row-1] == msg2[col-1]:
+                cost = 0 # If the characters are the same in the two strings in a given position [i,j] then the cost is 0
+            else:
+                cost = 1
+            distance[row][col] = min(distance[row-1][col] + 1,      # Cost of deletions
+                                 distance[row][col-1] + 1,          # Cost of insertions
+                                 distance[row-1][col-1] + cost)     # Cost of substitutions
+    return distance[row][col]
 
 @bot.event
 async def on_message(message):
     if message.author == bot.user:
         return
-    if message.content.upper() == "W":
+    # Delete white spaces from the beginning and the end
+    message_strip = message.content.strip()
+    # Delete ALL white spaces
+    new_message = message_strip.replace(" ", "")
+    if new_message[0].upper() == "H":
+        if(levenshtein(new_message.upper(), "HTOWNLET'SGETIT!") <= 3):
+            await message.add_reaction("\U0001F680")
+            await message.add_reaction("\U0001F1FC")
+    elif message.content.upper() == "W":
         await message.add_reaction("\U0001F1FC")
     elif "smH" in message.content:
         await message.add_reaction("\U0001F1F8")
         await message.add_reaction("\U0001F1F2")
         await message.add_reaction("\U0001F1ED")
-    elif message.content.upper() == "H TOWN LET'S GET IT!":
-        await message.add_reaction("\U0001F680")
-        await message.add_reaction("\U0001F1FC")
     elif message.content.upper() == "L":
         await message.add_reaction("\U0001F1F1")
     elif message.content.upper() == "F":
         await message.add_reaction("\U0001F1EB")
     else:
         await bot.process_commands(message)
-
 
 token = None
 creds = None
@@ -109,7 +135,6 @@ elif os.path.isfile("key"):
         token = f.read().strip().strip("\n")
 
 # Add in our cogs
-
 bot.add_cog(WillumpCog(bot))
 bot.add_cog(QueueCog(bot))
 bot.add_cog(LeagueCog(bot))
