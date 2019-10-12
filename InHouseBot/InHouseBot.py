@@ -12,14 +12,17 @@ from cogs.LeagueCog import LeagueCog
 
 # Change this to whatever prefix you'd like
 prefix = "!"  # Instantiate our bot #
-bot = commands.Bot(command_prefix=prefix)
+bot = commands.Bot(command_prefix=prefix,
+                    case_insensitive=True,
+                    description="Ask The_Fire_Chief/perks for any questions!")
 
 
 @tasks.loop(seconds=30)
 async def change_status():
     await bot.wait_until_ready()
-    set_type = random.randint(0, 2)
-    if set_type == 0:
+    activities = ["Playing", "Watching", "Listening"]
+    set_type = random.choice(activities)
+    if set_type == "Playing":
         phrases = [
             "with Chong's feelings",
             "with Nunu",
@@ -27,13 +30,13 @@ async def change_status():
             "with the boys",
             "tank-abuser meta",
             "League In-House",
-            "wadetendo Garen",
+            "wadetendo Garen"
         ]
         phrase = random.choice(phrases)
         await bot.change_presence(
             activity=discord.Activity(type=discord.ActivityType.playing, name=phrase)
         )
-    elif set_type == 1:
+    elif set_type == "Watching":
         phrases = [
             "WWE Smackdown",
             "Chong's toilet",
@@ -46,7 +49,7 @@ async def change_status():
             "Danny pooping",
             "chair porn",
             "RuPaul's Drag Race",
-            "missed Morgana Q's",
+            "missed Morgana Q's"
         ]
         phrase = random.choice(phrases)
         await bot.change_presence(
@@ -59,7 +62,7 @@ async def change_status():
             "Jackzilla casting",
             "the inner voice",
             "Fuck Truc by the Boys",
-            "Boyz II Men",
+            "Boyz II Men"
         ]
         phrase = random.choice(phrases)
         await bot.change_presence(
@@ -80,7 +83,7 @@ def levenshtein(msg1, msg2):
     rows = len(msg1) + 1
     cols = len(msg2) + 1
     distance = numpy.zeros((rows,cols),dtype = int)
-    # Populate matrix of zeros with the indeces of each character of both strings
+    # Populate matrix of zeros with the indices of each character of both strings
     for i in range(1, rows):
         for k in range(1,cols):
             distance[i][0] = i
@@ -106,8 +109,10 @@ async def on_message(message):
     message_strip = message.content.strip()
     # Delete ALL white spaces
     new_message = message_strip.replace(" ", "")
-    if new_message[0].upper() == "H":
-        if(levenshtein(new_message.upper(), "HTOWNLET'SGETIT!") <= 3):
+    # Capitalize the message for easier comparison
+    new_message_upper = new_message.upper()
+    if new_message_upper.startswith("HTOWN"):
+        if(levenshtein(new_message_upper, "HTOWNLET'SGETIT!") <= 2):
             await message.add_reaction("\U0001F680")
             await message.add_reaction("\U0001F1FC")
     elif message.content.upper() == "W":
