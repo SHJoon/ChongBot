@@ -105,6 +105,7 @@ class QueueCog(commands.Cog):
     async def queuetime(self, ctx, *, _time):
         """ Set gaming time """
         self.qtime = _time
+        await ctx.invoke(self._queue)
 
     @commands.command(pass_context=True)
     async def position(self, ctx):
