@@ -8,14 +8,12 @@ from discord.ext import commands, tasks
 
 from cogs.WillumpCog import WillumpCog
 from cogs.QueueCog import QueueCog
-from cogs.LeagueCog import LeagueCog
 
 # Change this to whatever prefix you'd like
 prefix = "!"  # Instantiate our bot #
 bot = commands.Bot(command_prefix=prefix,
                     case_insensitive=True,
                     description="Ask The_Fire_Chief/perks for any questions!")
-
 
 @tasks.loop(seconds=30)
 async def change_status():
@@ -125,10 +123,10 @@ async def on_message(message):
         await message.add_reaction("\U0001F1F1")
     elif message.content.upper() == "F":
         await message.add_reaction("\U0001F1EB")
-    elif new_message_upper.startswith("HI" or "HELLO" or "HERRO"):
+    elif new_message_upper.startswith(("HI","HELLO","HERRO")):
         if message.author.id == 132709848864391170:
-            await message.delete
-            await bot.send("SHUT UP TRUC")
+            await message.delete()
+            await message.channel.send("SHUT UP TRUC")
     else:
         await bot.process_commands(message)
 
@@ -146,7 +144,12 @@ elif os.path.isfile("key"):
 # Add in our cogs
 bot.add_cog(WillumpCog(bot))
 bot.add_cog(QueueCog(bot))
-bot.add_cog(LeagueCog(bot))
+
+if "GOOGLE_OAUTH_JSON" in os.environ:
+    from cogs.LeagueCog import LeagueCog
+    bot.add_cog(LeagueCog(bot))
+else:
+    print("No relevant file found. LeagueCog is disabled.")
 
 if token is not None:
     bot.run(token)
