@@ -94,7 +94,8 @@ class QueueCog(commands.Cog):
         message = f"**Gaming time**: {self.qtime}\n"
         for place, member_id in enumerate(self.queue):
             member = discord.utils.get(server.members, id=member_id)
-            message += f"**#{place+1}** : {member.name}\n"
+            name = member.nick if member.nick else member.name
+            message += f"**#{place+1}** : {name}\n"
         if len(self.queue) == 0:
             message += f"Queue is empty."
         embed = discord.Embed(title=message, colour=discord.Colour.green())

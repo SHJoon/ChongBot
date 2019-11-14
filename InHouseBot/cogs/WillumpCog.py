@@ -66,6 +66,20 @@ class WillumpCog(commands.Cog):
         await msg.add_reaction("\U000026CE")
         await msg.add_reaction("\U000021AA")
         await msg.add_reaction("\U0001F69A")
+    
+    @commands.command(aliases=["gdi","goddamnit","goddamnitethan"])
+    async def gdiethan(self,ctx):
+        """ Goddamn it """
+        msg = await ctx.send("GOD DAMN IT ETHAN")
+        await msg.add_reaction("\U0001F1EC")
+        await msg.add_reaction("\U0001F1E9")
+        await msg.add_reaction("\U0001F1EE")
+        await msg.add_reaction("\U0001F1EA")
+        await msg.add_reaction("\U0001F1F9")
+        await msg.add_reaction("\U0001F1ED")
+        await msg.add_reaction("\U0001F1E6")
+        await msg.add_reaction("\U0001F1F3")
+        await msg.add_reaction("\U0001F926")
 
     @commands.command()
     async def fuckme(self, ctx):

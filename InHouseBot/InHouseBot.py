@@ -1,8 +1,6 @@
 import discord
 import os
 import random
-import json
-import numpy
 
 from discord.ext import commands, tasks
 
@@ -80,7 +78,7 @@ async def on_ready():
 def levenshtein(msg1, msg2):
     rows = len(msg1) + 1
     cols = len(msg2) + 1
-    distance = numpy.zeros((rows,cols),dtype = int)
+    distance = [[0 for x in range(cols)] for x in range(rows)]
     # Populate matrix of zeros with the indices of each character of both strings
     for i in range(1, rows):
         for k in range(1,cols):
