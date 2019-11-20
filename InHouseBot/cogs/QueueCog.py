@@ -18,6 +18,7 @@ class QueueCog(commands.Cog):
         self.qtoggle = True
         self.qtime = "None set yet"
         self.queuemsg = None
+        self.readynum = 10
 
     @commands.command(aliases=["join"])
     async def add(self, ctx):
@@ -29,8 +30,6 @@ class QueueCog(commands.Cog):
             else:
                 await ctx.send("You are already in the queue!")
             await ctx.invoke(self._queue)
-            # Use queue to replace !leggo
-            await self._ready(ctx)
         else:
             await ctx.send("The queue is closed.")
     
@@ -42,21 +41,25 @@ class QueueCog(commands.Cog):
             if member.id not in self.queue:
                 self.queue.append(member.id)
                 await ctx.invoke(self._queue)
-                await self._ready(ctx)
             else:
                 await ctx.send(f"{name} is already in the queue!")
                 await ctx.invoke(self._queue)
         else:
             await ctx.send("The queue is closed.")
     
+    @commands.command(name="ready", aliases=["go"])
     async def _ready(self, ctx):
-        if len(self.queue) == 10:
+        if len(self.queue) >= self.readynum:
             server = ctx.guild
-            for member_id in self.queue:
+            for member_id in self.queue[0:self.readynum]:
                 member = discord.utils.get(server.members, id=member_id)
                 await ctx.send(member.mention)
+            for _ in range(self.readynum):
+                self.queue.pop(0)
             await ctx.send("10 MEN TIME LESGOO")
-            self.queue = []
+        else:
+            await ctx.send("Not enough people in the lobby...")
+            await ctx.invoke(self._queue)
         return
     
     @commands.command(aliases=["leave", "drop"])
