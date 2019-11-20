@@ -131,6 +131,8 @@ class WillumpCog(commands.Cog):
         # Truc's server ID
         elif author.id == 132709848864391170:
             await ctx.send(f"You're a dad")
+        elif author.id == 131626920738684928:
+            await ctx.send(f"You're chillin")
         else:
             await ctx.send(f"You're cool! {author.mention}")
 

@@ -121,7 +121,7 @@ async def on_message(message):
         await message.add_reaction("\U0001F1F1")
     elif message.content.upper() == "F":
         await message.add_reaction("\U0001F1EB")
-    elif new_message_upper.startswith(("HI","HELLO","HERRO","HEY","HOWDY","GREETINGS","WHATSUP")):
+    elif new_message_upper.startswith(("HI","HELLO","HERRO","HEY","HOWDY","GREETINGS","WHATSUP","SUP")):
         if message.author.id == 132709848864391170:
             await message.delete()
             await message.channel.send("SHUT UP TRUC")
