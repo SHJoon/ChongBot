@@ -18,7 +18,7 @@ class QueueCog(commands.Cog):
         self.qtoggle = True
         self.qtime = "None set yet"
         self.queuemsg = None
-        self.readynum = 10
+        self.readynum = 2
 
     @commands.command(aliases=["join"])
     async def add(self, ctx):
@@ -35,7 +35,7 @@ class QueueCog(commands.Cog):
     
     @commands.command(aliases=["forcejoin","fjoin", "fadd"])
     async def forceadd(self, ctx, member: discord.Member):
-        """ Force another user to join the queue with an @"""
+        """ Force another user to join the queue with an @ """
         if self.qtoggle:
             name = member.nick if member.nick else member.name
             if member.id not in self.queue:
@@ -49,17 +49,20 @@ class QueueCog(commands.Cog):
     
     @commands.command(name="ready", aliases=["go"])
     async def _ready(self, ctx):
+        """ If everyone is ready to game, this command will ping them! """
         if len(self.queue) >= self.readynum:
             server = ctx.guild
+            message = ""
             for member_id in self.queue[0:self.readynum]:
                 member = discord.utils.get(server.members, id=member_id)
-                await ctx.send(member.mention)
+                message += member.mention
+            await ctx.send(message)
             for _ in range(self.readynum):
                 self.queue.pop(0)
             await ctx.send("10 MEN TIME LESGOO")
         else:
             await ctx.send("Not enough people in the lobby...")
-            await ctx.invoke(self._queue)
+        await ctx.invoke(self._queue)
         return
     
     @commands.command(aliases=["leave", "drop"])
@@ -79,7 +82,7 @@ class QueueCog(commands.Cog):
     
     @commands.command(aliases=["forcedrop","forceleave","fremove","fdrop","fleave"])
     async def forceremove(self, ctx, member: discord.Member):
-        """ Force another user to drop from the queue with an @"""
+        """ Force another user to drop from the queue with an @ """
         name = member.nick if member.nick else member.name
         if member.id in self.queue:
             self.queue.remove(member.id)
