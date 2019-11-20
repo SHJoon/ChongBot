@@ -18,7 +18,7 @@ class QueueCog(commands.Cog):
         self.qtoggle = True
         self.qtime = "None set yet"
         self.queuemsg = None
-        self.readynum = 2
+        self.readynum = 10
 
     @commands.command(aliases=["join"])
     async def add(self, ctx):
