@@ -63,10 +63,11 @@ class QueueCog(commands.Cog):
     async def remove(self, ctx):
         """ Remove yourself from the queue """
         author = ctx.message.author
+        name = author.nick if author.nick else author.name
         message = ""
         if author.id in self.queue:
             self.queue.remove(author.id)
-            await ctx.send(f"{author.name} has been removed from the queue.")
+            await ctx.send(f"{name} has been removed from the queue.")
             await ctx.invoke(self._queue)
             if message != "":
                 await ctx.send(message)
@@ -98,7 +99,7 @@ class QueueCog(commands.Cog):
             message += f"**#{place+1}** : {name}\n"
         if len(self.queue) == 0:
             message += f"Queue is empty."
-        embed = discord.Embed(title=message, colour=discord.Colour.green())
+        embed = discord.Embed(description=message, colour=discord.Colour.green())
         self.queuemsg = await ctx.send(embed=embed)
         await ctx.message.delete()
     
