@@ -137,13 +137,7 @@ roles = {649426239706234886:[569662747915321344, 569978007591190539],# Top
 649426197918515211:[569662971484176395, 569978337502691333],# Support
 649426272933642240:[569663143786184727, 569980965582012416]# Fill
 }
-#:569978007591190539, Top_Sub
-#:569978157663387658, Jungle_Sub
-#:569977972929462283, Mid_Sub
-#:569977902993506305, ADC_Sub
-#:569978337502691333, Support_Sub
-#:569980965582012416 Fill_Sub
-"""
+
 @bot.event
 async def on_raw_reaction_add(reaction):
     if reaction.user_id == bot.user.id:
@@ -152,15 +146,40 @@ async def on_raw_reaction_add(reaction):
         return
     
     guild = await bot.fetch_guild(reaction.guild_id)
-    user = await guild.fetch_guild(reaction.user_id)
+    user = await guild.fetch_member(reaction.user_id)
 
-    if reaction.message_id == 
-    message = await bot.fetch_message(reaction.message_id)
-    if not reaction.message_id == 649335171212115980:
+    if reaction.message_id == 649433672411250688:
+        emojiID = roles.get(reaction.emoji.id)
+        id = emojiID[0]
+        await user.add_roles(guild.get_role(id))
+    elif reaction.message_id == 649433680464445470:
+        emojiID = roles.get(reaction.emoji.id)
+        id = emojiID[1]
+        await user.add_roles(guild.get_role(id))
+    else:
         return
-    channel = await message.fetch_channel(reaction.message_id)
-    await channel.send("h")
-"""
+
+@bot.event
+async def on_raw_reaction_remove(reaction):
+    if reaction.user_id == bot.user.id:
+        return
+    if not reaction.emoji.id in roles:
+        return
+    
+    guild = await bot.fetch_guild(reaction.guild_id)
+    user = await guild.fetch_member(reaction.user_id)
+
+    if reaction.message_id == 649433672411250688:
+        emojiID = roles.get(reaction.emoji.id)
+        id = emojiID[0]
+        await user.remove_roles(guild.get_role(id))
+    elif reaction.message_id == 649433680464445470:
+        emojiID = roles.get(reaction.emoji.id)
+        id = emojiID[1]
+        await user.remove_roles(guild.get_role(id))
+    else:
+        return
+
 token = None
 creds = None
 
