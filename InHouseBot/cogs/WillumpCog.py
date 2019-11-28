@@ -194,12 +194,12 @@ class WillumpCog(commands.Cog):
         await ctx.send("***It's important to choose your positions, as it helps captains with drafting!***")
         message = await ctx.send(
             "React to your **PRIMARY** position!\
-                \n:Top: Top\
-                \n:Jungle: Jungle\
-                \n:Mid: Mid\
-                \n:ADC: ADC\
-                \n:Support: Support\
-                \n:missingping: Fill\
+                \n<:Top:649426239706234886> Top\
+                \n<:Jungle:649426253056573450> Jungle\
+                \n<:Mid:649426225961500713> Mid\
+                \n<:ADC:649426210325266463> ADC\
+                \n<:Support:649426197918515211> Support\
+                \n<:missingping:649426272933642240> Fill\
                 \n**NOTE** Choose only 1 role. This will change your discord name color accordingly!")
         await message.add_reaction("<:Top:649426239706234886>")
         await message.add_reaction("<:Jungle:649426253056573450>")
@@ -211,12 +211,12 @@ class WillumpCog(commands.Cog):
 
         message = await ctx.send(
             "Now react to any of your **SECONDARY** positions!\
-                \n:Top: Top\
-                \n:Jungle: Jungle\
-                \n:Mid: Mid\
-                \n:ADC: ADC\
-                \n:Support: Support\
-                \n:missingping: Fill\
+                \n<:Top:649426239706234886> Top\
+                \n<:Jungle:649426253056573450> Jungle\
+                \n<:Mid:649426225961500713> Mid\
+                \n<:ADC:649426210325266463> ADC\
+                \n<:Support:649426197918515211> Support\
+                \n<:missingping:649426272933642240> Fill\
                 \n**NOTE** Choose as many roles as you want!")
         await message.add_reaction("<:Top:649426239706234886>")
         await message.add_reaction("<:Jungle:649426253056573450>")
