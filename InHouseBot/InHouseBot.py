@@ -169,11 +169,11 @@ async def on_raw_reaction_remove(reaction):
     guild = await bot.fetch_guild(reaction.guild_id)
     user = await guild.fetch_member(reaction.user_id)
 
-    if reaction.message_id == 649433672411250688:
+    if reaction.message_id == 649455328546521088:
         emojiID = roles.get(reaction.emoji.id)
         id = emojiID[0]
         await user.remove_roles(guild.get_role(id))
-    elif reaction.message_id == 649433680464445470:
+    elif reaction.message_id == 649455336838791191:
         emojiID = roles.get(reaction.emoji.id)
         id = emojiID[1]
         await user.remove_roles(guild.get_role(id))
