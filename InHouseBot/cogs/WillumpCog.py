@@ -188,4 +188,39 @@ class WillumpCog(commands.Cog):
             message = "No voice lobby for captains draft"
 
         await ctx.send(message)
-        
+    
+    @commands.command()
+    async def here(self, ctx):
+        await ctx.send("***It's important to choose your positions, as it helps captains with drafting!***")
+        message = await ctx.send(
+            "React to your **PRIMARY** position!\
+                \n<:Top:649426239706234886> Top\
+                \n<:Jungle:649426253056573450> Jungle\
+                \n<:Mid:649426225961500713> Mid\
+                \n<:Bot:649426210325266463> Bot\
+                \n<:Support:649426197918515211> Support\
+                \n<:missingping:649426272933642240> Fill\n\
+                \n**NOTE** Choose only 1 role. This will change your discord name color accordingly!")
+        await message.add_reaction("<:Top:649426239706234886>")
+        await message.add_reaction("<:Jungle:649426253056573450>")
+        await message.add_reaction("<:Mid:649426225961500713>")
+        await message.add_reaction("<:Bot:649426210325266463>")
+        await message.add_reaction("<:Support:649426197918515211>")
+        await message.add_reaction("<:missingping:649426272933642240>")
+        await ctx.send("-----------------------------------------------------------------------------------------")
+
+        message = await ctx.send(
+            "Now react to any of your **SECONDARY** positions!\
+                \n<:Top:649426239706234886> Top\
+                \n<:Jungle:649426253056573450> Jungle\
+                \n<:Mid:649426225961500713> Mid\
+                \n<:Bot:649426210325266463> Bot\
+                \n<:Support:649426197918515211> Support\
+                \n<:missingping:649426272933642240> Fill\n\
+                \n**NOTE** Choose as many roles as you want!")
+        await message.add_reaction("<:Top:649426239706234886>")
+        await message.add_reaction("<:Jungle:649426253056573450>")
+        await message.add_reaction("<:Mid:649426225961500713>")
+        await message.add_reaction("<:Bot:649426210325266463>")
+        await message.add_reaction("<:Support:649426197918515211>")
+        await message.add_reaction("<:missingping:649426272933642240>")
