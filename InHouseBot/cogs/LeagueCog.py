@@ -17,7 +17,7 @@ creds = None
 gclient = None
 
 
-print("Succesfully grabbed Google OAUTH creds")
+print("Succesfully grabbed Google OAUTH creds for LeagueCog")
 google_oauth_json = os.environ["GOOGLE_OAUTH_JSON"]
 
 # Ugh, why can't open work on the StringIO class

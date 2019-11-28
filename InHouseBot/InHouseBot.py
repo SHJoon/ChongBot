@@ -6,6 +6,7 @@ from discord.ext import commands, tasks
 
 from cogs.WillumpCog import WillumpCog
 from cogs.QueueCog import QueueCog
+from cogs.MemeCog import MemeCog
 
 # Change this to whatever prefix you'd like
 prefix = "!"  # Instantiate our bot #
@@ -128,6 +129,38 @@ async def on_message(message):
     else:
         await bot.process_commands(message)
 
+# roles = {emoji_id:role_id, role_sub_id}
+roles = {649426239706234886:[569662747915321344, 569978007591190539],# Top
+649426253056573450:[569662812344025089, 569978157663387658],# Jungle
+649426225961500713:[569662844556148741, 569977972929462283],# Mid
+649426210325266463:[569662919055245312, 569977902993506305],# ADC
+649426197918515211:[569662971484176395, 569978337502691333],# Support
+649426272933642240:[569663143786184727, 569980965582012416]# Fill
+}
+#:569978007591190539, Top_Sub
+#:569978157663387658, Jungle_Sub
+#:569977972929462283, Mid_Sub
+#:569977902993506305, ADC_Sub
+#:569978337502691333, Support_Sub
+#:569980965582012416 Fill_Sub
+"""
+@bot.event
+async def on_raw_reaction_add(reaction):
+    if reaction.user_id == bot.user.id:
+        return
+    if not reaction.emoji.id in roles:
+        return
+    
+    guild = await bot.fetch_guild(reaction.guild_id)
+    user = await guild.fetch_guild(reaction.user_id)
+
+    if reaction.message_id == 
+    message = await bot.fetch_message(reaction.message_id)
+    if not reaction.message_id == 649335171212115980:
+        return
+    channel = await message.fetch_channel(reaction.message_id)
+    await channel.send("h")
+"""
 token = None
 creds = None
 
@@ -142,6 +175,7 @@ elif os.path.isfile("key"):
 # Add in our cogs
 bot.add_cog(WillumpCog(bot))
 bot.add_cog(QueueCog(bot))
+bot.add_cog(MemeCog(bot))
 
 if "GOOGLE_OAUTH_JSON" in os.environ:
     from cogs.LeagueCog import LeagueCog

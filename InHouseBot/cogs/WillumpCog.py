@@ -38,137 +38,6 @@ class WillumpCog(commands.Cog):
         self.typo_add_chance = 10
 
     @commands.command(pass_context=True)
-    async def fuckchong(self, ctx):
-        """ Self explanatory """
-        msg = await ctx.send(f"FUCK CHONG")
-        await msg.add_reaction("\U0001F1EB")
-        await msg.add_reaction("\U0001F1FA")
-        await msg.add_reaction("\U0001F1E8")
-        await msg.add_reaction("\U0001F1F0")
-        await msg.add_reaction("\U000021AA")
-        await msg.add_reaction("\U0001F1ED")
-        await msg.add_reaction("\U0001F1F4")
-        await msg.add_reaction("\U0001F1F3")
-        await msg.add_reaction("\U0001F1EC")
-        emoji = "<:FuckChong:598605265641930757>"
-        await msg.add_reaction(emoji)
-    
-    @commands.command()
-    async def fucktruc(self,ctx):
-        """ He deserves it """
-        msg = await ctx.send("FUCK TRUC")
-        await msg.add_reaction("\U0001F1EB")
-        await msg.add_reaction("\U0001F1FA")
-        await msg.add_reaction("\U0001F1E8")
-        await msg.add_reaction("\U0001F1F0")
-        await msg.add_reaction("\U0001F1F9")
-        await msg.add_reaction("\U0001F1F7")
-        await msg.add_reaction("\U000026CE")
-        await msg.add_reaction("\U000021AA")
-        await msg.add_reaction("\U0001F69A")
-    
-    @commands.command(aliases=["gdi","goddamnit","goddamnitethan"])
-    async def gdiethan(self,ctx):
-        """ Goddamn it """
-        msg = await ctx.send("GOD DAMN IT ETHAN")
-        await msg.add_reaction("\U0001F1EC")
-        await msg.add_reaction("\U0001F1E9")
-        await msg.add_reaction("\U0001F1EE")
-        await msg.add_reaction("\U0001F1EA")
-        await msg.add_reaction("\U0001F1F9")
-        await msg.add_reaction("\U0001F1ED")
-        await msg.add_reaction("\U0001F1E6")
-        await msg.add_reaction("\U0001F1F3")
-        await msg.add_reaction("\U0001F926")
-
-    @commands.command()
-    async def fuckme(self, ctx):
-        """ Chong and Truc use only """
-        author = ctx.message.author
-        if author.id == 172899191998251009:
-            await ctx.invoke(self.fuckchong)
-        elif author.id == 132709848864391170:
-            await ctx.invoke(self.fucktruc)
-        else:
-            return
-    
-    @commands.command(pass_context=True)
-    async def ass(self, ctx):
-        """ It is the truth """
-        await ctx.send(f"CHONG IS AN ASS EATER")
-
-    @commands.command(pass_context=True)
-    async def grime(self, ctx):
-        """ Important slice of in-house history... """
-        await ctx.send(
-            f"On May 6th, 2019, Chong invited an ex-LCS player to the server..."
-        )
-
-    @commands.command(pass_context=True)
-    async def morg(self, ctx):
-        """ Everyone misses a skill shot occasionally, even you """
-        await ctx.send(
-            f"https://media.discordapp.net/attachments/569646728224178184/598615204288397501/unknown.png?width=1250&height=676"
-        )
-
-    @commands.command(pass_context=True)
-    async def boys(self, ctx):
-        """ The boys are back in town """
-        await ctx.send(f"https://i.imgflip.com/360ktl.jpg")
-
-    @commands.command(pass_contect=True)
-    async def boys2(self, ctx):
-        """ The boys are back in town again """
-        await ctx.send("https://i.imgflip.com/36j064.jpg")
-
-    @commands.command(pass_context=True)
-    async def cool(self, ctx):
-        """ See if you are cool or not! """
-        author = ctx.message.author
-        # Chong's server ID
-        if author.id == 172899191998251009:
-            await ctx.send(f"You're grimey")
-        # Truc's server ID
-        elif author.id == 132709848864391170:
-            await ctx.send(f"You're a dad")
-        elif author.id == 131626920738684928:
-            await ctx.send(f"You're chillin")
-        else:
-            await ctx.send(f"You're cool! {author.mention}")
-
-    @commands.command(pass_context=True)
-    async def ape(self, ctx):
-        """ Current state of inhouse drafts """
-        await ctx.send(
-            "https://media.discordapp.net/attachments/569646728224178184/611036013715783710/In-House_meme.png?width=902&height=866"
-        )
-
-    @commands.command(pass_context=True)
-    async def ksaper(self, ctx):
-        """ Stats telling me no, but my body telling me YES """
-        await ctx.send(f"beep boop :robot: 4fun4 :robot: beep boop")
-
-    @commands.command()
-    async def flames(self, ctx):
-        """ ConsTRUCtive flaming """
-        await ctx.send("https://i.imgflip.com/38i4t9.jpg")
-
-    @commands.command()
-    async def wade(self, ctx):
-        """ Self-loathing tank abuse """
-        await ctx.send(f"im wade, top lane blows dick and i dont think anyone can be good at league of legends except me")
-
-    @commands.command()
-    async def danny(self, ctx):
-        """ KING """
-        await ctx.send(f"https://i.imgflip.com/384zeu.jpg")
-    
-    @commands.command()
-    async def valley(self, ctx):
-        """ Meme KING """
-        await ctx.send(f"https://www.youtube.com/channel/UCLlFPxjfcwQAT9XWOLpi0KQ")
-
-    @commands.command(pass_context=True)
     async def flip(self, ctx):
         """ Heads or Tails """
         flip = ["Heads", "Tails"]
@@ -319,3 +188,40 @@ class WillumpCog(commands.Cog):
             message = "No voice lobby for captains draft"
 
         await ctx.send(message)
+    
+    @commands.command()
+    async def here(self, ctx):
+        await ctx.send("***It's important to choose your positions, as it helps captains with drafting!***")
+        message = await ctx.send(
+            "React to your **PRIMARY** position!\
+                \n:Top: Top\
+                \n:Jungle: Jungle\
+                \n:Mid: Mid\
+                \n:ADC: ADC\
+                \n:Support: Support\
+                \n:missingping: Fill\
+                \n**NOTE** Choose only 1 role. This will change your discord name color accordingly!")
+        await message.add_reaction("<:Top:649426239706234886>")
+        await message.add_reaction("<:Jungle:649426253056573450>")
+        await message.add_reaction("<:Mid:649426225961500713>")
+        await message.add_reaction("<:ADC:649426210325266463>")
+        await message.add_reaction("<:Support:649426197918515211>")
+        await message.add_reaction("<:missingping:649426272933642240>")
+        await ctx.send("-----------------------------------------------------------------------------------------")
+
+        message = await ctx.send(
+            "Now react to any of your **SECONDARY** positions!\
+                \n:Top: Top\
+                \n:Jungle: Jungle\
+                \n:Mid: Mid\
+                \n:ADC: ADC\
+                \n:Support: Support\
+                \n:missingping: Fill\
+                \n**NOTE** Choose as many roles as you want!")
+        await message.add_reaction("<:Top:649426239706234886>")
+        await message.add_reaction("<:Jungle:649426253056573450>")
+        await message.add_reaction("<:Mid:649426225961500713>")
+        await message.add_reaction("<:ADC:649426210325266463>")
+        await message.add_reaction("<:Support:649426197918515211>")
+        await message.add_reaction("<:missingping:649426272933642240>")
+        
