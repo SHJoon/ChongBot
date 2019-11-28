@@ -138,6 +138,9 @@ roles = {649426239706234886:[569662747915321344, 569978007591190539],# Top
 649426272933642240:[569663143786184727, 569980965582012416]# Fill
 }
 
+main_role_msg_id = 649464520179187765
+sub_role_msg_id = 649464528102490123
+
 @bot.event
 async def on_raw_reaction_add(reaction):
     if reaction.user_id == bot.user.id:
@@ -148,11 +151,11 @@ async def on_raw_reaction_add(reaction):
     guild = await bot.fetch_guild(reaction.guild_id)
     user = await guild.fetch_member(reaction.user_id)
 
-    if reaction.message_id == 649461655209508877:
+    if reaction.message_id == main_role_msg_id:
         emojiID = roles.get(reaction.emoji.id)
         id = emojiID[0]
         await user.add_roles(guild.get_role(id))
-    elif reaction.message_id == 649461662956519424:
+    elif reaction.message_id == sub_role_msg_id:
         emojiID = roles.get(reaction.emoji.id)
         id = emojiID[1]
         await user.add_roles(guild.get_role(id))
@@ -169,11 +172,11 @@ async def on_raw_reaction_remove(reaction):
     guild = await bot.fetch_guild(reaction.guild_id)
     user = await guild.fetch_member(reaction.user_id)
 
-    if reaction.message_id == 649461655209508877:
+    if reaction.message_id == main_role_msg_id:
         emojiID = roles.get(reaction.emoji.id)
         id = emojiID[0]
         await user.remove_roles(guild.get_role(id))
-    elif reaction.message_id == 649461662956519424:
+    elif reaction.message_id == sub_role_msg_id:
         emojiID = roles.get(reaction.emoji.id)
         id = emojiID[1]
         await user.remove_roles(guild.get_role(id))

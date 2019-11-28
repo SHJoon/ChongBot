@@ -42,7 +42,7 @@ class WillumpCog(commands.Cog):
         """ Heads or Tails """
         flip = ["Heads", "Tails"]
         ranflip = random.choice(flip)
-        if random.randrange(99) == 84:
+        if random.randrange(100) == 99:
             ranflip = "Sides"
 
         embed = discord.Embed(title=ranflip)
@@ -189,37 +189,3 @@ class WillumpCog(commands.Cog):
 
         await ctx.send(message)
     
-    @commands.command()
-    async def here(self, ctx):
-        await ctx.send("***It's important to choose your positions, as it helps captains with drafting!***")
-        message = await ctx.send(
-            "React to your **PRIMARY** position!\
-                \n<:Top:649426239706234886> Top\
-                \n<:Jungle:649426253056573450> Jungle\
-                \n<:Mid:649426225961500713> Mid\
-                \n<:Bot:649463087476375573> Bot\
-                \n<:Support:649426197918515211> Support\
-                \n<:missingping:649426272933642240> Fill\n\
-                \n**NOTE** Choose only 1 role. This will change your discord name color accordingly!")
-        await message.add_reaction("<:Top:649426239706234886>")
-        await message.add_reaction("<:Jungle:649426253056573450>")
-        await message.add_reaction("<:Mid:649426225961500713>")
-        await message.add_reaction("<:Bot:649463087476375573>")
-        await message.add_reaction("<:Support:649426197918515211>")
-        await message.add_reaction("<:missingping:649426272933642240>")
-
-        message = await ctx.send(
-            "\nNow react to any of your **SECONDARY** positions!\
-                \n<:Top:649426239706234886> Top\
-                \n<:Jungle:649426253056573450> Jungle\
-                \n<:Mid:649426225961500713> Mid\
-                \n<:Bot:649463087476375573> Bot\
-                \n<:Support:649426197918515211> Support\
-                \n<:missingping:649426272933642240> Fill\n\
-                \n**NOTE** Choose as many roles as you want!")
-        await message.add_reaction("<:Top:649426239706234886>")
-        await message.add_reaction("<:Jungle:649426253056573450>")
-        await message.add_reaction("<:Mid:649426225961500713>")
-        await message.add_reaction("<:Bot:649463087476375573>")
-        await message.add_reaction("<:Support:649426197918515211>")
-        await message.add_reaction("<:missingping:649426272933642240>")
