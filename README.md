@@ -1,7 +1,8 @@
 # ChongBot
 
-P3rks <3
-QueueBot+ChongBot = TurboBot
+Used to be ChongBot, now called InHouseBot
+
+A Utility DiscordBot featuring queue system, excel database, memes, and more!
 
 Add your key to a file called 'key' (no extension) where you will be launching
 the script (relative to cur directory invocation)
