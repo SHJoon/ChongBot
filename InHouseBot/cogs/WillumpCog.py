@@ -165,7 +165,7 @@ class WillumpCog(commands.Cog):
             for letter_substring in ["".join(g) for _, g in itertools.groupby(name)]:
                 # No support for shift+char typos or other non present keys atm, so just pass them to stop
                 # us key error indexing on our table
-                if letter_substring[0] not in self.lookup_table:
+                if letter_substring[0].lower() not in self.lookup_table:
                     danny_name += letter_substring
                 elif (
                     random.randrange(100) <= self.typo_replace_chance
