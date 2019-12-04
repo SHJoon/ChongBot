@@ -135,7 +135,7 @@ class MemeCog(commands.Cog):
         """ ConsTRUCtive flaming """
         await ctx.send("https://i.imgflip.com/38i4t9.jpg")
     
-    @commands.command()
+    @commands.command(aliases = ["ethan", "Ethan"])
     async def valley(self, ctx):
         """ Meme KING """
         await ctx.send(f"https://www.youtube.com/channel/UCLlFPxjfcwQAT9XWOLpi0KQ")
