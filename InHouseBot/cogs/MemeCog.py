@@ -117,7 +117,7 @@ class MemeCog(commands.Cog):
     async def anees(self, ctx):
         """ FREE PALASTINE """
         await ctx.send(
-            f"https://discordapp.com/channels/@me/629458377193422849/651856434983731219"
+            f"https://cdn.discordapp.com/attachments/629458377193422849/651856430365802532/image0.jpg"
         )
         
     @commands.command()
