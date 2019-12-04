@@ -114,6 +114,13 @@ class MemeCog(commands.Cog):
         )
     
     @commands.command()
+    async def anees(self, ctx):
+        """ FREE PALASTINE """
+        await ctx.send(
+            f"https://discordapp.com/channels/@me/629458377193422849/651856434983731219"
+        )
+        
+    @commands.command()
     async def danny(self, ctx):
         """ KING """
         await ctx.send(f"https://i.imgflip.com/384zeu.jpg")
