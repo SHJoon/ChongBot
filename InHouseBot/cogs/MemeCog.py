@@ -138,7 +138,12 @@ class MemeCog(commands.Cog):
     @commands.command(aliases=["uwu"])
     async def truwu(self, ctx):
         """ UwU with a touch of Truc """
-        await ctx.send("https://i.imgur.com/Cn0mS7H.png")
+        embed = discord.Embed(title="trUwU")
+        embed.set_image(
+            url="https://i.imgur.com/9HC22JW.png"
+        )
+        embed.colour = discord.Colour.orange()
+        await ctx.send(embed=embed)
     
     @commands.command(aliases = ["ethan"])
     async def valley(self, ctx):
