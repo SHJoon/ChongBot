@@ -42,7 +42,7 @@ class WillumpCog(commands.Cog):
         """ Heads or Tails """
         flip = ["Heads", "Tails"]
         ranflip = random.choice(flip)
-        if random.randrange(100) == 99:
+        if random.randrange(50) == 49:
             ranflip = "Sides"
 
         embed = discord.Embed(title=ranflip)

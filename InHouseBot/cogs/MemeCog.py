@@ -134,6 +134,11 @@ class MemeCog(commands.Cog):
     async def flames(self, ctx):
         """ ConsTRUCtive flaming """
         await ctx.send("https://i.imgflip.com/38i4t9.jpg")
+
+    @commands.command(aliases=["uwu"])
+    async def truwu(self, ctx):
+        """ UwU with a touch of Truc """
+        await ctx.send("https://i.imgur.com/Cn0mS7H.png")
     
     @commands.command(aliases = ["ethan"])
     async def valley(self, ctx):
