@@ -9,8 +9,9 @@ from cogs.QueueCog import QueueCog
 from cogs.MemeCog import MemeCog
 
 # Change this to whatever prefix you'd like
-prefix = "!"  # Instantiate our bot #
-bot = commands.Bot(command_prefix=prefix,
+prefixes = ["!", "."]
+# Instantiate our bot
+bot = commands.Bot(command_prefix=prefixes,
                     case_insensitive=True,
                     description="Ask The_Fire_Chief/perks for any questions!")
 
