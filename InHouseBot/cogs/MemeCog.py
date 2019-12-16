@@ -123,13 +123,20 @@ class MemeCog(commands.Cog):
     @commands.command()
     async def danny(self, ctx):
         """ KING """
-        await ctx.send(f"https://i.imgflip.com/384zeu.jpg")
+        await ctx.send(
+            f"https://i.imgflip.com/384zeu.jpg"
+        )
 
     @commands.command(pass_context=True)
     async def ksaper(self, ctx):
         """ Who the hell """
-        await ctx.send(f"Did some bimbo 1st, 2nd, or 3rd pick Ksaper?!?!")
-        await ctx.send("https://cdn.discordapp.com/attachments/569646728224178184/651570847546343424/4c856b92b38200175aa1c923ed729021.png")
+        await ctx.send(
+            f"Did some bimbo 1st, 2nd, or 3rd pick Ksaper?!?!"
+        )
+        embed = discord.Embed()
+        embed.set_image(url="https://cdn.discordapp.com/attachments/569646728224178184/651570847546343424/4c856b92b38200175aa1c923ed729021.png")
+        embed.colour = discord.Colour.purple()
+        await ctx.send(embed=embed)
 
     @commands.command()
     async def flames(self, ctx):
