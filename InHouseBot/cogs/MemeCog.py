@@ -127,8 +127,9 @@ class MemeCog(commands.Cog):
 
     @commands.command(pass_context=True)
     async def ksaper(self, ctx):
-        """ Stats telling me no, but my body telling me YES """
-        await ctx.send(f"beep boop :robot: 4fun4 :robot: beep boop")
+        """ Who the hell """
+        await ctx.send(f"Did some bimbo 1st, 2nd, or 3rd pick Ksaper?!?!")
+        await ctx.send("https://cdn.discordapp.com/attachments/569646728224178184/651570847546343424/4c856b92b38200175aa1c923ed729021.png")
 
     @commands.command()
     async def flames(self, ctx):
