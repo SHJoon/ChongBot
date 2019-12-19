@@ -2,7 +2,7 @@ import asyncio
 import discord
 from discord.ext import commands
 
-approved_roles = ["Admin", "Bot", "Mod"]
+approved_roles = ["Admin"]
 
 def is_approved():
     def predicate(ctx):

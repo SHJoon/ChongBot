@@ -1,5 +1,4 @@
 import discord
-import httpx
 import os
 from functools import wraps
 from tempfile import NamedTemporaryFile
@@ -15,10 +14,13 @@ SHEET_URL_IDX = 3
 
 creds = None
 gclient = None
+google_oauth_json = None
 
-
-print("Succesfully grabbed Google OAUTH creds for LeagueCog")
-google_oauth_json = os.environ["GOOGLE_OAUTH_JSON"]
+if "GOOGLE_OAUTH_JSON" in os.environ:
+    google_oauth_json = os.environ["GOOGLE_OAUTH_JSON"]
+elif os.path.isfile("InHouseTest.json"):
+    with open("InHouseTest.json", "r") as f:
+        google_oauth_json = f.read()
 
 # Ugh, why can't open work on the StringIO class
 f = NamedTemporaryFile(mode="w+", delete=False)
@@ -66,14 +68,15 @@ class LeagueCog(commands.Cog):
         self.creds = creds
         self.gclient = gclient
         self._init_sheet()
-
-        self.client = httpx.AsyncClient()
-    
-        # break is a keyword so we can't define it on class, interesting
-        self.broke = False
+        self.sheet_name = None
 
     def _init_sheet(self):
-        self.sheet = gclient.open("InHouseData").sheet1
+        if "GOOGLE_OAUTH_JSON" in os.environ:
+            self.sheet_name = "InHouseData"
+        elif os.path.isfile("InHouseTest.json"):
+            self.sheet_name = "InHouseDataTest"
+
+        self.sheet = gclient.open(self.sheet_name).sheet1
 
         # Lets cache on init
         self.cache = self.sheet.get_all_values()
@@ -144,49 +147,3 @@ class LeagueCog(commands.Cog):
             ]
         )
         await ctx.send(msg)
-
-    @commands.command(
-        name="break"
-    )  # remember, its keyworded so we can't define it as is
-    async def _break(self, ctx):
-        """ Generates a prodraft lobby and records blue/red team memebers. """
-
-        blue_channel = discord.utils.get(
-            ctx.guild.channels, name="Blue Team 1", type=discord.ChannelType.voice
-        )
-        red_channel = discord.utils.get(
-            ctx.guild.channels, name="Red Team 2", type=discord.ChannelType.voice
-        )
-
-        # We don't have to intialize these since they are only in scope if we
-        # invoke this command
-
-        self.blue_team = blue_channel.members
-        self.red_team = red_channel.members
-
-        # Lets do some fun custom team names :)
-
-        draft_lobby_req = await self.client.post(
-            "http://prodraft.leagueoflegends.com/draft",
-            json={
-                "team1Name": "Blue Side",
-                "team2Name": "Red Side",
-                "matchName": "Inhouse Lobby",
-            },
-        )
-
-        draft_lobby_resp = draft_lobby_req.json()
-
-        _id = draft_lobby_resp["id"]
-        _blue_auth, _red_auth = draft_lobby_resp["auth"]
-        blue_url = f"http://prodraft.leagueoflegends.com?draft={_id}&auth={_blue_auth}&locale=en_US"
-        red_url = f"http://prodraft.leagueoflegends.com?draft={_id}&auth={_red_auth}&locale=en_US"
-        spec_url = f"http://prodraft.leagueoflegends.com?draft={_id}&locale=en_US"
-
-        message = (
-            f"BLUE TEAM:\n{blue_url}\n\nRED TEAM:\n{red_url}\n\nSPEC:\n{spec_url}\n"
-        )
-
-        self.broke = True
-
-        await ctx.send(message)

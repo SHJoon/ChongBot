@@ -6,6 +6,7 @@ class MemeCog(commands.Cog):
         self.chongID = 172899191998251009
         self.trucID = 132709848864391170
         self.ksaperID = 131626920738684928
+        self.ethanID = 303289460970487811
     
     @commands.command(pass_context=True)
     async def fuckchong(self, ctx):
@@ -53,12 +54,14 @@ class MemeCog(commands.Cog):
 
     @commands.command()
     async def fuckme(self, ctx):
-        """ Chong and Truc use only """
+        """ Chong, Truc, and Ethan(Valley) use only """
         author = ctx.message.author
         if author.id == self.chongID:
             await ctx.invoke(self.fuckchong)
         elif author.id == self.trucID:
             await ctx.invoke(self.fucktruc)
+        elif author.id == self.ethanID:
+            await ctx.invoke(self.gdi)
         else:
             return
     
@@ -95,14 +98,13 @@ class MemeCog(commands.Cog):
     async def cool(self, ctx):
         """ See if you are cool or not! """
         author = ctx.message.author
-        # Chong's server ID
+
         if author.id == self.chongID:
             await ctx.send(f"You're grimey")
-        # Truc's server ID
         elif author.id == self.trucID:
             await ctx.send(f"You're a dad")
         elif author.id == self.ksaperID:
-            await ctx.send(f"You're chillin")
+            await ctx.send(f"You're 4chill4")
         else:
             await ctx.send(f"You're cool! {author.mention}")
 
@@ -142,6 +144,15 @@ class MemeCog(commands.Cog):
     async def flames(self, ctx):
         """ ConsTRUCtive flaming """
         await ctx.send("https://i.imgflip.com/38i4t9.jpg")
+    
+    @commands.command()
+    async def truggered(self, ctx):
+        """ Mad Truc Disease """
+        embed = discord.Embed()
+        embed.set_image(
+            url="https://cdn.discordapp.com/attachments/629458377193422849/657014560791724032/madtruc.gif"
+        )
+        await ctx.send(embed=embed)
 
     @commands.command(aliases=["uwu"])
     async def truwu(self, ctx):
@@ -161,4 +172,6 @@ class MemeCog(commands.Cog):
     @commands.command()
     async def wade(self, ctx):
         """ Self-loathing tank abuse """
-        await ctx.send(f"im wade, top lane blows dick and i dont think anyone can be good at league of legends except me")
+        await ctx.send(
+            f"im wade, top lane blows dick and i dont think anyone can be good at league of legends except me"
+        )
