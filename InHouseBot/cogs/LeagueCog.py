@@ -1,5 +1,6 @@
 import discord
 import os
+import httpx
 from functools import wraps
 from tempfile import NamedTemporaryFile
 
@@ -70,6 +71,9 @@ class LeagueCog(commands.Cog):
         self.gclient = gclient
         self._init_sheet()
         self.sheet_name = None
+        
+        self.client = httpx.AsyncClient()
+        self.broke = False
 
     def _init_sheet(self):
         if "GOOGLE_OAUTH_JSON" in os.environ:
