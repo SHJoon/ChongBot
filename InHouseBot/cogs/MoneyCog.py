@@ -21,6 +21,7 @@ google_oauth_json = None
 if "GOOGLE_OAUTH_JSON" in os.environ:
     google_oauth_json = os.environ["GOOGLE_OAUTH_JSON"]
 elif os.path.isfile("InHouseTest.json"):
+    print("Grabbed local json file for test spreadsheet")
     with open("InHouseTest.json", "r") as f:
         google_oauth_json = f.read()
 
@@ -112,10 +113,20 @@ class MoneyCog(commands.Cog):
 
         self.cache.append(userlist)
     
+    @commands.command(name = "$", aliases = ["money", "fund"])
+    async def cmd_money(self, ctx):
+        """ Check how much money you have! """
+        author = ctx.message.author
+        for _, row in enumerate(self.cache):
+            if row[SHEET_ID_IDX - 1] == author.id:
+                await ctx.send(f"{author.name} has {row[SHEET_MONEY_IDX - 1]} WillumpBucks.")
+                return
+        await ctx.send("You have not joined our currency database yet! Use `!join$` now!")
+    
     @is_approved()
     @commands.command(name="add$")
     @retry_authorize(gspread.exceptions.APIError)
-    async def cmd_add(self, ctx, user:discord.Member, money:int):
+    async def cmd_add(self, ctx, money:int, user:discord.Member):
         """ Add money to target member(ADMIN USE ONLY) """
         for idx, row in enumerate(self.cache):
             if row[SHEET_ID_IDX - 1] == str(user.id):
@@ -127,7 +138,23 @@ class MoneyCog(commands.Cog):
         
         await ctx.send(f"{user.name} is not part of our currency database yet!")
     
+    @is_approved()
+    @commands.command(name="remove$")
+    @retry_authorize(gspread.exceptions.APIError)
+    async def cmd_remove(self, ctx, money:int, user:discord.Member):
+        """ Remove money from target member(ADMIN USE ONLY) """
+        for idx, row in enumerate(self.cache):
+            if row[SHEET_ID_IDX - 1] == str(user.id):
+                current_money = int(row[SHEET_MONEY_IDX - 1])
+                new_money = current_money - money
+                self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, new_money)
+                row[SHEET_MONEY_IDX - 1] = new_money
+                return
+        
+        await ctx.send(f"{user.name} is not part of our currency database yet!")
+    
     @commands.command()
+    @retry_authorize(gspread.exceptions.APIError)
     async def give(self, ctx, money:int, member:discord.Member):
         """ Give some of your money to select person (!give amount person)"""
         author = ctx.message.author
@@ -142,19 +169,17 @@ class MoneyCog(commands.Cog):
                 self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, row[SHEET_MONEY_IDX -1])
     
     @commands.command()
+    @retry_authorize(gspread.exceptions.APIError)
+    async def bet(self, ctx, money:int, team):
+        if self.broke:
+            pass
+        else:
+            print("You need to finalize the team with !break to bet!")
+    
+    @commands.command()
     async def steal(self, ctx, member:discord.Member):
         """ Steal money from target person (!steal @person) """
         await ctx.send("You really thought you could steal money?")
-    
-    @commands.command(name = "$", aliases = ["money", "fund"])
-    async def cmd_money(self, ctx):
-        """ Check how much money you have! """
-        author = ctx.message.author
-        for _, row in enumerate(self.cache):
-            if row[SHEET_ID_IDX - 1] == author.id:
-                await ctx.send(f"{author.name} has {row[SHEET_MONEY_IDX - 1]} WillumpBucks.")
-                return
-        await ctx.send("You have not joined our currency database yet! Use `!join$` now!")
     
     @commands.command(name="break")
     async def _break(self, ctx):

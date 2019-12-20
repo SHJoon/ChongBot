@@ -7,7 +7,6 @@ from discord.ext import commands, tasks
 from cogs.WillumpCog import WillumpCog
 from cogs.QueueCog import QueueCog
 from cogs.MemeCog import MemeCog
-# from cogs.MoneyCog import MoneyCog
 
 # Change this to whatever prefix you'd like
 prefixes = ["!", "."]
@@ -201,13 +200,7 @@ bot.add_cog(WillumpCog(bot))
 bot.add_cog(QueueCog(bot))
 bot.add_cog(MemeCog(bot))
 
-if "GOOGLE_OAUTH_JSON" in os.environ:
-    from cogs.LeagueCog import LeagueCog
-    # from cogs.MoneyCog import MoneyCog
-    bot.add_cog(LeagueCog(bot))
-    # bot.add_cog(MoneyCog(bot))
-elif os.path.isfile("InHouseTest.json"):
-    print("Grabbed local json file for test spreadsheet")
+if ("GOOGLE_OAUTH_JSON" in os.environ) or (os.path.isfile("InHouseTest.json")):
     from cogs.LeagueCog import LeagueCog
     # from cogs.MoneyCog import MoneyCog
     bot.add_cog(LeagueCog(bot))
