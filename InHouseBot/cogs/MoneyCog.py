@@ -81,6 +81,7 @@ class MoneyCog(commands.Cog):
         self.gclient = gclient
         self._init_sheet()
         self.sheet_name = None
+        self.bet_list = {}
 
         self.client = httpx.AsyncClient()
     
@@ -170,19 +171,55 @@ class MoneyCog(commands.Cog):
     
     @commands.command()
     @retry_authorize(gspread.exceptions.APIError)
-    async def bet(self, ctx, money:int, team):
+    async def bet(self, ctx, money:int, team:str = ""):
+        """ Bet on the team you think will win! Can only be used after !break is used. (!bet amount team) """
         if self.broke:
+            if team == "":
+                await ctx.send("You need to choose a team to bet on! For example, `!bet 500 Blue`")
+                return
+            elif team.lower() == "red":
+                # Add the author to a list/dict for red team, with how much they bet, and deduct the bet amount.
+                pass
+            elif team.lower() == "blue":
+                # Add the author to a list/dict for blue team, with how much they bet, and deduct the bet amount.
+                pass
+            else:
+                await ctx.send("Team choices are either blue or red.")
+                return
+        else:
+            print("You need to finalize the team with `!break` to start betting!")
+    
+    @commands.command()
+    @retry_authorize(gspread.exceptions.APIError)
+    async def win(self, ctx, team:str):
+        """ Decide on who the winner is, and distribute the winnings accordingly! """
+        if team.lower() == "blue":
+            # Give the Blue team members their winnings.
+            # Grab the list/dict for blue team, calculate how much they won, and distribute accordingly.
+            self.broke = False
+            pass
+        elif team.lower() == "red":
+            # Give the Red team members their winnings.
+            # Grab the list/dict for red team, calculate how much they won, and distribute accordingly.
+            self.broke = False
             pass
         else:
-            print("You need to finalize the team with !break to bet!")
+            await ctx.send("The possible choices are either Blue or Red!")
+    
+    @commands.command()
+    @retry_authorize(gspread.exceptions.APIError)
+    async def reset(self, ctx):
+        """ Reset the bets and return all the money. """
+        # Grab the list of both Blue/Red team bets, and return the money.
+        pass
     
     @commands.command()
     async def steal(self, ctx, member:discord.Member):
         """ Steal money from target person (!steal @person) """
         await ctx.send("You really thought you could steal money?")
     
-    @commands.command(name="break")
-    async def _break(self, ctx):
+    @commands.command(name="breaking")
+    async def temp_break(self, ctx):
         """ Generates a prodraft lobby and records blue/red team memebers. """
 
         blue_channel = discord.utils.get(
