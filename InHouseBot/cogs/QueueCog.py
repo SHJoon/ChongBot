@@ -70,13 +70,10 @@ class QueueCog(commands.Cog):
         """ Remove yourself from the queue """
         author = ctx.message.author
         name = author.nick if author.nick else author.name
-        message = ""
         if author.id in self.queue:
             self.queue.remove(author.id)
             await ctx.send(f"{name} has been removed from the queue.")
             await ctx.invoke(self._queue)
-            if message != "":
-                await ctx.send(message)
         else:
             await ctx.send("You were not in the queue.")
     
@@ -106,6 +103,7 @@ class QueueCog(commands.Cog):
         if len(self.queue) == 0:
             message += f"Queue is empty."
         embed = discord.Embed(description=message, colour=discord.Colour.green())
+        embed.set_footer(text="Join the queue with !add / Leave the queue with !leave")
         self.queuemsg = await ctx.send(embed=embed)
         await ctx.message.delete()
     
@@ -164,4 +162,4 @@ class QueueCog(commands.Cog):
     async def leggo(self, ctx, *, _time = "None set yet"):
         """ Tries to get a game ready """
         self.qtime = _time
-        _message = await ctx.send("Time for some 10 mens! Join the lobby @here")
+        await ctx.send("Time for some 10 mens! Join the lobby @here")

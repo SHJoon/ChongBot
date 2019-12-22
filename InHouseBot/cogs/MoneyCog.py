@@ -104,7 +104,7 @@ class MoneyCog(commands.Cog):
     async def cmd_join(self, ctx):
         """ Join our currency database! """
         user = ctx.message.author
-        for _, row in enumerate(self.cache):
+        for row in self.cache:
             if row[SHEET_ID_IDX - 1] == str(user.id):
                 await ctx.send("You have already joined our currency database!")
                 return
@@ -118,7 +118,7 @@ class MoneyCog(commands.Cog):
     async def cmd_money(self, ctx):
         """ Check how much money you have! """
         author = ctx.message.author
-        for _, row in enumerate(self.cache):
+        for row in self.cache:
             if row[SHEET_ID_IDX - 1] == author.id:
                 await ctx.send(f"{author.name} has {row[SHEET_MONEY_IDX - 1]} WillumpBucks.")
                 return
