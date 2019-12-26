@@ -73,7 +73,10 @@ class LeagueCog(commands.Cog):
         self.sheet_name = None
         
         self.client = httpx.AsyncClient()
+        
         self.broke = False
+        self.blue_team_name = "Blue Side"
+        self.red_team_name = "Red Side"
 
     def _init_sheet(self):
         if "GOOGLE_OAUTH_JSON" in os.environ:
@@ -175,8 +178,8 @@ class LeagueCog(commands.Cog):
         draft_lobby_req = await self.client.post(
             "http://prodraft.leagueoflegends.com/draft",
             json={
-                "team1Name": "Blue Side",
-                "team2Name": "Red Side",
+                "team1Name": f"{self.blue_team_name}",
+                "team2Name": f"{self.red_team_name}",
                 "matchName": "Inhouse Lobby",
             },
         )
