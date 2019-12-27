@@ -84,7 +84,7 @@ class LeagueCog(commands.Cog):
         elif os.path.isfile("InHouseTest.json"):
             self.sheet_name = "InHouseDataTest"
 
-        self.sheet = gclient.open(self.sheet_name).sheet1
+        self.sheet = gclient.open(self.sheet_name).worksheet("Stream_URL")
 
         # Lets cache on init
         self.cache = self.sheet.get_all_values()

@@ -63,7 +63,6 @@ class QueueCog(commands.Cog):
         else:
             await ctx.send("Not enough people in the lobby...")
         await ctx.invoke(self._queue)
-        return
     
     @commands.command(aliases=["leave", "drop"])
     async def remove(self, ctx):

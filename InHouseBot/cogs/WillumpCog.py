@@ -49,7 +49,8 @@ class WillumpCog(commands.Cog):
 
         if ranflip == "Heads":
             embed.set_image(
-                url="https://i.imgur.com/9HC22JW.png"
+                url="https://cdn.discordapp.com/attachments/602376454491078659/659905323217322021/image0.jpg"
+                # "https://i.imgur.com/9HC22JW.png"
                 # "https://i.imgur.com/lDlR54a.gif"
                 )
             embed.colour = discord.Colour.orange()
