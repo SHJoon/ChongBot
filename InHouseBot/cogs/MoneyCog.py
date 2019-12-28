@@ -83,14 +83,14 @@ class MoneyCog(commands.Cog):
         self._init_sheet()
         self.sheet_name = None
 
-        self.blue_team_bet = {}
-        self.red_team_bet = {}
-
         # Variables for !break command
         self.client = httpx.AsyncClient()
         self.broke = False
         self.blue_team_name = "Blue Side"
         self.red_team_name = "Red Side"
+
+        self.blue_team_bet = {}
+        self.red_team_bet = {}
 
     def _init_sheet(self):
         if "GOOGLE_OAUTH_JSON" in os.environ:
@@ -138,29 +138,15 @@ class MoneyCog(commands.Cog):
             return False
         else:
             return True
-    
-    @retry_authorize(gspread.exceptions.APIError)
-    async def update_whole_sheet(self):
-        """ Update the whole spreadsheet. Used to minimize API calls """
-        cache_len = len(self.cache)
-        sheet_range_A1 = f'A1:C{cache_len}'
-        cell_list = self.sheet.range(sheet_range_A1)
-        index = 0
-        for row in self.cache:
-            for val in row:
-                cell_list[index].value = val
-                index += 1
-        self.sheet.update_cells(cell_list)
-
 
     @is_approved()
     @commands.command(name="add$")
     @retry_authorize(gspread.exceptions.APIError)
-    async def cmd_add(self, ctx, money:int, user:discord.Member):
+    async def cmd_add(self, ctx, member:discord.Member, money:int):
         """ Add money to target member(ADMIN USE ONLY) """
         if await self.is_positive_money(ctx, money):
             for idx, row in enumerate(self.cache):
-                if row[SHEET_ID_IDX - 1] == str(user.id):
+                if row[SHEET_ID_IDX - 1] == str(member.id):
                     current_money = int(row[SHEET_MONEY_IDX - 1])
                     new_money = current_money + money
                     self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, new_money)
@@ -169,20 +155,15 @@ class MoneyCog(commands.Cog):
     @is_approved()
     @commands.command(name="remove$")
     @retry_authorize(gspread.exceptions.APIError)
-    async def cmd_remove(self, ctx, money:int, user:discord.Member):
+    async def cmd_remove(self, ctx, member:discord.Member, money:int):
         """ Remove money from target member(ADMIN USE ONLY) """
-        if await self.is_positive_money(ctx, money):
-            for idx, row in enumerate(self.cache):
-                if row[SHEET_ID_IDX - 1] == str(user.id):
-                    current_money = int(row[SHEET_MONEY_IDX - 1])
-                    new_money = current_money - money
-                    self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, new_money)
-                    row[SHEET_MONEY_IDX - 1] = new_money
+        money = -money
+        await ctx.invoke(self.cmd_add(ctx, member, money))
     
     @commands.command()
     @retry_authorize(gspread.exceptions.APIError)
-    async def give(self, ctx, money:int, member:discord.Member):
-        """ Give some of your money to select person (!give amount person)"""
+    async def give(self, ctx, member:discord.Member, money:int):
+        """ Give some of your money to select person (!give @person amount)"""
         if await self.is_positive_money(ctx, money):
             author = ctx.message.author
             for idx, row in enumerate(self.cache):
@@ -196,8 +177,8 @@ class MoneyCog(commands.Cog):
                     self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, row[SHEET_MONEY_IDX - 1])
     
     @commands.command()
-    async def bet(self, ctx, money:int, team:str = ""):
-        """ Bet on the team you think will win! Can only be used after !break is used. (!bet amount team) """
+    async def bet(self, ctx, team:str = "", money:int = 0):
+        """ Bet on the team you think will win! Can only be used after !break is used. (!bet team amount) """
         # !break will collect name/id of the players from each team via voice channels
         if self.broke:
             # Betting amount has to be greater than 0.
@@ -265,44 +246,81 @@ class MoneyCog(commands.Cog):
         
         await ctx.send(message)
     
+    async def update_whole_sheet(self):
+        """ Update the whole spreadsheet. Used to minimize API calls """
+        cache_len = len(self.cache)
+        sheet_range_A1 = f'A1:C{cache_len}'
+        cell_list = self.sheet.range(sheet_range_A1)
+        index = 0
+        for row in self.cache:
+            for val in row:
+                cell_list[index].value = val
+                index += 1
+        self.sheet.update_cells(cell_list)
+
     @is_approved()
     @commands.command(aliases=["payout"])
     @retry_authorize(gspread.exceptions.APIError)
-    async def win(self, ctx, team):
+    async def win(self, ctx, team = ""):
         """ Decide on who the winner is, and distribute the winnings accordingly! """
         if team.lower() == "blue":
             # Give the Blue team members their winnings.
+            for row in self.cache:
+                for member in self.blue_team:
+                    if str(member.id) == row[SHEET_ID_IDX - 1]:
+                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + 100
             # Grab the list/dict for blue team, calculate how much they won, and distribute accordingly.
             for member_id in self.blue_team_bet:
                 self.blue_team_bet[member_id] *= self.blue_multiplier
                 for row in self.cache:
                     if row[SHEET_ID_IDX - 1] == str(member_id):
                         row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + int(self.blue_team_bet[member_id])
-            self.broke = False
-            self.blue_team_bet.clear()
-            self.red_team_bet.clear()
-            await self.update_whole_sheet()
         elif team.lower() == "red":
             # Give the Red team members their winnings.
+            for row in self.cache:
+                for member in self.red_team:
+                    if str(member.id) == row[SHEET_ID_IDX - 1]:
+                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + 100
             # Grab the list/dict for red team, calculate how much they won, and distribute accordingly.
             for member_id in self.red_team_bet:
                 self.red_team_bet[member_id] *= self.red_multiplier
                 for row in self.cache:
                     if row[SHEET_ID_IDX - 1] == str(member_id):
                         row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + int(self.red_team_bet[member_id])
-            self.broke = False
-            self.blue_team_bet.clear()
-            self.red_team_bet.clear()
-            await self.update_whole_sheet()
         else:
             await ctx.send("The possible choices are either Blue or Red! For example: `!win Blue`")
+            return
+
+        self.broke = False
+        self.blue_team_bet.clear()
+        self.red_team_bet.clear()
+        await self.update_whole_sheet()
     
     @commands.command()
-    @retry_authorize(gspread.exceptions.APIError)
     async def reset(self, ctx):
         """ Reset the bets and return all the money. """
         # Grab the list of both Blue/Red team bets, and return the money.
-        pass
+        if self.broke:
+            # Return the money to participants
+            for row in self.cache:
+                for member in self.blue_team:
+                    if str(member.id) == row[SHEET_ID_IDX - 1]:
+                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + 50
+                for member in self.red_team:
+                    if str(member.id) == row[SHEET_ID_IDX - 1]:
+                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + 50
+            # Return the betting money for blue team
+            for member_id, bet in self.blue_team_bet.items():
+                for row in self.cache:
+                    if row[SHEET_ID_IDX - 1] == str(member_id):
+                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + bet
+            # Return the betting money for red team
+            for member_id, bet in self.red_team_bet.items():
+                for row in self.cache:
+                    if row[SHEET_ID_IDX - 1] == str(member_id):
+                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + bet
+        else:
+            await ctx.send("Can only be used after !break is called!")
     
     @commands.command()
     async def steal(self, ctx, member:discord.Member):
@@ -358,19 +376,26 @@ class MoneyCog(commands.Cog):
 
         self.broke = True
 
+        # Deduct entry fee from every players
+        for row in self.cache:
+            for member in self.blue_team:
+                if str(member.id) == row[SHEET_ID_IDX - 1]:
+                    row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) - 50
+            for member in self.red_team:
+                if str(member.id) == row[SHEET_ID_IDX - 1]:
+                    row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) - 50
+
         # Organize score of each teams
         blue_team_scores = []
         red_team_scores = []
 
-        for person in self.cache2:
+        for row in self.cache2:
             for member in self.blue_team:
-                if str(member.id) == person[SHEET_ID_IDX - 1]:
-                    blue_team_scores.append(float(person[SHEET_SCORE_IDX - 1]))
-        
-        for person in self.cache2:
+                if str(member.id) == row[SHEET_ID_IDX - 1]:
+                    blue_team_scores.append(float(row[SHEET_SCORE_IDX - 1]))
             for member in self.red_team:
-                if str(member.id) == person[SHEET_ID_IDX - 1]:
-                    red_team_scores.append(float(person[SHEET_SCORE_IDX - 1]))
+                if str(member.id) == row[SHEET_ID_IDX - 1]:
+                    red_team_scores.append(float(row[SHEET_SCORE_IDX - 1]))
         
         blue_scores = 0
         red_scores = 0
@@ -387,8 +412,8 @@ class MoneyCog(commands.Cog):
         self.red_multiplier = red_scores/(len(red_team_scores))
 
 
-    @commands.command()
-    async def test(self, ctx):
+    @commands.command(hidden=True)
+    async def datatest(self, ctx):
         print(self.broke)
         await ctx.send(f"Blue team bets: {self.blue_team_bet}")
         await ctx.send(f"Red team bets: {self.red_team_bet}")

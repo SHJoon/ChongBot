@@ -129,6 +129,14 @@ class MemeCog(commands.Cog):
             f"https://i.imgflip.com/384zeu.jpg"
         )
 
+    @commands.command(aliases=["boobsareass"])
+    async def evelyn(self, ctx):
+        """ hmm... """
+        embed = discord.Embed()
+        embed.set_image(url="https://cdn.discordapp.com/attachments/629458377193422849/660287429680562176/unknown.png")
+        embed.colour = discord.Colour.purple()
+        await ctx.send(embed=embed)
+
     @commands.command(pass_context=True)
     async def ksaper(self, ctx):
         """ Who the hell """
