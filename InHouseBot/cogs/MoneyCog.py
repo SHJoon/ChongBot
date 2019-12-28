@@ -105,13 +105,6 @@ class MoneyCog(commands.Cog):
         self.cache = self.sheet.get_all_values()
         self.cache2 = self.sheet2.get_all_values()
     
-    async def check_positive_money(self, ctx, money):
-        if money < 0:
-            await ctx.send("The amount of money has to be positive!")
-            return False
-        else:
-            return True
-    
     @commands.command(name="join$")
     @retry_authorize(gspread.exceptions.APIError)
     async def cmd_join(self, ctx):
@@ -138,12 +131,34 @@ class MoneyCog(commands.Cog):
 
         await ctx.send("You have not joined our currency database yet! Use `!join$` now!")
     
+    async def is_positive_money(self, ctx, money):
+        """ Lazy function to check if amount is Non-negative """
+        if money < 0:
+            await ctx.send("The amount of money has to be positive!")
+            return False
+        else:
+            return True
+    
+    @retry_authorize(gspread.exceptions.APIError)
+    async def update_whole_sheet(self):
+        """ Update the whole spreadsheet. Used to minimize API calls """
+        cache_len = len(self.cache)
+        sheet_range_A1 = f'A1:C{cache_len}'
+        cell_list = self.sheet.range(sheet_range_A1)
+        index = 0
+        for row in self.cache:
+            for val in row:
+                cell_list[index].value = val
+                index += 1
+        self.sheet.update_cells(cell_list)
+
+
     @is_approved()
     @commands.command(name="add$")
     @retry_authorize(gspread.exceptions.APIError)
     async def cmd_add(self, ctx, money:int, user:discord.Member):
         """ Add money to target member(ADMIN USE ONLY) """
-        if await self.check_positive_money(ctx, money):
+        if await self.is_positive_money(ctx, money):
             for idx, row in enumerate(self.cache):
                 if row[SHEET_ID_IDX - 1] == str(user.id):
                     current_money = int(row[SHEET_MONEY_IDX - 1])
@@ -156,7 +171,7 @@ class MoneyCog(commands.Cog):
     @retry_authorize(gspread.exceptions.APIError)
     async def cmd_remove(self, ctx, money:int, user:discord.Member):
         """ Remove money from target member(ADMIN USE ONLY) """
-        if await self.check_positive_money(ctx, money):
+        if await self.is_positive_money(ctx, money):
             for idx, row in enumerate(self.cache):
                 if row[SHEET_ID_IDX - 1] == str(user.id):
                     current_money = int(row[SHEET_MONEY_IDX - 1])
@@ -168,7 +183,7 @@ class MoneyCog(commands.Cog):
     @retry_authorize(gspread.exceptions.APIError)
     async def give(self, ctx, money:int, member:discord.Member):
         """ Give some of your money to select person (!give amount person)"""
-        if await self.check_positive_money(ctx, money):
+        if await self.is_positive_money(ctx, money):
             author = ctx.message.author
             for idx, row in enumerate(self.cache):
                 # Deduct amount from command invoker
@@ -181,13 +196,12 @@ class MoneyCog(commands.Cog):
                     self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, row[SHEET_MONEY_IDX - 1])
     
     @commands.command()
-    @retry_authorize(gspread.exceptions.APIError)
     async def bet(self, ctx, money:int, team:str = ""):
         """ Bet on the team you think will win! Can only be used after !break is used. (!bet amount team) """
         # !break will collect name/id of the players from each team via voice channels
         if self.broke:
             # Betting amount has to be greater than 0.
-            if await self.check_positive_money(ctx, money):
+            if await self.is_positive_money(ctx, money):
                 author = ctx.message.author
                 # Give error if betting amount is more than how much you own.
                 for row in self.cache:
@@ -197,31 +211,37 @@ class MoneyCog(commands.Cog):
                             return
 
                 if team.lower() == "blue":
+                    # For replacing existing bet, return the money.
+                    for member_id, bet in self.blue_team_bet.items():
+                        if author.id == member_id:
+                            for row in self.cache:
+                                if row[SHEET_ID_IDX - 1] == str(author.id):
+                                    row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + bet
+
                      # Add the author to a list/dict for blue team, with how much they bet.
                     self.blue_team_bet[author.id] = money
-                    for idx, row in enumerate(self.cache):
+                    for row in self.cache:
                         if row[SHEET_ID_IDX - 1] == str(author.id):
                             row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) - money
-                            self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, row[SHEET_MONEY_IDX - 1])
+
                 elif team.lower() == "red":
+                    # For replacing existing bet, return the money first, then put in the new bet.
+                    for member_id, bet in self.red_team_bet.items():
+                        if author.id == member_id:
+                            for row in self.cache:
+                                if row[SHEET_ID_IDX - 1] == str(author.id):
+                                    row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + bet
+
                     # Add the author to a list/dict for red team, with how much they bet.
                     self.red_team_bet[author.id] = money
-                    for idx, row in enumerate(self.cache):
+                    for row in self.cache:
                         if row[SHEET_ID_IDX - 1] == str(author.id):
                             row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) - money
-                            self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, row[SHEET_MONEY_IDX - 1])
                 elif team == "":
                     await ctx.send("You need to choose a team to bet on! For example, `!bet 500 Blue`")
                     return
                 else:
                     await ctx.send("Team choices are either Blue or Red.")
-                    return
-
-                # Deduct the bet amount
-                for idx, row in enumerate(self.cache):
-                        if row[SHEET_ID_IDX - 1] == str(author.id):
-                            row[SHEET_MONEY_IDX - 1] -= money
-                            self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, row[SHEET_MONEY_IDX - 1])
         else:
             await ctx.send("You need to finalize the team with `!break` to start betting!")
     
@@ -238,7 +258,7 @@ class MoneyCog(commands.Cog):
             message += f"\n{name}: {bet_amt} NunuBucks"
         
         message += "\n**Red Team Bets**"
-        for member_id, bet_amt in self.blue_team_bet.items():
+        for member_id, bet_amt in self.red_team_bet.items():
             member = discord.utils.get(server.members, id=member_id)
             name = member.nick if member.nick else member.name
             message += f"\n{name}: {bet_amt} NunuBucks"
@@ -253,13 +273,27 @@ class MoneyCog(commands.Cog):
         if team.lower() == "blue":
             # Give the Blue team members their winnings.
             # Grab the list/dict for blue team, calculate how much they won, and distribute accordingly.
+            for member_id in self.blue_team_bet:
+                self.blue_team_bet[member_id] *= self.blue_multiplier
+                for row in self.cache:
+                    if row[SHEET_ID_IDX - 1] == str(member_id):
+                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + int(self.blue_team_bet[member_id])
             self.broke = False
-            pass
+            self.blue_team_bet.clear()
+            self.red_team_bet.clear()
+            await self.update_whole_sheet()
         elif team.lower() == "red":
             # Give the Red team members their winnings.
             # Grab the list/dict for red team, calculate how much they won, and distribute accordingly.
+            for member_id in self.red_team_bet:
+                self.red_team_bet[member_id] *= self.red_multiplier
+                for row in self.cache:
+                    if row[SHEET_ID_IDX - 1] == str(member_id):
+                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + int(self.red_team_bet[member_id])
             self.broke = False
-            pass
+            self.blue_team_bet.clear()
+            self.red_team_bet.clear()
+            await self.update_whole_sheet()
         else:
             await ctx.send("The possible choices are either Blue or Red! For example: `!win Blue`")
     
@@ -321,20 +355,22 @@ class MoneyCog(commands.Cog):
         )
 
         await ctx.send(message)
+
         self.broke = True
 
-        self.blue_team_scores = []
-        self.red_team_scores = []
+        # Organize score of each teams
+        blue_team_scores = []
+        red_team_scores = []
 
         for person in self.cache2:
             for member in self.blue_team:
                 if str(member.id) == person[SHEET_ID_IDX - 1]:
-                    self.blue_team_scores.append(float(person[SHEET_SCORE_IDX - 1]))
+                    blue_team_scores.append(float(person[SHEET_SCORE_IDX - 1]))
         
         for person in self.cache2:
             for member in self.red_team:
                 if str(member.id) == person[SHEET_ID_IDX - 1]:
-                    self.red_team_scores.append(float(person[SHEET_SCORE_IDX - 1]))
+                    red_team_scores.append(float(person[SHEET_SCORE_IDX - 1]))
         
         blue_scores = 0
         red_scores = 0
@@ -342,13 +378,13 @@ class MoneyCog(commands.Cog):
         self.blue_multiplier = 0
         self.red_multiplier = 0
 
-        for score in self.blue_team_scores:
+        for score in blue_team_scores:
             blue_scores += score
-        for score in self.red_team_scores:
+        for score in red_team_scores:
             red_scores += score
         
-        self.blue_multiplier = blue_scores/(len(self.blue_team_scores))
-        self.red_multiplier = red_scores/(len(self.red_team_scores))
+        self.blue_multiplier = blue_scores/(len(blue_team_scores))
+        self.red_multiplier = red_scores/(len(red_team_scores))
 
 
     @commands.command()
