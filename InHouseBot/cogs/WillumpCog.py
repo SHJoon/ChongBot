@@ -7,13 +7,11 @@ from discord.ext import commands
 # Figuring out how the !help command gets automatically registered and invoked
 # is actually a good excercise in reading source code Howard
 
-
 class AliasHelpCommand(commands.DefaultHelpCommand):
     def __init__(self):
         super().__init__(
             command_attrs={"name": "help", "aliases": ["commands", "command"]}
         )
-
 
 class WillumpCog(commands.Cog):
     def __init__(self, bot):
@@ -123,7 +121,7 @@ class WillumpCog(commands.Cog):
         typo = self.keyboard_array[new_row][new_col]
         return typo.upper() if holdShift else typo
 
-    @commands.command(pass_context=True)
+    @commands.command(hidden=True)
     async def typo(self, ctx, chance_replace: int, chance_add: int):
         """ Modify settings for lulcaptains typo """
         if not (0 <= chance_replace <= 100 and 0 <= chance_add <= 100):

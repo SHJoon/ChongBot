@@ -52,7 +52,7 @@ class MemeCog(commands.Cog):
         await msg.add_reaction("\U0001F1F3")
         await msg.add_reaction("\U0001F926")
 
-    @commands.command()
+    @commands.command(hidden=True)
     async def fuckme(self, ctx):
         """ Chong, Truc, and Ethan(Valley) use only """
         author = ctx.message.author
@@ -65,12 +65,12 @@ class MemeCog(commands.Cog):
         else:
             return
     
-    @commands.command(pass_context=True)
+    @commands.command(hidden=True)
     async def ass(self, ctx):
         """ It is the truth """
         await ctx.send(f"CHONG IS AN ASS EATER")
 
-    @commands.command(pass_context=True)
+    @commands.command(hidden=True)
     async def grime(self, ctx):
         """ Important slice of in-house history... """
         await ctx.send(
@@ -84,17 +84,17 @@ class MemeCog(commands.Cog):
             f"https://media.discordapp.net/attachments/569646728224178184/598615204288397501/unknown.png?width=1250&height=676"
         )
 
-    @commands.command(pass_context=True)
+    @commands.command(hidden=True)
     async def boys(self, ctx):
         """ The boys are back in town """
         await ctx.send(f"https://i.imgflip.com/360ktl.jpg")
 
-    @commands.command(pass_contect=True)
+    @commands.command(hidden=True)
     async def boys2(self, ctx):
         """ The boys are back in town again """
         await ctx.send("https://i.imgflip.com/36j064.jpg")
 
-    @commands.command(pass_context=True)
+    @commands.command(hidden=True)
     async def cool(self, ctx):
         """ See if you are cool or not! """
         author = ctx.message.author
@@ -108,36 +108,36 @@ class MemeCog(commands.Cog):
         else:
             await ctx.send(f"You're cool! {author.mention}")
 
-    @commands.command(pass_context=True)
+    @commands.command(hidden=True)
     async def ape(self, ctx):
         """ Current state of inhouse drafts """
         await ctx.send(
             "https://media.discordapp.net/attachments/569646728224178184/611036013715783710/In-House_meme.png?width=902&height=866"
         )
     
-    @commands.command()
+    @commands.command(hidden=True)
     async def anees(self, ctx):
         """ FREE PALASTINE """
         await ctx.send(
             f"https://cdn.discordapp.com/attachments/629458377193422849/651856430365802532/image0.jpg"
         )
         
-    @commands.command()
+    @commands.command(hidden=True)
     async def danny(self, ctx):
         """ KING """
         await ctx.send(
             f"https://i.imgflip.com/384zeu.jpg"
         )
 
-    @commands.command(aliases=["boobsareass"])
-    async def evelyn(self, ctx):
+    @commands.command(aliases=["boobsareass", "evelyn"])
+    async def evelynn(self, ctx):
         """ hmm... """
         embed = discord.Embed()
         embed.set_image(url="https://cdn.discordapp.com/attachments/629458377193422849/660287429680562176/unknown.png")
         embed.colour = discord.Colour.purple()
         await ctx.send(embed=embed)
 
-    @commands.command(pass_context=True)
+    @commands.command(hidden=True)
     async def ksaper(self, ctx):
         """ Who the hell """
         await ctx.send(
@@ -148,7 +148,7 @@ class MemeCog(commands.Cog):
         embed.colour = discord.Colour.purple()
         await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.command(hidden=True)
     async def flames(self, ctx):
         """ ConsTRUCtive flaming """
         await ctx.send("https://i.imgflip.com/38i4t9.jpg")
@@ -177,7 +177,7 @@ class MemeCog(commands.Cog):
         """ Meme KING """
         await ctx.send(f"https://www.youtube.com/channel/UCLlFPxjfcwQAT9XWOLpi0KQ")
     
-    @commands.command()
+    @commands.command(hidden=True)
     async def wade(self, ctx):
         """ Self-loathing tank abuse """
         await ctx.send(

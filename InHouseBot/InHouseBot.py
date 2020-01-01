@@ -13,7 +13,7 @@ prefixes = ["!", "."]
 # Instantiate our bot
 bot = commands.Bot(command_prefix=prefixes,
                     case_insensitive=True,
-                    description="Ask The_Fire_Chief/perks for any questions!")
+                    )
 
 @tasks.loop(seconds=30)
 async def change_status():
@@ -205,6 +205,7 @@ if ("GOOGLE_OAUTH_JSON" in os.environ) or (os.path.isfile("InHouseTest.json")):
     bot.add_cog(LeagueCog(bot))
     # from cogs.MoneyCog import MoneyCog
     # bot.add_cog(MoneyCog(bot))
+    pass
 else:
     print("No relevant file found. LeagueCog/MoneyCog is disabled.")
 

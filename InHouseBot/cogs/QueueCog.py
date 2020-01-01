@@ -112,7 +112,7 @@ class QueueCog(commands.Cog):
         self.qtime = _time
         await ctx.invoke(self._queue)
 
-    @commands.command(pass_context=True)
+    @commands.command(hidden=True)
     async def position(self, ctx):
         """ Check your position in the queue """
         author = ctx.message.author
@@ -139,7 +139,7 @@ class QueueCog(commands.Cog):
             await ctx.send("No one left in  the queue :(")
 
     @is_approved()
-    @commands.command(pass_context=True)
+    @commands.command(hidden=True)
     async def clear(self, ctx):
         """ Clears the queue (ADMIN ONLY) """
         self.queue = []
@@ -147,7 +147,7 @@ class QueueCog(commands.Cog):
         await ctx.send("Queue has been cleared")
     
     @is_approved()
-    @commands.command(pass_context=True)
+    @commands.command(hidden=True)
     async def toggle(self, ctx):
         """ Toggles the queue (ADMIN ONLY) """
         self.qtoggle = not self.qtoggle
