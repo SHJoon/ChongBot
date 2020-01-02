@@ -203,9 +203,8 @@ bot.add_cog(MemeCog(bot))
 if ("GOOGLE_OAUTH_JSON" in os.environ) or (os.path.isfile("InHouseTest.json")):
     from cogs.LeagueCog import LeagueCog
     bot.add_cog(LeagueCog(bot))
-    # from cogs.MoneyCog import MoneyCog
-    # bot.add_cog(MoneyCog(bot))
-    pass
+    from cogs.MoneyCog import MoneyCog
+    bot.add_cog(MoneyCog(bot))
 else:
     print("No relevant file found. LeagueCog/MoneyCog is disabled.")
 

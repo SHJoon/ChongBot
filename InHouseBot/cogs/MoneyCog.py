@@ -15,7 +15,6 @@ SHEET_NAME_IDX = 1
 SHEET_ID_IDX = 2
 SHEET_MONEY_IDX = 3
 SHEET_MMR_IDX = 4
-SHEET_SCORE_IDX = 3
 
 creds = None
 gclient = None
@@ -104,23 +103,9 @@ class MoneyCog(commands.Cog):
             self.sheet_name = "InHouseDataTest"
             
         self.sheet = gclient.open(self.sheet_name).worksheet("Player_Profile")
-        self.sheet2 = gclient.open(self.sheet_name).worksheet("Player_Multiplier")
 
         # Lets cache on init
         self.cache = self.sheet.get_all_values()
-        self.cache2 = self.sheet2.get_all_values()
-
-    @commands.command(hidden=True)
-    async def datatest(self, ctx):
-        print(self.broke)
-        await ctx.send(f"Blue team bets: {self.blue_team_bet}")
-        await ctx.send(f"Red team bets: {self.red_team_bet}")
-        print(self.blue_team)
-        print(self.red_team)
-        #print(self.blue_multiplier)
-        await ctx.send(f"Blue team multiplier: {self.blue_multiplier}")
-        #print(self.red_multiplier)
-        await ctx.send(f"Red team multiplier: {self.red_multiplier}")
     
     @commands.command(name="join$")
     @retry_authorize(gspread.exceptions.APIError)
@@ -132,19 +117,20 @@ class MoneyCog(commands.Cog):
             user = member.name
             userid = member.id
         else:
+            author = ctx.message.author
+            user = author.name
+            userid = author.id
             for row in self.cache:
-                if row[SHEET_ID_IDX - 1] == str(user.id):
+                if row[SHEET_ID_IDX - 1] == str(userid):
                     await ctx.send("You have already joined our currency database!")
                     return
-            user = ctx.message.author
-            userid = user.id
         
         userlist = [user, str(userid), "1000", "1400"]
 
         self.sheet.append_row(userlist)
         self.cache.append(userlist)
     
-    @commands.command(name = "$", aliases = ["money", "fund", "funds"])
+    @commands.command(name = "$", aliases = ["money", "fund", "funds", "cash"])
     async def cmd_money(self, ctx):
         """ Check how much money you have! """
         author = ctx.message.author
@@ -274,8 +260,8 @@ class MoneyCog(commands.Cog):
         server = ctx.guild
         if self.bets_msg is not None:
             await self.bets_msg.delete()
-        message = f"**Blue Team multiplier:** {self.blue_multiplier}\
-        \n**Red Team multiplier:** {self.red_multiplier}\
+        message = f"**Blue Team multiplier:** {1 + self.blue_multiplier}\
+        \n**Red Team multiplier:** {1 + self.red_multiplier}\
         \n**Blue Team Bets**"
         for member_id, bet_amt in self.blue_team_bet.items():
             member = discord.utils.get(server.members, id=member_id)
@@ -288,7 +274,7 @@ class MoneyCog(commands.Cog):
             name = member.nick if member.nick else member.name
             message += f"\n{name}: {bet_amt} NunuBucks"
         
-        embed = discord.Embed(description=message)
+        embed = discord.Embed(description=message, colour = discord.Colour.green())
         self.bets_msg = await ctx.send(embed=embed)
         await ctx.message.delete()
     
@@ -298,12 +284,10 @@ class MoneyCog(commands.Cog):
         sheet_range_A1 = f'A1:D{cache_len}'
         cell_list = self.sheet.range(sheet_range_A1)
         index = 0
-        print(cell_list)
         for row in self.cache:
             for val in row:
                 cell_list[index].value = val
                 index += 1
-                print(index)
         self.sheet.update_cells(cell_list)
 
     @is_approved()
@@ -313,13 +297,22 @@ class MoneyCog(commands.Cog):
         """ Decide on who the winner is, and payout accordingly! """
         if team.lower() == "blue":
             # Give the Blue team members their winnings.
+            # Additionally, calculate the new MMR of each players
             for row in self.cache:
                 for member in self.blue_team:
                     if str(member.id) == row[SHEET_ID_IDX - 1]:
                         row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + 200
+                        old_mmr = int(row[SHEET_MMR_IDX - 1])
+                        new_mmr = old_mmr + 32 * (1 - self.blue_team_win)
+                        row[SHEET_MMR_IDX - 1] = new_mmr
+                for member in self.red_team:
+                    if str(member.id) == row[SHEET_ID_IDX - 1]:
+                        old_mmr = int(row[SHEET_MMR_IDX - 1])
+                        new_mmr = old_mmr + 32 * (0 - (1 - self.blue_team_win))
+                        row[SHEET_MMR_IDX - 1] = new_mmr
             # Grab the list/dict for blue team, calculate how much they won, and distribute accordingly.
             for member_id in self.blue_team_bet:
-                self.blue_team_bet[member_id] *= self.blue_multiplier
+                self.blue_team_bet[member_id] *= (1 + self.blue_multiplier)
                 for row in self.cache:
                     if row[SHEET_ID_IDX - 1] == str(member_id):
                         row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + int(self.blue_team_bet[member_id])
@@ -329,16 +322,23 @@ class MoneyCog(commands.Cog):
                 for member in self.red_team:
                     if str(member.id) == row[SHEET_ID_IDX - 1]:
                         row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + 200
+                        old_mmr = int(row[SHEET_MMR_IDX - 1])
+                        new_mmr = old_mmr + 32 * (1 - (1 - self.blue_team_win))
+                        row[SHEET_MMR_IDX - 1] = new_mmr
+                for member in self.blue_team:
+                    if str(member.id) == row[SHEET_ID_IDX - 1]:
+                        old_mmr = int(row[SHEET_MMR_IDX - 1])
+                        new_mmr = old_mmr + 32 * (0 - self.blue_team_win)
+                        row[SHEET_MMR_IDX - 1] = new_mmr
             # Grab the list/dict for red team, calculate how much they won, and distribute accordingly.
             for member_id in self.red_team_bet:
-                self.red_team_bet[member_id] *= self.red_multiplier
+                self.red_team_bet[member_id] *= (1 + self.red_multiplier)
                 for row in self.cache:
                     if row[SHEET_ID_IDX - 1] == str(member_id):
                         row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + int(self.red_team_bet[member_id])
         else:
             await ctx.send("The possible choices are either Blue or Red! For example: `!win Blue`")
             return
-
         self.broke = False
         self.blue_multiplier = 0
         self.red_multiplier = 0
@@ -346,7 +346,7 @@ class MoneyCog(commands.Cog):
         self.red_team_bet.clear()
         await self.update_whole_sheet()
     
-    @commands.command(name="register", aliases = ["team"])
+    @commands.command(name="register")
     async def _register(self, ctx, team, *members:discord.Member):
         embed = discord.Embed()
         message = ""
@@ -357,6 +357,7 @@ class MoneyCog(commands.Cog):
                 self.blue_team.append(member)
                 message += f"\n{member.name}"
             embed.description = message
+            embed.colour = discord.Colour.blue()
             await ctx.send(embed=embed)
         elif team == "red":
             message += "**RED Team members:**"
@@ -365,6 +366,7 @@ class MoneyCog(commands.Cog):
                 self.red_team.append(member)
                 message += f"\n{member.name}"
             embed.description = message
+            embed.colour = discord.Colour.red()
             await ctx.send(embed=embed)
         else:
             await ctx.send("The format is `!register team @person @person...`")
@@ -402,6 +404,20 @@ class MoneyCog(commands.Cog):
             await ctx.send("Can only be used after !break is called!")
     
     @commands.command()
+    async def profile(self, ctx):
+        author = ctx.message.author
+        name = author.name
+        money = None
+        mmr = None
+        for row in self.cache:
+            if str(author.id) == row[SHEET_ID_IDX - 1]:
+                money = row[SHEET_MONEY_IDX - 1]
+                mmr = row[SHEET_MMR_IDX - 1]
+        embed = discord.Embed(title=f"{name}'s profile", description=f"Money: {money}\nMMR: {mmr}")
+        await ctx.send(embed=embed)
+
+    
+    @commands.command()
     async def steal(self, ctx, member:discord.Member):
         """ Steal money from target person (!steal @person) """
         # We can add as many funny URL's as we want
@@ -414,14 +430,6 @@ class MoneyCog(commands.Cog):
     @commands.command(name="breaking")
     async def temp_break(self, ctx):
         """ Generates a prodraft lobby and records blue/red team memebers. """
-        """
-        blue_channel = discord.utils.get(
-            ctx.guild.channels, name="Blue Team 1", type=discord.ChannelType.voice
-        )
-        red_channel = discord.utils.get(
-            ctx.guild.channels, name="Red Team 2", type=discord.ChannelType.voice
-        )
-        """
 
         if not self.blue_team:
             await ctx.send("You must register **blue team** members using !register command.")
@@ -429,13 +437,6 @@ class MoneyCog(commands.Cog):
         elif not self.red_team:
             await ctx.send("You must register **red team** members using !register command.")
             return
-        # We don't have to intialize these since they are only in scope if we
-        # invoke this command
-
-        # self.blue_team = blue_channel.members
-        # self.red_team = red_channel.members
-
-        # Lets do some fun custom team names :)
 
         draft_lobby_req = await self.client.post(
             "http://prodraft.leagueoflegends.com/draft",
@@ -462,13 +463,15 @@ class MoneyCog(commands.Cog):
 
         self.broke = True
 
-        # If the player is not in the database yet, add them to the database!
+        # If the player is not in the database yet, add them to the database.
         for member in self.blue_team:
-            if member.id not in self.cache:
+            is_in_database = any(str(member.id) in sublist for sublist in self.cache)
+            if not is_in_database:
                 await ctx.invoke(self.cmd_join, member)
-        
+
         for member in self.red_team:
-            if member.id not in self.cache:
+            is_in_database = any(str(member.id) in sublist for sublist in self.cache)
+            if not is_in_database:
                 await ctx.invoke(self.cmd_join, member)
 
         # Deduct entry fee from every players
@@ -497,10 +500,6 @@ class MoneyCog(commands.Cog):
 
         self.blue_multiplier = 0
         self.red_multiplier = 0
-        # double blue_multiplier = (1 - blue_team_win) / blue_team_win
-
-        # double red_multiplier = (blue_team_win) / (1 - blue_team_win)
-        # or 1 / blue_multiplier
 
         for MMR in blue_team_MMRs:
             blue_MMRs += MMR
@@ -510,48 +509,16 @@ class MoneyCog(commands.Cog):
         blue_avg_MMR = blue_MMRs/(len(blue_team_MMRs))
         red_avg_MMR = red_MMRs/(len(red_team_MMRs))
 
-        blue_team_win = blue_avg_MMR / (blue_avg_MMR + red_avg_MMR)
+        self.blue_team_win = blue_avg_MMR / (blue_avg_MMR + red_avg_MMR)
 
-        self.blue_multiplier = (1 - blue_team_win) / blue_team_win
-        self.red_multiplier = 1 / self.blue_multiplier
+        self.blue_multiplier = round((1 - self.blue_team_win) / self.blue_team_win, 5)
+        self.red_multiplier = round(1 / self.blue_multiplier, 5)
 
         self.bet_toggle = True
-        await ctx.send("Betting starts now! You have 10 minutes until the bets close.")
+        await ctx.send("**Betting starts now! You have 10 minutes until the bets close.**")
         await asyncio.sleep(300)
-        await ctx.send("The bet will close in 5 minutes!")
+        await ctx.send("**The bet will close in 5 minutes!**")
         await asyncio.sleep(300)
         self.bet_toggle = False
-        await ctx.send("The bets are now closed!")
+        await ctx.send("**The bets are now closed!**")
         await ctx.invoke(self.bets(ctx))
-
-# Will pseudo-code
-# step 1: grab each player's mmr on each team
-# step 2: average players' mmrs for each team
-
-
-# on break
-
-# int blue_team_mmr =
-# int red_team_mmr = 
-# to calculate odds
-# double blue_team_win = blue_team_mmr / (blue_team_mmr + red_team_mmr)
-
-# on win
-
-# for each blue_team_members:
-    # if member is not in sheet:
-        # member.mmr = 1400
-    # int old_mmr = member.mmr
-    # int sa = 0;
-    # if (blue_win):
-        # sa = 1;
-    # int new_mmr = old_mmr + 32(sa - blue_team_win)
-    # member.mmr = new_mmr (adjust member's mmr on the google sheet)
-
-# for each red_team_members:
-    # int old_mmr = member.mmr
-    # int sa = 0
-    # if (red_win)
-        # sa = 1
-    # int new_mmr = old_mmr + 32(sa - (1 - blue_team_win))
-    # member.mmr = new_mmr
