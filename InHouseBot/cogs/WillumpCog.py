@@ -54,7 +54,8 @@ class WillumpCog(commands.Cog):
             embed.colour = discord.Colour.orange()
         elif ranflip == "Tails":
             embed.set_image(
-                url="https://i.imgur.com/grTqgib.png"
+                url="https://i.imgur.com/P3EbqRH.gif"
+                # "https://i.imgur.com/grTqgib.png"
                 # "https://media0.giphy.com/media/uWcNWtfqzySDYqkORw/source.gif"
             )
             embed.colour = discord.Colour.blue()

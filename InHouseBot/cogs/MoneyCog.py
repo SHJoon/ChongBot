@@ -412,7 +412,7 @@ class MoneyCog(commands.Cog):
         for row in self.cache:
             if str(author.id) == row[SHEET_ID_IDX - 1]:
                 money = row[SHEET_MONEY_IDX - 1]
-                mmr = row[SHEET_MMR_IDX - 1]
+                mmr = int(row[SHEET_MMR_IDX - 1])
         embed = discord.Embed(title=f"{name}'s profile", description=f"Money: {money}\nMMR: {mmr}")
         await ctx.send(embed=embed)
 
