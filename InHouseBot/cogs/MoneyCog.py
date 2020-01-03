@@ -449,16 +449,20 @@ class MoneyCog(commands.Cog):
         embed.set_image(url=image_URL)
         await ctx.send(embed=embed)
     
+    @is_approved()
     @commands.command()
     async def bettoggle(self, ctx):
+        """ (ADMIN) Toggle bets on/off """
         self.bet_toggle != self.bet_toggle
         if self.bet_toggle:
             await ctx.send("Betting is now open.")
         else:
             await ctx.send("Betting is now closed.")
     
+    @is_approved()
     @commands.command()
     async def extend(self, ctx, num:int):
+        """ (ADMIN) Extend the betting time (!extend minutes)"""
         minute = num * 60
         self.bet_toggle = True
         await asyncio.sleep(minute)
