@@ -167,8 +167,13 @@ class MoneyCog(commands.Cog):
     @retry_authorize(gspread.exceptions.APIError)
     async def cmd_remove(self, ctx, member:discord.Member, money:int):
         """ (ADMIN) Remove money from target member """
-        money = -money
-        await ctx.invoke(self.cmd_add(ctx, member, money))
+        if await self.is_positive_money(ctx, money):
+            for idx, row in enumerate(self.cache):
+                if row[SHEET_ID_IDX - 1] == str(member.id):
+                    current_money = int(row[SHEET_MONEY_IDX - 1])
+                    new_money = current_money - money
+                    self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, new_money)
+                    row[SHEET_MONEY_IDX - 1] = new_money
     
     @commands.command()
     @retry_authorize(gspread.exceptions.APIError)
@@ -396,14 +401,6 @@ class MoneyCog(commands.Cog):
         """ (ADMIN) Reset the bets and return all the money. """
         # Grab the list of both Blue/Red team bets, and return the money.
         if self.broke:
-            # Return the money to participants
-            for row in self.cache:
-                for member in self.blue_team:
-                    if str(member.id) == row[SHEET_ID_IDX - 1]:
-                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + 100
-                for member in self.red_team:
-                    if str(member.id) == row[SHEET_ID_IDX - 1]:
-                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + 100
             # Return the betting money for blue team
             for member_id, bet in self.blue_team_bet.items():
                 for row in self.cache:
@@ -514,15 +511,6 @@ class MoneyCog(commands.Cog):
             is_in_database = any(str(member.id) in sublist for sublist in self.cache)
             if not is_in_database:
                 await ctx.invoke(self.cmd_join, member)
-
-        # Deduct entry fee from every players
-        for row in self.cache:
-            for member in self.blue_team:
-                if str(member.id) == row[SHEET_ID_IDX - 1]:
-                    row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) - 100
-            for member in self.red_team:
-                if str(member.id) == row[SHEET_ID_IDX - 1]:
-                    row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) - 100
 
         # Organize score of each teams
         blue_team_MMRs = []
