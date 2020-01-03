@@ -54,18 +54,32 @@ class WillumpCog(commands.Cog):
             embed.colour = discord.Colour.orange()
         elif ranflip == "Tails":
             embed.set_image(
-                url="https://i.imgur.com/P3EbqRH.gif"
-                # "https://i.imgur.com/grTqgib.png"
+                url="https://i.imgur.com/grTqgib.png"
                 # "https://media0.giphy.com/media/uWcNWtfqzySDYqkORw/source.gif"
             )
             embed.colour = discord.Colour.blue()
         else:
             embed.set_image(
-                url="https://lolskinshop.com/wp-content/uploads/2015/04/Poppy_2.jpg"
+                url="https://i.imgur.com/P3EbqRH.gif"
+                # "https://lolskinshop.com/wp-content/uploads/2015/04/Poppy_2.jpg"
             )
             embed.colour = discord.Colour.green()
             
         await ctx.send(embed=embed)
+    
+    @commands.command(hidden = True)
+    async def massflip(self, ctx, num:int):
+        """ Mini command to flip many times """
+        flip = ["Heads", "Tails"]
+        head_count = 0
+        tail_count = 0
+        for _ in range(num):
+            ranflip = random.choice(flip)
+            if ranflip == "Heads":
+                head_count += 1
+            else:
+                tail_count += 1
+        await ctx.send(f"Heads:{head_count}\nTails:{tail_count}")
 
     @commands.command(pass_context=True)
     async def choose(self, ctx, *choices: str):

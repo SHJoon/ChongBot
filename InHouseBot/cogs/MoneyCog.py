@@ -413,7 +413,9 @@ class MoneyCog(commands.Cog):
             if str(author.id) == row[SHEET_ID_IDX - 1]:
                 money = row[SHEET_MONEY_IDX - 1]
                 mmr = int(row[SHEET_MMR_IDX - 1])
-        embed = discord.Embed(title=f"{name}'s profile", description=f"Money: {money}\nMMR: {mmr}")
+        embed = discord.Embed(title=f"{name}'s profile", description=f"Money: {money} NunuBucks\nMMR: {mmr}")
+        fp = author.avatar_url
+        embed.set_thumbnail(url=fp)
         await ctx.send(embed=embed)
 
     
