@@ -153,7 +153,7 @@ class MoneyCog(commands.Cog):
     @commands.command(name="add$")
     @retry_authorize(gspread.exceptions.APIError)
     async def cmd_add(self, ctx, member:discord.Member, money:int):
-        """ Add money to target member(ADMIN USE ONLY) """
+        """ (ADMIN) Add money to target member """
         if await self.is_positive_money(ctx, money):
             for idx, row in enumerate(self.cache):
                 if row[SHEET_ID_IDX - 1] == str(member.id):
@@ -166,7 +166,7 @@ class MoneyCog(commands.Cog):
     @commands.command(name="remove$")
     @retry_authorize(gspread.exceptions.APIError)
     async def cmd_remove(self, ctx, member:discord.Member, money:int):
-        """ Remove money from target member(ADMIN USE ONLY) """
+        """ (ADMIN) Remove money from target member """
         money = -money
         await ctx.invoke(self.cmd_add(ctx, member, money))
     
@@ -198,10 +198,18 @@ class MoneyCog(commands.Cog):
         """ Bet on the team you think will win! (!bet team amount) """
         # !break will collect name/id of the players from each team via voice channels
         if self.broke:
+            author = ctx.message.author
+            for member in self.blue_team:
+                if author.id == member.id:
+                    await ctx.send("Players are not allowed to bet!")
+                    return
+            for member in self.red_team:
+                if author.id == member.id:
+                    await ctx.send("Players are not allowed to bet!")
+                    return
             if self.bet_toggle:
                 # Betting amount has to be greater than 0.
                 if await self.is_positive_money(ctx, money):
-                    author = ctx.message.author
                     # Give error if betting amount is more than how much you own.
                     current_money = await self.get_current_money(ctx, self.cache)
                     if team.lower() == "blue":
@@ -295,7 +303,7 @@ class MoneyCog(commands.Cog):
     @commands.command(aliases=["payout"])
     @retry_authorize(gspread.exceptions.APIError)
     async def win(self, ctx, team = ""):
-        """ Decide on who the winner is, and payout accordingly! """
+        """ (ADMIN) Decide on who the winner is, and payout accordingly! """
         winning_team = None
         if team.lower() == "blue":
             # Give the Blue team members their winnings.
@@ -355,8 +363,10 @@ class MoneyCog(commands.Cog):
         self.red_team_bet.clear()
         await self.update_whole_sheet()
     
+    @is_approved()
     @commands.command(name="register")
     async def _register(self, ctx, team, *members:discord.Member):
+        """ (ADMIN) Register players on the respective teams. """
         embed = discord.Embed()
         message = ""
         if team == "blue":
@@ -383,7 +393,7 @@ class MoneyCog(commands.Cog):
     @is_approved()
     @commands.command()
     async def reset(self, ctx):
-        """ Reset the bets and return all the money. (ADMIN USE ONLY) """
+        """ (ADMIN) Reset the bets and return all the money. """
         # Grab the list of both Blue/Red team bets, and return the money.
         if self.broke:
             # Return the money to participants
@@ -414,6 +424,7 @@ class MoneyCog(commands.Cog):
     
     @commands.command()
     async def profile(self, ctx):
+        """ View your bank/MMR! """
         author = ctx.message.author
         name = author.name
         money = None
@@ -438,8 +449,8 @@ class MoneyCog(commands.Cog):
         embed.set_image(url=image_URL)
         await ctx.send(embed=embed)
     
-    @commands.command(name="breaking")
-    async def temp_break(self, ctx):
+    @commands.command(name="break")
+    async def _break(self, ctx):
         """ Generates a prodraft lobby and records blue/red team memebers. """
 
         if not self.blue_team:
