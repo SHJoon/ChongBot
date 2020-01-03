@@ -74,9 +74,9 @@ async def on_ready():
     print(bot.user.id)
     # I want to get notified when the bot resets
     user = bot.get_user(219726815663620096)
-    channel = bot.get_channel(569974088932655134)
+    # channel = bot.get_channel(569974088932655134)
     await user.send('Bot has been reset.')
-    await channel.send('Bot has been reset.')
+    # await channel.send('Bot has been reset.')
     change_status.start()
 
 def levenshtein(msg1, msg2):

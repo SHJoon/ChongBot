@@ -107,6 +107,25 @@ class MoneyCog(commands.Cog):
         # Lets cache on init
         self.cache = self.sheet.get_all_values()
     
+    async def is_positive_money(self, ctx, money):
+        """ Lazy function to check if amount is Non-negative """
+        if money < 0:
+            await ctx.send("The amount of money has to be positive!")
+            return False
+        else:
+            return True
+
+    async def is_in_database(self, element):
+        """ Check if the element is in the cache """
+        return any(element in sublist for sublist in self.cache)
+    
+    async def get_current_money(self,ctx,cache):
+        """ Retrieve how much the person has """
+        author = ctx.message.author
+        for row in cache:
+            if row[SHEET_ID_IDX - 1] == str(author.id):
+                return int(row[SHEET_MONEY_IDX - 1])
+    
     @commands.command(name="join$")
     @retry_authorize(gspread.exceptions.APIError)
     async def cmd_join(self, ctx, member:discord.Member=None):
@@ -118,85 +137,89 @@ class MoneyCog(commands.Cog):
             userid = member.id
         else:
             author = ctx.message.author
+            if await self.is_in_database(str(author.id)):
+                await ctx.send("You have already joined our currency database!")
+                return
             user = author.name
             userid = author.id
-            for row in self.cache:
-                if row[SHEET_ID_IDX - 1] == str(userid):
-                    await ctx.send("You have already joined our currency database!")
-                    return
         
         userlist = [user, str(userid), "1000", "1400"]
 
         self.sheet.append_row(userlist)
         self.cache.append(userlist)
-    
-    @commands.command(name = "$", aliases = ["money", "fund", "funds", "cash"])
-    async def cmd_money(self, ctx):
-        """ Check how much money you have! """
+
+    @commands.command(aliases = ["$", "money", "fund", "funds", "cash", "mmr"])
+    async def profile(self, ctx):
+        """ View your bank/MMR! """
         author = ctx.message.author
+        if not await self.is_in_database(str(author.id)):
+            await ctx.send("You have not joined our currency database yet! Use `!join$` now!")
+            return
+        name = author.name
+        money = None
+        mmr = None
         for row in self.cache:
-            if row[SHEET_ID_IDX - 1] == str(author.id):
-                await ctx.send(f"{author.name} has {row[SHEET_MONEY_IDX - 1]} NunuBucks.")
-                return
-
-        await ctx.send("You have not joined our currency database yet! Use `!join$` now!")
+            if str(author.id) == row[SHEET_ID_IDX - 1]:
+                money = row[SHEET_MONEY_IDX - 1]
+                mmr = int(row[SHEET_MMR_IDX - 1])
+        embed = discord.Embed(title=f"{name}'s profile", description=f"Money: {money} NunuBucks\nMMR: {mmr}")
+        fp = author.avatar_url
+        embed.set_thumbnail(url=fp)
+        await ctx.send(embed=embed)
     
-    async def is_positive_money(self, ctx, money):
-        """ Lazy function to check if amount is Non-negative """
-        if money < 0:
-            await ctx.send("The amount of money has to be positive!")
-            return False
-        else:
-            return True
-
     @is_approved()
     @commands.command(name="add$")
     @retry_authorize(gspread.exceptions.APIError)
     async def cmd_add(self, ctx, member:discord.Member, money:int):
         """ (ADMIN) Add money to target member """
-        if await self.is_positive_money(ctx, money):
-            for idx, row in enumerate(self.cache):
-                if row[SHEET_ID_IDX - 1] == str(member.id):
-                    current_money = int(row[SHEET_MONEY_IDX - 1])
-                    new_money = current_money + money
-                    self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, new_money)
-                    row[SHEET_MONEY_IDX - 1] = new_money
+        if await self.is_in_database(str(member.id)):
+            if await self.is_positive_money(ctx, money):
+                for idx, row in enumerate(self.cache):
+                    if row[SHEET_ID_IDX - 1] == str(member.id):
+                        current_money = int(row[SHEET_MONEY_IDX - 1])
+                        new_money = current_money + money
+                        self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, new_money)
+                        row[SHEET_MONEY_IDX - 1] = new_money
+        else:
+            await ctx.send("The member is not part of the database yet!")
     
     @is_approved()
     @commands.command(name="remove$")
     @retry_authorize(gspread.exceptions.APIError)
     async def cmd_remove(self, ctx, member:discord.Member, money:int):
         """ (ADMIN) Remove money from target member """
-        if await self.is_positive_money(ctx, money):
-            for idx, row in enumerate(self.cache):
-                if row[SHEET_ID_IDX - 1] == str(member.id):
-                    current_money = int(row[SHEET_MONEY_IDX - 1])
-                    new_money = current_money - money
-                    self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, new_money)
-                    row[SHEET_MONEY_IDX - 1] = new_money
+        if await self.is_in_database(str(member.id)):
+            if await self.is_positive_money(ctx, money):
+                for idx, row in enumerate(self.cache):
+                    if row[SHEET_ID_IDX - 1] == str(member.id):
+                        current_money = int(row[SHEET_MONEY_IDX - 1])
+                        new_money = current_money - money
+                        self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, new_money)
+                        row[SHEET_MONEY_IDX - 1] = new_money
+        else:
+            await ctx.send("The member is not part of the database yet!")
     
     @commands.command()
     @retry_authorize(gspread.exceptions.APIError)
     async def give(self, ctx, member:discord.Member, money:int):
         """ Give some of your money to select person (!give @person amount)"""
         if await self.is_positive_money(ctx, money):
-            author = ctx.message.author
-            for idx, row in enumerate(self.cache):
-                # Deduct amount from command invoker
-                if row[SHEET_ID_IDX - 1] == str(author.id):
-                    row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) - money
-                    self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, row[SHEET_MONEY_IDX - 1])
-                # Give amount to target person
-                if row[SHEET_ID_IDX - 1] == str(member.id):
-                    row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + money
-                    self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, row[SHEET_MONEY_IDX - 1])
-    
-    async def get_current_money(self,ctx,cache):
-        """ Retrieve how much the person has """
-        author = ctx.message.author
-        for row in cache:
-            if row[SHEET_ID_IDX - 1] == str(author.id):
-                return int(row[SHEET_MONEY_IDX - 1])
+            if await self.is_in_database(str(ctx.message.author.id)):
+                if await self.is_in_database(str(member.id)):
+                    author = ctx.message.author
+                    for idx, row in enumerate(self.cache):
+                        # Deduct amount from command invoker
+                        if row[SHEET_ID_IDX - 1] == str(author.id):
+                            row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) - money
+                            self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, row[SHEET_MONEY_IDX - 1])
+                        # Give amount to target person
+                        if row[SHEET_ID_IDX - 1] == str(member.id):
+                            row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + money
+                            self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, row[SHEET_MONEY_IDX - 1])
+                else:
+                    await ctx.send("The person is not in the database yet!")
+            else:
+                await ctx.send("You're not in the database yet! Use `!join$` now!")
     
     @commands.command()
     async def bet(self, ctx, team:str = "", money:int = 0):
@@ -204,66 +227,69 @@ class MoneyCog(commands.Cog):
         # !break will collect name/id of the players from each team via voice channels
         if self.broke:
             author = ctx.message.author
-            for member in self.blue_team:
-                if author.id == member.id:
-                    await ctx.send("Players are not allowed to bet!")
-                    return
-            for member in self.red_team:
-                if author.id == member.id:
-                    await ctx.send("Players are not allowed to bet!")
-                    return
-            if self.bet_toggle:
-                # Betting amount has to be greater than 0.
-                if await self.is_positive_money(ctx, money):
-                    # Give error if betting amount is more than how much you own.
-                    current_money = await self.get_current_money(ctx, self.cache)
-                    if team.lower() == "blue":
-                        # For replacing existing bet, return the money.
-                        if author.id in self.blue_team_bet:
-                            for member_id, bet in self.blue_team_bet.items():
+            if await self.is_in_database(str(author.id)):
+                for member in self.blue_team:
+                    if author.id == member.id:
+                        await ctx.send("Players are not allowed to bet!")
+                        return
+                for member in self.red_team:
+                    if author.id == member.id:
+                        await ctx.send("Players are not allowed to bet!")
+                        return
+                if self.bet_toggle:
+                    # Betting amount has to be greater than 0.
+                    if await self.is_positive_money(ctx, money):
+                        # Give error if betting amount is more than how much you own.
+                        current_money = await self.get_current_money(ctx, self.cache)
+                        if team.lower() == "blue":
+                            # For replacing existing bet, return the money.
+                            if author.id in self.blue_team_bet:
+                                for member_id, bet in self.blue_team_bet.items():
+                                    if author.id == member_id:
+                                        for row in self.cache:
+                                            if row[SHEET_ID_IDX - 1] == str(author.id):
+                                                if money > (current_money + bet):
+                                                    await ctx.send("You don't have enough money to bet that amount!")
+                                                    return
+                                                row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + bet
+                            else:
+                                if money > current_money:
+                                    await ctx.send("You don't have enough money to bet that amount!")
+                                    return
+
+                            # Add the author to a list/dict for blue team, with how much they bet.
+                            self.blue_team_bet[author.id] = money
+                            for row in self.cache:
+                                if row[SHEET_ID_IDX - 1] == str(author.id):
+                                    row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) - money
+
+                        elif team.lower() == "red":
+                            # For replacing existing bet, return the money first, then put in the new bet.
+                            for member_id, bet in self.red_team_bet.items():
                                 if author.id == member_id:
                                     for row in self.cache:
                                         if row[SHEET_ID_IDX - 1] == str(author.id):
-                                            if money > (current_money + bet):
-                                                await ctx.send("You don't have enough money to bet that amount!")
-                                                return
                                             row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + bet
-                        else:
-                            if money > current_money:
+                                            current_money = row[SHEET_MONEY_IDX - 1]
+                            
+                            if current_money < money:
                                 await ctx.send("You don't have enough money to bet that amount!")
                                 return
 
-                        # Add the author to a list/dict for blue team, with how much they bet.
-                        self.blue_team_bet[author.id] = money
-                        for row in self.cache:
-                            if row[SHEET_ID_IDX - 1] == str(author.id):
-                                row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) - money
-
-                    elif team.lower() == "red":
-                        # For replacing existing bet, return the money first, then put in the new bet.
-                        for member_id, bet in self.red_team_bet.items():
-                            if author.id == member_id:
-                                for row in self.cache:
-                                    if row[SHEET_ID_IDX - 1] == str(author.id):
-                                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + bet
-                                        current_money = row[SHEET_MONEY_IDX - 1]
-                        
-                        if current_money < money:
-                            await ctx.send("You don't have enough money to bet that amount!")
-                            return
-
-                        # Add the author to a list/dict for red team, with how much they bet.
-                        self.red_team_bet[author.id] = money
-                        for row in self.cache:
-                            if row[SHEET_ID_IDX - 1] == str(author.id):
-                                row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) - money
-                    elif team == "":
-                        await ctx.send("You need to choose a team to bet on! For example, `!bet 500 Blue`")
-                    else:
-                        await ctx.send("Team choices are either Blue or Red.")
-                    await ctx.invoke(self.bets)
+                            # Add the author to a list/dict for red team, with how much they bet.
+                            self.red_team_bet[author.id] = money
+                            for row in self.cache:
+                                if row[SHEET_ID_IDX - 1] == str(author.id):
+                                    row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) - money
+                        elif team == "":
+                            await ctx.send("You need to choose a team to bet on! For example, `!bet 500 Blue`")
+                        else:
+                            await ctx.send("Team choices are either Blue or Red.")
+                        await ctx.invoke(self.bets)
+                else:
+                    await ctx.send("You need to bet within betting time to be able to bet!")
             else:
-                await ctx.send("You need to bet within betting time to be able to bet!")
+                await ctx.send("You're not in the database yet! Use `!join$` now!")
         else:
             await ctx.send("You need to finalize the team with `!break` to start betting!")
     
@@ -291,18 +317,6 @@ class MoneyCog(commands.Cog):
         embed.set_footer(text="Use !bets to display this message.")
         self.bets_msg = await ctx.send(embed=embed)
         await ctx.message.delete()
-    
-    async def update_whole_sheet(self):
-        """ Update the whole spreadsheet. Used to minimize API calls """
-        cache_len = len(self.cache)
-        sheet_range_A1 = f'A1:D{cache_len}'
-        cell_list = self.sheet.range(sheet_range_A1)
-        index = 0
-        for row in self.cache:
-            for val in row:
-                cell_list[index].value = val
-                index += 1
-        self.sheet.update_cells(cell_list)
 
     @is_approved()
     @commands.command(aliases=["payout"])
@@ -395,76 +409,6 @@ class MoneyCog(commands.Cog):
         else:
             await ctx.send("The format is `!register team @person @person...`")
     
-    @is_approved()
-    @commands.command()
-    async def reset(self, ctx):
-        """ (ADMIN) Reset the bets and return all the money. """
-        # Grab the list of both Blue/Red team bets, and return the money.
-        if self.broke:
-            # Return the betting money for blue team
-            for member_id, bet in self.blue_team_bet.items():
-                for row in self.cache:
-                    if row[SHEET_ID_IDX - 1] == str(member_id):
-                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + bet
-            # Return the betting money for red team
-            for member_id, bet in self.red_team_bet.items():
-                for row in self.cache:
-                    if row[SHEET_ID_IDX - 1] == str(member_id):
-                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + bet
-            self.broke = False
-            self.blue_multiplier = 0
-            self.red_multiplier = 0
-            self.blue_team_bet.clear()
-            self.red_team_bet.clear()
-        else:
-            await ctx.send("Can only be used after !break is called!")
-    
-    @commands.command()
-    async def profile(self, ctx):
-        """ View your bank/MMR! """
-        author = ctx.message.author
-        name = author.name
-        money = None
-        mmr = None
-        for row in self.cache:
-            if str(author.id) == row[SHEET_ID_IDX - 1]:
-                money = row[SHEET_MONEY_IDX - 1]
-                mmr = int(row[SHEET_MMR_IDX - 1])
-        embed = discord.Embed(title=f"{name}'s profile", description=f"Money: {money} NunuBucks\nMMR: {mmr}")
-        fp = author.avatar_url
-        embed.set_thumbnail(url=fp)
-        await ctx.send(embed=embed)
-
-    
-    @commands.command()
-    async def steal(self, ctx, member:discord.Member):
-        """ Steal money from target person (!steal @person) """
-        # We can add as many funny URL's as we want
-        image_URLs = ["https://i.redd.it/1wbz4b15vcd31.jpg"]
-        image_URL = random.choice(image_URLs)
-        embed = discord.Embed()
-        embed.set_image(url=image_URL)
-        await ctx.send(embed=embed)
-    
-    @is_approved()
-    @commands.command()
-    async def bettoggle(self, ctx):
-        """ (ADMIN) Toggle bets on/off """
-        self.bet_toggle != self.bet_toggle
-        if self.bet_toggle:
-            await ctx.send("Betting is now open.")
-        else:
-            await ctx.send("Betting is now closed.")
-    
-    @is_approved()
-    @commands.command()
-    async def extend(self, ctx, num:int):
-        """ (ADMIN) Extend the betting time (!extend minutes)"""
-        minute = num * 60
-        self.bet_toggle = True
-        await asyncio.sleep(minute)
-        await ctx.send("Betting is now closed.")
-    
     @commands.command(name="break")
     async def _break(self, ctx):
         """ Generates a prodraft lobby and records blue/red team memebers. """
@@ -503,13 +447,13 @@ class MoneyCog(commands.Cog):
 
         # If the player is not in the database yet, add them to the database.
         for member in self.blue_team:
-            is_in_database = any(str(member.id) in sublist for sublist in self.cache)
-            if not is_in_database:
+            # is_in_database = any(str(member.id) in sublist for sublist in self.cache)
+            if not await self.is_in_database(str(member.id)):
                 await ctx.invoke(self.cmd_join, member)
 
         for member in self.red_team:
-            is_in_database = any(str(member.id) in sublist for sublist in self.cache)
-            if not is_in_database:
+            # is_in_database = any(str(member.id) in sublist for sublist in self.cache)
+            if not await self.is_in_database(str(member.id)):
                 await ctx.invoke(self.cmd_join, member)
 
         # Organize score of each teams
@@ -551,3 +495,54 @@ class MoneyCog(commands.Cog):
         self.bet_toggle = False
         await ctx.send("**The bets are now closed!**")
         await ctx.invoke(self.bets(ctx))
+    
+    @is_approved()
+    @commands.command()
+    async def bettoggle(self, ctx):
+        """ (ADMIN) Toggle bets on/off """
+        self.bet_toggle != self.bet_toggle
+        if self.bet_toggle:
+            await ctx.send("Betting is now open.")
+        else:
+            await ctx.send("Betting is now closed.")
+    
+    @is_approved()
+    @commands.command()
+    async def extend(self, ctx, num:int):
+        """ (ADMIN) Extend the betting time (!extend minutes)"""
+        minute = num * 60
+        self.bet_toggle = True
+        await asyncio.sleep(minute)
+        await ctx.send("Betting is now closed.")
+    
+    @is_approved()
+    @commands.command()
+    async def reset(self, ctx):
+        """ (ADMIN) Reset the bets and return all the money. """
+        # Return the betting money for blue team
+        for member_id, bet in self.blue_team_bet.items():
+            for row in self.cache:
+                if row[SHEET_ID_IDX - 1] == str(member_id):
+                    row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + bet
+        # Return the betting money for red team
+        for member_id, bet in self.red_team_bet.items():
+            for row in self.cache:
+                if row[SHEET_ID_IDX - 1] == str(member_id):
+                    row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + bet
+        # Reset to all the default values
+        self.broke = False
+        self.blue_multiplier = 0
+        self.red_multiplier = 0
+        self.blue_team_bet.clear()
+        self.red_team_bet.clear()
+        await ctx.send("All the bets have been reset.")
+
+    @commands.command()
+    async def steal(self, ctx, member:discord.Member):
+        """ Steal money from target person (!steal @person) """
+        # We can add as many funny URL's as we want
+        image_URLs = ["https://i.redd.it/1wbz4b15vcd31.jpg"]
+        image_URL = random.choice(image_URLs)
+        embed = discord.Embed()
+        embed.set_image(url=image_URL)
+        await ctx.send(embed=embed)
