@@ -275,6 +275,7 @@ class MoneyCog(commands.Cog):
             message += f"\n{name}: {bet_amt} NunuBucks"
         
         embed = discord.Embed(description=message, colour = discord.Colour.green())
+        embed.set_footer(text="Use !bets to display this message.")
         self.bets_msg = await ctx.send(embed=embed)
         await ctx.message.delete()
     
@@ -295,16 +296,19 @@ class MoneyCog(commands.Cog):
     @retry_authorize(gspread.exceptions.APIError)
     async def win(self, ctx, team = ""):
         """ Decide on who the winner is, and payout accordingly! """
+        winning_team = None
         if team.lower() == "blue":
             # Give the Blue team members their winnings.
             # Additionally, calculate the new MMR of each players
             for row in self.cache:
+                # Blue team when blue win
                 for member in self.blue_team:
                     if str(member.id) == row[SHEET_ID_IDX - 1]:
                         row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + 200
                         old_mmr = int(row[SHEET_MMR_IDX - 1])
                         new_mmr = old_mmr + 32 * (1 - self.blue_team_win)
                         row[SHEET_MMR_IDX - 1] = new_mmr
+                # Red team when blue win
                 for member in self.red_team:
                     if str(member.id) == row[SHEET_ID_IDX - 1]:
                         old_mmr = int(row[SHEET_MMR_IDX - 1])
@@ -316,15 +320,18 @@ class MoneyCog(commands.Cog):
                 for row in self.cache:
                     if row[SHEET_ID_IDX - 1] == str(member_id):
                         row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + int(self.blue_team_bet[member_id])
+            winning_team = "Blue Team"
         elif team.lower() == "red":
             # Give the Red team members their winnings.
             for row in self.cache:
+                # Red team when red win
                 for member in self.red_team:
                     if str(member.id) == row[SHEET_ID_IDX - 1]:
                         row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + 200
                         old_mmr = int(row[SHEET_MMR_IDX - 1])
                         new_mmr = old_mmr + 32 * (1 - (1 - self.blue_team_win))
                         row[SHEET_MMR_IDX - 1] = new_mmr
+                # Blue team when red win
                 for member in self.blue_team:
                     if str(member.id) == row[SHEET_ID_IDX - 1]:
                         old_mmr = int(row[SHEET_MMR_IDX - 1])
@@ -336,9 +343,11 @@ class MoneyCog(commands.Cog):
                 for row in self.cache:
                     if row[SHEET_ID_IDX - 1] == str(member_id):
                         row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + int(self.red_team_bet[member_id])
+            winning_team = "Red Team"
         else:
             await ctx.send("The possible choices are either Blue or Red! For example: `!win Blue`")
             return
+        await ctx.send(f"{winning_team} has won! Now distributing the payout...")
         self.broke = False
         self.blue_multiplier = 0
         self.red_multiplier = 0

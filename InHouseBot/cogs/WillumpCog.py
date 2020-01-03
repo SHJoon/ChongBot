@@ -70,6 +70,10 @@ class WillumpCog(commands.Cog):
     @commands.command(hidden = True)
     async def massflip(self, ctx, num:int):
         """ Mini command to flip many times """
+        member = ctx.message.author
+        if num > 50000:
+            await ctx.send(f"{member.mention} YOU MONKEY TRYING TO BREAK THE BOT, 50000 FLIPS OR LESS ONLY")
+            return
         flip = ["Heads", "Tails"]
         head_count = 0
         tail_count = 0
