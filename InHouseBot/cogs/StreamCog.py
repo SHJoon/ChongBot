@@ -1,6 +1,5 @@
 import discord
 import os
-import httpx
 from functools import wraps
 from tempfile import NamedTemporaryFile
 
@@ -64,19 +63,13 @@ def retry_authorize(exceptions, tries=4):
     return deco_retry
 
 
-class LeagueCog(commands.Cog):
+class StreamCog(commands.Cog):
     def __init__(self, bot):
 
         self.creds = creds
         self.gclient = gclient
         self._init_sheet()
         self.sheet_name = None
-        
-        self.client = httpx.AsyncClient()
-        
-        self.broke = False
-        self.blue_team_name = "Blue Side"
-        self.red_team_name = "Red Side"
 
     def _init_sheet(self):
         if "GOOGLE_OAUTH_JSON" in os.environ:
