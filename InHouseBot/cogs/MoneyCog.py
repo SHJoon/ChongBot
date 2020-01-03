@@ -449,6 +449,21 @@ class MoneyCog(commands.Cog):
         embed.set_image(url=image_URL)
         await ctx.send(embed=embed)
     
+    @commands.command()
+    async def bettoggle(self, ctx):
+        self.bet_toggle != self.bet_toggle
+        if self.bet_toggle:
+            await ctx.send("Betting is now open.")
+        else:
+            await ctx.send("Betting is now closed.")
+    
+    @commands.command()
+    async def extend(self, ctx, num:int):
+        minute = num * 60
+        self.bet_toggle = True
+        await asyncio.sleep(minute)
+        await ctx.send("Betting is now closed.")
+    
     @commands.command(name="break")
     async def _break(self, ctx):
         """ Generates a prodraft lobby and records blue/red team memebers. """
@@ -537,10 +552,10 @@ class MoneyCog(commands.Cog):
         self.red_multiplier = round(1 / self.blue_multiplier, 5)
 
         self.bet_toggle = True
-        await ctx.send("**Betting starts now! You have 10 minutes until the bets close.**")
-        await asyncio.sleep(300)
-        await ctx.send("**The bet will close in 5 minutes!**")
-        await asyncio.sleep(300)
+        await ctx.send("**Betting starts now! You have 15 minutes until the bets close.**")
+        await asyncio.sleep(480)
+        await ctx.send("**The bet will close in 7 minutes!**")
+        await asyncio.sleep(420)
         self.bet_toggle = False
         await ctx.send("**The bets are now closed!**")
         await ctx.invoke(self.bets(ctx))
