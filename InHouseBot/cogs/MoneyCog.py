@@ -126,6 +126,18 @@ class MoneyCog(commands.Cog):
             if row[SHEET_ID_IDX - 1] == str(author.id):
                 return int(row[SHEET_MONEY_IDX - 1])
     
+    async def update_whole_sheet(self):
+        """ Update the whole spreadsheet. Used to minimize API calls """
+        cache_len = len(self.cache)
+        sheet_range_A1 = f'A1:D{cache_len}'
+        cell_list = self.sheet.range(sheet_range_A1)
+        index = 0
+        for row in self.cache:
+            for val in row:
+                cell_list[index].value = val
+                index += 1
+        self.sheet.update_cells(cell_list)
+    
     @commands.command(name="join$")
     @retry_authorize(gspread.exceptions.APIError)
     async def cmd_join(self, ctx, member:discord.Member=None):
@@ -161,7 +173,9 @@ class MoneyCog(commands.Cog):
         for row in self.cache:
             if str(author.id) == row[SHEET_ID_IDX - 1]:
                 money = row[SHEET_MONEY_IDX - 1]
-                mmr = int(row[SHEET_MMR_IDX - 1])
+                mmr = float(row[SHEET_MMR_IDX - 1])
+                mmr = int(mmr)
+                #mmr = int(row[SHEET_MMR_IDX - 1])
         embed = discord.Embed(title=f"{name}'s profile", description=f"Money: {money} NunuBucks\nMMR: {mmr}")
         fp = author.avatar_url
         embed.set_thumbnail(url=fp)
@@ -299,9 +313,9 @@ class MoneyCog(commands.Cog):
         server = ctx.guild
         if self.bets_msg is not None:
             await self.bets_msg.delete()
-        message = f"**Blue Team multiplier:** {1 + self.blue_multiplier}\
-        \n**Red Team multiplier:** {1 + self.red_multiplier}\
-        \n**Blue Team Bets**"
+        message = "**Blue Team Multiplier:** {:.2f} \n **Red Team Multiplier:** {:.2f}".format(1 + self.blue_multiplier, 1 + self.red_multiplier)
+        
+        message += "\n**Blue Team Bets**"
         for member_id, bet_amt in self.blue_team_bet.items():
             member = discord.utils.get(server.members, id=member_id)
             name = member.nick if member.nick else member.name
@@ -332,13 +346,13 @@ class MoneyCog(commands.Cog):
                 for member in self.blue_team:
                     if str(member.id) == row[SHEET_ID_IDX - 1]:
                         row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + 200
-                        old_mmr = int(row[SHEET_MMR_IDX - 1])
+                        old_mmr = float(row[SHEET_MMR_IDX - 1])
                         new_mmr = old_mmr + 32 * (1 - self.blue_team_win)
                         row[SHEET_MMR_IDX - 1] = new_mmr
                 # Red team when blue win
                 for member in self.red_team:
                     if str(member.id) == row[SHEET_ID_IDX - 1]:
-                        old_mmr = int(row[SHEET_MMR_IDX - 1])
+                        old_mmr = float(row[SHEET_MMR_IDX - 1])
                         new_mmr = old_mmr + 32 * (0 - (1 - self.blue_team_win))
                         row[SHEET_MMR_IDX - 1] = new_mmr
             # Grab the list/dict for blue team, calculate how much they won, and distribute accordingly.
@@ -355,13 +369,13 @@ class MoneyCog(commands.Cog):
                 for member in self.red_team:
                     if str(member.id) == row[SHEET_ID_IDX - 1]:
                         row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + 200
-                        old_mmr = int(row[SHEET_MMR_IDX - 1])
+                        old_mmr = float(row[SHEET_MMR_IDX - 1])
                         new_mmr = old_mmr + 32 * (1 - (1 - self.blue_team_win))
                         row[SHEET_MMR_IDX - 1] = new_mmr
                 # Blue team when red win
                 for member in self.blue_team:
                     if str(member.id) == row[SHEET_ID_IDX - 1]:
-                        old_mmr = int(row[SHEET_MMR_IDX - 1])
+                        old_mmr = float(row[SHEET_MMR_IDX - 1])
                         new_mmr = old_mmr + 32 * (0 - self.blue_team_win)
                         row[SHEET_MMR_IDX - 1] = new_mmr
             # Grab the list/dict for red team, calculate how much they won, and distribute accordingly.
@@ -484,23 +498,24 @@ class MoneyCog(commands.Cog):
 
         self.blue_team_win = blue_avg_MMR / (blue_avg_MMR + red_avg_MMR)
 
-        self.blue_multiplier = round((1 - self.blue_team_win) / self.blue_team_win, 5)
-        self.red_multiplier = round(1 / self.blue_multiplier, 5)
+        self.blue_multiplier = (1 - self.blue_team_win) / self.blue_team_win
+        self.red_multiplier = 1 / self.blue_multiplier
 
         self.bet_toggle = True
         await ctx.send("**Betting starts now! You have 15 minutes until the bets close.**")
+        await ctx.invoke(self.bets)
         await asyncio.sleep(480)
         await ctx.send("**The bet will close in 7 minutes!**")
         await asyncio.sleep(420)
         self.bet_toggle = False
         await ctx.send("**The bets are now closed!**")
-        await ctx.invoke(self.bets(ctx))
+        await ctx.invoke(self.bets)
     
     @is_approved()
     @commands.command()
     async def bettoggle(self, ctx):
         """ (ADMIN) Toggle bets on/off """
-        self.bet_toggle != self.bet_toggle
+        self.bet_toggle = not self.bet_toggle
         if self.bet_toggle:
             await ctx.send("Betting is now open.")
         else:
@@ -514,6 +529,7 @@ class MoneyCog(commands.Cog):
         self.bet_toggle = True
         await asyncio.sleep(minute)
         await ctx.send("Betting is now closed.")
+        self.bet_toggle = False
     
     @is_approved()
     @commands.command()
