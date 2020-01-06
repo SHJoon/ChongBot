@@ -161,24 +161,40 @@ class MoneyCog(commands.Cog):
         self.cache.append(userlist)
 
     @commands.command(aliases = ["$", "money", "fund", "funds", "cash", "mmr"])
-    async def profile(self, ctx):
+    async def profile(self, ctx, person:discord.Member=None):
         """ View your bank/MMR! """
-        author = ctx.message.author
-        if not await self.is_in_database(str(author.id)):
-            await ctx.send("You have not joined our currency database yet! Use `!join$` now!")
-            return
-        name = author.name
+        name = None
         money = None
         mmr = None
-        for row in self.cache:
-            if str(author.id) == row[SHEET_ID_IDX - 1]:
-                money = row[SHEET_MONEY_IDX - 1]
-                mmr = float(row[SHEET_MMR_IDX - 1])
-                mmr = int(mmr)
-                #mmr = int(row[SHEET_MMR_IDX - 1])
+        avatar = None
+        author = ctx.message.author
+        if person is not None:
+            if not await self.is_in_database(str(person.id)):
+                await ctx.send("The person is not part of our currency database yet!")
+                return
+
+            name = person.name
+            avatar = person.avatar_url
+            for row in self.cache:
+                if str(person.id) == row[SHEET_ID_IDX - 1]:
+                    money = row[SHEET_MONEY_IDX - 1]
+                    mmr = float(row[SHEET_MMR_IDX - 1])
+                    mmr = int(mmr)
+        else:
+            if not await self.is_in_database(str(author.id)):
+                await ctx.send("You have not joined our currency database yet! Use `!join$` now!")
+                return
+
+            name = author.name
+            for row in self.cache:
+                if str(author.id) == row[SHEET_ID_IDX - 1]:
+                    money = row[SHEET_MONEY_IDX - 1]
+                    mmr = float(row[SHEET_MMR_IDX - 1])
+                    mmr = int(mmr)
+            avatar = author.avatar_url
+                    #mmr = int(row[SHEET_MMR_IDX - 1])
         embed = discord.Embed(title=f"{name}'s profile", description=f"Money: {money} NunuBucks\nMMR: {mmr}")
-        fp = author.avatar_url
-        embed.set_thumbnail(url=fp)
+        embed.set_thumbnail(url=avatar)
         await ctx.send(embed=embed)
     
     @is_approved()
@@ -313,8 +329,9 @@ class MoneyCog(commands.Cog):
         server = ctx.guild
         if self.bets_msg is not None:
             await self.bets_msg.delete()
-        message = "**Blue Team Multiplier:** {:.2f} \n **Red Team Multiplier:** {:.2f}".format(1 + self.blue_multiplier, 1 + self.red_multiplier)
-        
+        message = "**Blue Team Multiplier:** {:.2f} \n \
+            **Red Team Multiplier:** {:.2f}".format(1 + self.blue_multiplier, 1 + self.red_multiplier)
+
         message += "\n**Blue Team Bets**"
         for member_id, bet_amt in self.blue_team_bet.items():
             member = discord.utils.get(server.members, id=member_id)
