@@ -3,6 +3,7 @@ import httpx
 import os
 import random
 import asyncio
+from pprint import pprint
 from functools import wraps
 from tempfile import NamedTemporaryFile
 
@@ -15,6 +16,8 @@ SHEET_NAME_IDX = 1
 SHEET_ID_IDX = 2
 SHEET_MONEY_IDX = 3
 SHEET_MMR_IDX = 4
+SHEET_MONEY_RANK_IDX = 5
+SHEET_MMR_RANK_IDX = 6
 
 creds = None
 gclient = None
@@ -106,6 +109,25 @@ class MoneyCog(commands.Cog):
 
         # Lets cache on init
         self.cache = self.sheet.get_all_values()
+        self.money_ranking = sorted(self.cache[1:], key=lambda inner: int(inner[2]), reverse=True)
+        self.mmr_ranking = sorted(self.cache[1:], key=lambda inner: float(inner[3]),reverse=True)
+
+        prev_money = 0
+        index = 0
+        
+        for idx, (name, id_, money, mmr, money_rank, mmr_rank) in enumerate(self.money_ranking):
+            if money != prev_money:
+                index = idx + 1
+            self.money_ranking[idx][4] = str(index)
+            prev_money = money
+
+        prev_mmr = 0
+        index = 0
+        for idx, (name, id_, money, mmr, money_rank, mmr_rank) in enumerate(self.mmr_ranking):
+            if mmr != prev_mmr:
+                index = idx + 1
+            self.mmr_ranking[idx][5] = str(index)
+            prev_mmr = mmr
     
     async def is_positive_money(self, ctx, money):
         """ Lazy function to check if amount is Non-negative """
@@ -129,15 +151,30 @@ class MoneyCog(commands.Cog):
     async def update_whole_sheet(self):
         """ Update the whole spreadsheet. Used to minimize API calls """
         cache_len = len(self.cache)
-        sheet_range_A1 = f'A1:D{cache_len}'
+        sheet_range_A1 = f'A2:F{cache_len}'
         cell_list = self.sheet.range(sheet_range_A1)
         index = 0
-        for row in self.cache:
+        for row in self.money_ranking:
             for val in row:
                 cell_list[index].value = val
                 index += 1
         self.sheet.update_cells(cell_list)
     
+    async def get_ranks(self, userid:int):
+        money_rank, mmr_rank = None, None
+        for row in self.cache:
+            if row[SHEET_ID_IDX - 1] == str(userid):
+                money_rank = row[SHEET_MONEY_RANK_IDX - 1]
+                mmr_rank = row[SHEET_MMR_RANK_IDX - 1]
+                break
+        return money_rank, mmr_rank
+
+    @is_approved()
+    @commands.command(hidden=True)
+    async def update_the_sheet(self, ctx):
+        """ (ADMIN) Come on, read the name """
+        await self.update_whole_sheet()
+
     @commands.command(name="join$")
     @retry_authorize(gspread.exceptions.APIError)
     async def cmd_join(self, ctx, member:discord.Member=None):
@@ -163,10 +200,7 @@ class MoneyCog(commands.Cog):
     @commands.command(aliases = ["$", "money", "fund", "funds", "cash", "mmr"])
     async def profile(self, ctx, person:discord.Member=None):
         """ View your bank/MMR! """
-        name = None
-        money = None
-        mmr = None
-        avatar = None
+        name = money = money_rank = mmr = mmr_rank = avatar = None
         author = ctx.message.author
         if person is not None:
             if not await self.is_in_database(str(person.id)):
@@ -180,6 +214,7 @@ class MoneyCog(commands.Cog):
                     money = row[SHEET_MONEY_IDX - 1]
                     mmr = float(row[SHEET_MMR_IDX - 1])
                     mmr = int(mmr)
+                    money_rank, mmr_rank = await self.get_ranks(person.id)
         else:
             if not await self.is_in_database(str(author.id)):
                 await ctx.send("You have not joined our currency database yet! Use `!join$` now!")
@@ -191,10 +226,40 @@ class MoneyCog(commands.Cog):
                     money = row[SHEET_MONEY_IDX - 1]
                     mmr = float(row[SHEET_MMR_IDX - 1])
                     mmr = int(mmr)
+                    money_rank, mmr_rank = await self.get_ranks(author.id)
             avatar = author.avatar_url
-                    #mmr = int(row[SHEET_MMR_IDX - 1])
-        embed = discord.Embed(title=f"{name}'s profile", description=f"Money: {money} NunuBucks\nMMR: {mmr}")
+        embed = discord.Embed(title=f"{name}'s profile", description=f"Money: {money} NunuBucks (#{money_rank})\nMMR: {mmr} (#{mmr_rank})")
         embed.set_thumbnail(url=avatar)
+        await ctx.send(embed=embed)
+    
+    @commands.command()
+    async def rank(self, ctx, key:str="", page:int=1):
+        end_element = (page*10) - 1
+        start_element = end_element - 9
+        title = None
+        message = ""
+        if key.lower() == "money":
+            title = "Money Rank"
+            for idx, (name, id_, money, mmr, money_rank, mmr_rank) in enumerate(self.money_ranking):
+                if start_element <= idx <= end_element:
+                    message += f"**#{money_rank}**: {name} - ${money}\n"
+        elif key.lower() == "mmr":
+            title = "MMR Rank"
+            for idx, (name, id_, money, mmr, money_rank, mmr_rank) in enumerate(self.mmr_ranking):
+                if start_element <= idx <= end_element:
+                    mmr = float(mmr)
+                    message += f"**#{mmr_rank}**: {name} - {int(mmr)}\n"
+        else:
+            await ctx.send("We have rankings based on either money or mmr! (`!rank money`) or (`!rank mmr`)")
+            return
+        if message == "":
+            message = "No one in this page!"
+        embed = discord.Embed(title=title, description=message)
+        if key.lower() == "money":
+            embed.colour = discord.Colour.gold()
+        else:
+            embed.colour = discord.Colour.greyple()
+        embed.set_footer(text="To access different pages, !rank (money/mmr) (page#)")
         await ctx.send(embed=embed)
     
     @is_approved()
