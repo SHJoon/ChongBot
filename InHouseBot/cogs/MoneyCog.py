@@ -337,6 +337,7 @@ class MoneyCog(commands.Cog):
         if self.broke:
             author = ctx.message.author
             if await self.is_in_database(str(author.id)):
+                """
                 for member in self.blue_team:
                     if author.id == member.id:
                         await ctx.send("Players are not allowed to bet!")
@@ -345,6 +346,7 @@ class MoneyCog(commands.Cog):
                     if author.id == member.id:
                         await ctx.send("Players are not allowed to bet!")
                         return
+                """
                 if self.bet_toggle:
                     # Betting amount has to be greater than 0.
                     if await self.is_positive_money(ctx, money):
