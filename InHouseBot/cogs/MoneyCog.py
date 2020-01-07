@@ -111,23 +111,6 @@ class MoneyCog(commands.Cog):
         self.cache = self.sheet.get_all_values()
         self.money_ranking = sorted(self.cache[1:], key=lambda inner: int(inner[2]), reverse=True)
         self.mmr_ranking = sorted(self.cache[1:], key=lambda inner: float(inner[3]),reverse=True)
-
-        prev_money = 0
-        index = 0
-        
-        for idx, (name, id_, money, mmr, money_rank, mmr_rank) in enumerate(self.money_ranking):
-            if money != prev_money:
-                index = idx + 1
-            self.money_ranking[idx][4] = str(index)
-            prev_money = money
-
-        prev_mmr = 0
-        index = 0
-        for idx, (name, id_, money, mmr, money_rank, mmr_rank) in enumerate(self.mmr_ranking):
-            if mmr != prev_mmr:
-                index = idx + 1
-            self.mmr_ranking[idx][5] = str(index)
-            prev_mmr = mmr
     
     async def is_positive_money(self, ctx, money):
         """ Lazy function to check if amount is Non-negative """
@@ -160,6 +143,27 @@ class MoneyCog(commands.Cog):
                 index += 1
         self.sheet.update_cells(cell_list)
     
+    async def calculate_ranks(self):
+        self.money_ranking = sorted(self.cache[1:], key=lambda inner: int(inner[2]),reverse=True)
+        self.mmr_ranking = sorted(self.cache[1:], key=lambda inner: float(inner[3]),reverse=True)
+        prev_money = 0
+        index = 0
+        
+        for idx, (name, id_, money, mmr, money_rank, mmr_rank) in enumerate(self.money_ranking):
+            if money != prev_money:
+                index = idx + 1
+            self.money_ranking[idx][4] = str(index)
+            prev_money = money
+
+        prev_mmr = 0
+        index = 0
+        for idx, (name, id_, money, mmr, money_rank, mmr_rank) in enumerate(self.mmr_ranking):
+            if mmr != prev_mmr:
+                index = idx + 1
+            self.mmr_ranking[idx][5] = str(index)
+            prev_mmr = mmr
+        await self.update_whole_sheet()
+    
     async def get_ranks(self, userid:int):
         money_rank, mmr_rank = None, None
         for row in self.cache:
@@ -171,6 +175,7 @@ class MoneyCog(commands.Cog):
 
     @is_approved()
     @commands.command(hidden=True)
+    @retry_authorize(gspread.exceptions.APIError)
     async def update_the_sheet(self, ctx):
         """ (ADMIN) Come on, read the name """
         await self.update_whole_sheet()
@@ -179,8 +184,7 @@ class MoneyCog(commands.Cog):
     @retry_authorize(gspread.exceptions.APIError)
     async def cmd_join(self, ctx, member:discord.Member=None):
         """ Join our currency database! """
-        user = None
-        userid = None
+        user = userid = money_rank = mmr_rank = None
         if member is not None:
             user = member.name
             userid = member.id
@@ -192,10 +196,13 @@ class MoneyCog(commands.Cog):
             user = author.name
             userid = author.id
         
-        userlist = [user, str(userid), "1000", "1400"]
-
-        self.sheet.append_row(userlist)
+        userlist = [user, str(userid), "1000", "1400", 0, 0]
         self.cache.append(userlist)
+        await self.calculate_ranks()
+        money_rank, mmr_rank = await self.get_ranks(userid)
+        userlist = [user, str(userid), "1000", "1400", money_rank, mmr_rank]
+        self.cache[-1] = userlist
+        await self.update_whole_sheet()
 
     @commands.command(aliases = ["$", "money", "fund", "funds", "cash", "mmr"])
     async def profile(self, ctx, person:discord.Member=None):
@@ -232,7 +239,7 @@ class MoneyCog(commands.Cog):
         embed.set_thumbnail(url=avatar)
         await ctx.send(embed=embed)
     
-    @commands.command()
+    @commands.command(aliases=["ranks"])
     async def rank(self, ctx, key:str="", page:int=1):
         end_element = (page*10) - 1
         start_element = end_element - 9
@@ -277,6 +284,8 @@ class MoneyCog(commands.Cog):
                         row[SHEET_MONEY_IDX - 1] = new_money
         else:
             await ctx.send("The member is not part of the database yet!")
+            return
+        await self.calculate_ranks()
     
     @is_approved()
     @commands.command(name="remove$")
@@ -293,6 +302,8 @@ class MoneyCog(commands.Cog):
                         row[SHEET_MONEY_IDX - 1] = new_money
         else:
             await ctx.send("The member is not part of the database yet!")
+            return
+        await self.calculate_ranks()
     
     @commands.command()
     @retry_authorize(gspread.exceptions.APIError)
@@ -313,8 +324,11 @@ class MoneyCog(commands.Cog):
                             self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, row[SHEET_MONEY_IDX - 1])
                 else:
                     await ctx.send("The person is not in the database yet!")
+                    return
             else:
                 await ctx.send("You're not in the database yet! Use `!join$` now!")
+                return
+        await self.calculate_ranks()
     
     @commands.command()
     async def bet(self, ctx, team:str = "", money:int = 0):
