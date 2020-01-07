@@ -426,7 +426,7 @@ class MoneyCog(commands.Cog):
             message += f"\n{name}: {bet_amt} NunuBucks"
         
         embed = discord.Embed(description=message, colour = discord.Colour.green())
-        embed.set_footer(text="Use !bets to display this message.")
+        embed.set_footer(text="Use !bets to display this message.\n!bet blue/red amount")
         self.bets_msg = await ctx.send(embed=embed)
         await ctx.message.delete()
 
@@ -487,6 +487,7 @@ class MoneyCog(commands.Cog):
             await ctx.send("The possible choices are either Blue or Red! For example: `!win Blue`")
             return
         await ctx.send(f"{winning_team} has won! Now distributing the payout...")
+        await self.calculate_ranks()
         self.broke = False
         self.blue_multiplier = 0
         self.red_multiplier = 0
