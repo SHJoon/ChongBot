@@ -162,7 +162,6 @@ class MoneyCog(commands.Cog):
                 index = idx + 1
             self.mmr_ranking[idx][5] = str(index)
             prev_mmr = mmr
-        await self.update_whole_sheet()
     
     async def get_ranks(self, userid:int):
         money_rank, mmr_rank = None, None
@@ -239,7 +238,7 @@ class MoneyCog(commands.Cog):
         embed.set_thumbnail(url=avatar)
         await ctx.send(embed=embed)
     
-    @commands.command(aliases=["ranks"])
+    @commands.command(aliases=["ranks", "ranking", "rankings"])
     async def rank(self, ctx, key:str="", page:int=1):
         end_element = (page*10) - 1
         start_element = end_element - 9
@@ -286,6 +285,7 @@ class MoneyCog(commands.Cog):
             await ctx.send("The member is not part of the database yet!")
             return
         await self.calculate_ranks()
+        await self.update_whole_sheet()
     
     @is_approved()
     @commands.command(name="remove$")
@@ -304,6 +304,7 @@ class MoneyCog(commands.Cog):
             await ctx.send("The member is not part of the database yet!")
             return
         await self.calculate_ranks()
+        await self.update_whole_sheet()
     
     @commands.command()
     @retry_authorize(gspread.exceptions.APIError)
@@ -329,6 +330,7 @@ class MoneyCog(commands.Cog):
                 await ctx.send("You're not in the database yet! Use `!join$` now!")
                 return
         await self.calculate_ranks()
+        await self.update_whole_sheet()
     
     @commands.command()
     async def bet(self, ctx, team:str = "", money:int = 0):
@@ -338,6 +340,7 @@ class MoneyCog(commands.Cog):
             author = ctx.message.author
             if await self.is_in_database(str(author.id)):
                 """
+                # Players cannot bet
                 for member in self.blue_team:
                     if author.id == member.id:
                         await ctx.send("Players are not allowed to bet!")
@@ -487,12 +490,12 @@ class MoneyCog(commands.Cog):
             await ctx.send("The possible choices are either Blue or Red! For example: `!win Blue`")
             return
         await ctx.send(f"{winning_team} has won! Now distributing the payout...")
-        await self.calculate_ranks()
         self.broke = False
         self.blue_multiplier = 0
         self.red_multiplier = 0
         self.blue_team_bet.clear()
         self.red_team_bet.clear()
+        await self.calculate_ranks()
         await self.update_whole_sheet()
     
     @is_approved()
