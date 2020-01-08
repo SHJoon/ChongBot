@@ -254,15 +254,24 @@ class MoneyCog(commands.Cog):
         message = ""
         if key.lower() == "money":
             title = "Money Rank"
-            for idx, (name, id_, money, mmr, money_rank, mmr_rank) in enumerate(self.money_ranking):
-                if start_element <= idx <= end_element:
+            if page == -1:
+                for idx, (name, id_, money, mmr, money_rank, mmr_rank) in enumerate(self.money_ranking):
                     message += f"**#{money_rank}**: {name} - ${money}\n"
+            else:
+                for idx, (name, id_, money, mmr, money_rank, mmr_rank) in enumerate(self.money_ranking):
+                    if start_element <= idx <= end_element:
+                        message += f"**#{money_rank}**: {name} - ${money}\n"
         elif key.lower() == "mmr":
             title = "MMR Rank"
-            for idx, (name, id_, money, mmr, money_rank, mmr_rank) in enumerate(self.mmr_ranking):
-                if start_element <= idx <= end_element:
+            if page == -1:
+                for idx, (name, id_, money, mmr, money_rank, mmr_rank) in enumerate(self.mmr_ranking):
                     mmr = float(mmr)
                     message += f"**#{mmr_rank}**: {name} - {int(mmr)}\n"
+            else:
+                for idx, (name, id_, money, mmr, money_rank, mmr_rank) in enumerate(self.mmr_ranking):
+                    if start_element <= idx <= end_element:
+                        mmr = float(mmr)
+                        message += f"**#{mmr_rank}**: {name} - {int(mmr)}\n"
         else:
             await ctx.send("We have rankings based on either money or mmr! (`!rank money`) or (`!rank mmr`)")
             return
