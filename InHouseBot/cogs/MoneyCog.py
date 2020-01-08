@@ -119,15 +119,23 @@ class MoneyCog(commands.Cog):
             return False
         else:
             return True
+    
+    async def has_enough_money(self, ctx, current_money, arg_money):
+        """ Check if invoker has enough money for the argument """
+        if current_money >= arg_money:
+            return True
+        else:
+            await ctx.send("You don't have enough money to do that.")
+            return False
 
     async def is_in_database(self, element):
         """ Check if the element is in the cache """
         return any(element in sublist for sublist in self.cache)
     
-    async def get_current_money(self,ctx,cache):
+    async def get_current_money(self,ctx):
         """ Retrieve how much the person has """
         author = ctx.message.author
-        for row in cache:
+        for row in self.cache:
             if row[SHEET_ID_IDX - 1] == str(author.id):
                 return int(row[SHEET_MONEY_IDX - 1])
     
@@ -311,23 +319,27 @@ class MoneyCog(commands.Cog):
     async def give(self, ctx, member:discord.Member, money:int):
         """ Give some of your money to select person (!give @person amount)"""
         if await self.is_positive_money(ctx, money):
-            if await self.is_in_database(str(ctx.message.author.id)):
-                if await self.is_in_database(str(member.id)):
-                    author = ctx.message.author
-                    for idx, row in enumerate(self.cache):
-                        # Deduct amount from command invoker
-                        if row[SHEET_ID_IDX - 1] == str(author.id):
-                            row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) - money
-                            self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, row[SHEET_MONEY_IDX - 1])
-                        # Give amount to target person
-                        if row[SHEET_ID_IDX - 1] == str(member.id):
-                            row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + money
-                            self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, row[SHEET_MONEY_IDX - 1])
+            current_money = await self.get_current_money(ctx)
+            if await self.has_enough_money(ctx, current_money, money):
+                if await self.is_in_database(str(ctx.message.author.id)):
+                    if await self.is_in_database(str(member.id)):
+                        author = ctx.message.author
+                        for idx, row in enumerate(self.cache):
+                            # Deduct amount from command invoker
+                            if row[SHEET_ID_IDX - 1] == str(author.id):
+                                row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) - money
+                                self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, row[SHEET_MONEY_IDX - 1])
+                            # Give amount to target person
+                            if row[SHEET_ID_IDX - 1] == str(member.id):
+                                row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + money
+                                self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, row[SHEET_MONEY_IDX - 1])
+                    else:
+                        await ctx.send("The person is not in the database yet!")
+                        return
                 else:
-                    await ctx.send("The person is not in the database yet!")
+                    await ctx.send("You're not in the database yet! Use `!join$` now!")
                     return
             else:
-                await ctx.send("You're not in the database yet! Use `!join$` now!")
                 return
         await self.calculate_ranks()
         await self.update_whole_sheet()
@@ -339,7 +351,7 @@ class MoneyCog(commands.Cog):
         if self.broke:
             author = ctx.message.author
             if await self.is_in_database(str(author.id)):
-                """
+                """ 
                 # Players cannot bet
                 for member in self.blue_team:
                     if author.id == member.id:
@@ -354,7 +366,7 @@ class MoneyCog(commands.Cog):
                     # Betting amount has to be greater than 0.
                     if await self.is_positive_money(ctx, money):
                         # Give error if betting amount is more than how much you own.
-                        current_money = await self.get_current_money(ctx, self.cache)
+                        current_money = await self.get_current_money(ctx)
                         if team.lower() == "blue":
                             # For replacing existing bet, return the money.
                             if author.id in self.blue_team_bet:
@@ -379,12 +391,15 @@ class MoneyCog(commands.Cog):
 
                         elif team.lower() == "red":
                             # For replacing existing bet, return the money first, then put in the new bet.
-                            for member_id, bet in self.red_team_bet.items():
-                                if author.id == member_id:
-                                    for row in self.cache:
-                                        if row[SHEET_ID_IDX - 1] == str(author.id):
-                                            row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + bet
-                                            current_money = row[SHEET_MONEY_IDX - 1]
+                            if author.id in self.red_team_bet:
+                                for member_id, bet in self.red_team_bet.items():
+                                    if author.id == member_id:
+                                        for row in self.cache:
+                                            if row[SHEET_ID_IDX - 1] == str(author.id):
+                                                if money > (current_money + bet):
+                                                    await ctx.send("You don't have enough money to bet that amount!")
+                                                    return
+                                                row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + bet
                             
                             if current_money < money:
                                 await ctx.send("You don't have enough money to bet that amount!")
