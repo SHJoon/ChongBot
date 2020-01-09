@@ -265,7 +265,7 @@ class MoneyCog(commands.Cog):
                         message += f"**#{money_rank}**: {name} - ${money}\n"
         elif key.lower() == "mmr":
             title = "MMR Rank"
-            if page == -1:
+            if page == 0:
                 for idx, (name, id_, money, mmr, money_rank, mmr_rank) in enumerate(self.mmr_ranking):
                     mmr = float(mmr)
                     message += f"**#{mmr_rank}**: {name} - {int(mmr)}\n"
