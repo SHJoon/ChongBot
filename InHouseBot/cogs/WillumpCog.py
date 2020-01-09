@@ -210,3 +210,6 @@ class WillumpCog(commands.Cog):
 
         await ctx.send(message)
     
+    @commands.command(aliases=["race"])
+    async def gg(self, ctx):
+        await ctx.send("https://zeal.gg/x1waP0W\nhttps://zeal.gg/TpvQYWZ")
