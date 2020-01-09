@@ -106,7 +106,7 @@ class QueueCog(commands.Cog):
         self.queuemsg = await ctx.send(embed=embed)
         await ctx.message.delete()
     
-    @commands.command(aliases=["qtime","settime","time"])
+    @commands.command(aliases=["qtime","settime"])
     async def queuetime(self, ctx, *, _time):
         """ Set gaming time """
         self.qtime = _time

@@ -152,6 +152,7 @@ class MoneyCog(commands.Cog):
         self.sheet.update_cells(cell_list)
     
     async def calculate_ranks(self):
+        """ Sort the cache by ranks and update them """
         self.money_ranking = sorted(self.cache[1:], key=lambda inner: int(inner[2]),reverse=True)
         self.mmr_ranking = sorted(self.cache[1:], key=lambda inner: float(inner[3]),reverse=True)
         prev_money = 0
@@ -248,13 +249,14 @@ class MoneyCog(commands.Cog):
     
     @commands.command(aliases=["ranks", "ranking", "rankings"])
     async def rank(self, ctx, key:str="", page:int=1):
-        end_element = (page*10) - 1
-        start_element = end_element - 9
+        """ Display ranks of our server! !rank (money/mmr) page# """
+        end_element = (page*15) - 1
+        start_element = end_element - 14
         title = None
         message = ""
         if key.lower() == "money":
             title = "Money Rank"
-            if page == -1:
+            if page == 0:
                 for idx, (name, id_, money, mmr, money_rank, mmr_rank) in enumerate(self.money_ranking):
                     message += f"**#{money_rank}**: {name} - ${money}\n"
             else:
@@ -360,23 +362,17 @@ class MoneyCog(commands.Cog):
         if self.broke:
             author = ctx.message.author
             if await self.is_in_database(str(author.id)):
-                """ 
-                # Players cannot bet
-                for member in self.blue_team:
-                    if author.id == member.id:
-                        await ctx.send("Players are not allowed to bet!")
-                        return
-                for member in self.red_team:
-                    if author.id == member.id:
-                        await ctx.send("Players are not allowed to bet!")
-                        return
-                """
                 if self.bet_toggle:
                     # Betting amount has to be greater than 0.
                     if await self.is_positive_money(ctx, money):
                         # Give error if betting amount is more than how much you own.
                         current_money = await self.get_current_money(ctx)
                         if team.lower() == "blue":
+                            # If you're in Red Team, you cannot bet for Blue Team.
+                            for member in self.red_team:
+                                if author.id == member.id:
+                                    await ctx.send("You cannot bet on the opposing team!")
+                                    return
                             # For replacing existing bet, return the money.
                             if author.id in self.blue_team_bet:
                                 for member_id, bet in self.blue_team_bet.items():
@@ -399,6 +395,11 @@ class MoneyCog(commands.Cog):
                                     row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) - money
 
                         elif team.lower() == "red":
+                            # If you're in Blue Team, you cannot bet for Red Team.
+                            for member in self.blue_team:
+                                if author.id == member.id:
+                                    await ctx.send("You cannot bet on the opposing team!")
+                                    return
                             # For replacing existing bet, return the money first, then put in the new bet.
                             if author.id in self.red_team_bet:
                                 for member_id, bet in self.red_team_bet.items():
@@ -409,10 +410,10 @@ class MoneyCog(commands.Cog):
                                                     await ctx.send("You don't have enough money to bet that amount!")
                                                     return
                                                 row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + bet
-                            
-                            if current_money < money:
-                                await ctx.send("You don't have enough money to bet that amount!")
-                                return
+                            else:
+                                if current_money < money:
+                                    await ctx.send("You don't have enough money to bet that amount!")
+                                    return
 
                             # Add the author to a list/dict for red team, with how much they bet.
                             self.red_team_bet[author.id] = money
@@ -435,24 +436,29 @@ class MoneyCog(commands.Cog):
     async def bets(self, ctx):
         """ Show the list of bets """
         server = ctx.guild
+        embed = discord.Embed()
         if self.bets_msg is not None:
             await self.bets_msg.delete()
         message = "**Blue Team Multiplier:** {:.2f} \n \
             **Red Team Multiplier:** {:.2f}".format(1 + self.blue_multiplier, 1 + self.red_multiplier)
+        embed.description = message
 
-        message += "\n**Blue Team Bets**"
+        message = "**Blue Team Bets**"
         for member_id, bet_amt in self.blue_team_bet.items():
             member = discord.utils.get(server.members, id=member_id)
             name = member.nick if member.nick else member.name
             message += f"\n{name}: {bet_amt} NunuBucks"
+        embed.add_field(name="\u200b",value = message,inline=True)
         
-        message += "\n**Red Team Bets**"
+        message = "**Red Team Bets**"
         for member_id, bet_amt in self.red_team_bet.items():
             member = discord.utils.get(server.members, id=member_id)
             name = member.nick if member.nick else member.name
             message += f"\n{name}: {bet_amt} NunuBucks"
+        embed.add_field(name="\u200b",value = message,inline=True)
+        embed.colour=discord.Colour.green()
         
-        embed = discord.Embed(description=message, colour = discord.Colour.green())
+        # embed = discord.Embed(description=message, colour = discord.Colour.green())
         embed.set_footer(text="Use !bets to display this message.\n!bet blue/red amount")
         self.bets_msg = await ctx.send(embed=embed)
         await ctx.message.delete()
@@ -463,6 +469,8 @@ class MoneyCog(commands.Cog):
     async def win(self, ctx, team = ""):
         """ (ADMIN) Decide on who the winner is, and payout accordingly! """
         winning_team = None
+        server = ctx.guild
+        msg = ""
         if team.lower() == "blue":
             # Give the Blue team members their winnings.
             # Additionally, calculate the new MMR of each players
@@ -482,7 +490,11 @@ class MoneyCog(commands.Cog):
                         row[SHEET_MMR_IDX - 1] = new_mmr
             # Grab the list/dict for blue team, calculate how much they won, and distribute accordingly.
             for member_id in self.blue_team_bet:
+                temp = self.blue_team_bet[member_id]
                 self.blue_team_bet[member_id] *= (1 + self.blue_multiplier)
+                member = discord.utils.get(server.members, id=member_id)
+                msg += f"{member.name}: {int(self.blue_team_bet[member_id]) - temp}\n"
+                print(msg)
                 for row in self.cache:
                     if row[SHEET_ID_IDX - 1] == str(member_id):
                         row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + int(self.blue_team_bet[member_id])
@@ -505,7 +517,10 @@ class MoneyCog(commands.Cog):
                         row[SHEET_MMR_IDX - 1] = new_mmr
             # Grab the list/dict for red team, calculate how much they won, and distribute accordingly.
             for member_id in self.red_team_bet:
+                temp = self.red_team_bet[member_id]
                 self.red_team_bet[member_id] *= (1 + self.red_multiplier)
+                member = discord.utils.get(server.members, id=member_id)
+                msg += f"{member.name}: {int(self.red_team_bet[member_id] - temp)}\n"
                 for row in self.cache:
                     if row[SHEET_ID_IDX - 1] == str(member_id):
                         row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + int(self.red_team_bet[member_id])
@@ -513,7 +528,11 @@ class MoneyCog(commands.Cog):
         else:
             await ctx.send("The possible choices are either Blue or Red! For example: `!win Blue`")
             return
-        await ctx.send(f"{winning_team} has won! Now distributing the payout...")
+        message = await ctx.send(f"{winning_team} has won! Now distributing the payout...")
+        avatar = message.author.avatar_url
+        embed = discord.Embed(title="Bet Payouts",description=msg, colour = discord.Colour.gold())
+        embed.set_thumbnail(url=avatar)
+        await ctx.send(embed=embed)
         self.broke = False
         self.blue_multiplier = 0
         self.red_multiplier = 0
