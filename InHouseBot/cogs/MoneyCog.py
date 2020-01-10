@@ -92,6 +92,8 @@ class MoneyCog(commands.Cog):
         self.broke = False
         self.blue_team_name = "Blue Side"
         self.red_team_name = "Red Side"
+        self.baron_id = 663256952742084637
+        self.peasant_id = 663605505809186847
 
         self.blue_team = []
         self.red_team = []
@@ -151,7 +153,7 @@ class MoneyCog(commands.Cog):
                 index += 1
         self.sheet.update_cells(cell_list)
     
-    async def calculate_ranks(self):
+    async def calculate_ranks(self, ctx):
         """ Sort the cache by ranks and update them """
         self.money_ranking = sorted(self.cache[1:], key=lambda inner: int(inner[2]),reverse=True)
         self.mmr_ranking = sorted(self.cache[1:], key=lambda inner: float(inner[3]),reverse=True)
@@ -171,6 +173,8 @@ class MoneyCog(commands.Cog):
                 index = idx + 1
             self.mmr_ranking[idx][5] = str(index)
             prev_mmr = mmr
+        
+        await self.assign_roles(ctx)
     
     async def get_ranks(self, userid:int):
         money_rank, mmr_rank = None, None
@@ -180,6 +184,24 @@ class MoneyCog(commands.Cog):
                 mmr_rank = row[SHEET_MMR_RANK_IDX - 1]
                 break
         return money_rank, mmr_rank
+    
+    async def assign_roles(self, ctx):
+        """ Assign proper roles to each person based on money."""
+        guild = ctx.guild
+        highest_money = self.money_ranking[0][2]
+        for name, id_, money, mmr, money_rank, mmr_rank in self.money_ranking:
+            member = discord.utils.get(guild.members, id=int(id_))
+            if money == highest_money:
+                await member.add_roles(guild.get_role(self.baron_id))
+            else:
+                await member.remove_roles(guild.get_role(self.baron_id))
+        lowest_money = self.money_ranking[-1][2]
+        for name, id_, money, mmr, money_rank, mmr_rank in reversed(self.money_ranking):
+            member = discord.utils.get(guild.members, id=int(id_))
+            if money == lowest_money:
+                await member.add_roles(guild.get_role(self.peasant_id))
+            else:
+                await member.remove_roles(guild.get_role(self.peasant_id))
 
     @is_approved()
     @commands.command(hidden=True)
@@ -206,7 +228,7 @@ class MoneyCog(commands.Cog):
         
         userlist = [user, str(userid), "1000", "1400", 0, 0]
         self.cache.append(userlist)
-        await self.calculate_ranks()
+        await self.calculate_ranks(ctx)
         money_rank, mmr_rank = await self.get_ranks(userid)
         userlist = [user, str(userid), "1000", "1400", money_rank, mmr_rank]
         self.cache[-1] = userlist
@@ -303,7 +325,7 @@ class MoneyCog(commands.Cog):
         else:
             await ctx.send("The member is not part of the database yet!")
             return
-        await self.calculate_ranks()
+        await self.calculate_ranks(ctx)
         await self.update_whole_sheet()
     
     @is_approved()
@@ -322,7 +344,7 @@ class MoneyCog(commands.Cog):
         else:
             await ctx.send("The member is not part of the database yet!")
             return
-        await self.calculate_ranks()
+        await self.calculate_ranks(ctx)
         await self.update_whole_sheet()
     
     @commands.command()
@@ -352,7 +374,7 @@ class MoneyCog(commands.Cog):
                     return
             else:
                 return
-        await self.calculate_ranks()
+        await self.calculate_ranks(ctx)
         await self.update_whole_sheet()
     
     @commands.command()
@@ -480,13 +502,13 @@ class MoneyCog(commands.Cog):
                     if str(member.id) == row[SHEET_ID_IDX - 1]:
                         row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + 200
                         old_mmr = float(row[SHEET_MMR_IDX - 1])
-                        new_mmr = old_mmr + 32 * (1 - self.blue_team_win)
+                        new_mmr = old_mmr + (32 * (1 - self.blue_team_win))
                         row[SHEET_MMR_IDX - 1] = new_mmr
                 # Red team when blue win
                 for member in self.red_team:
                     if str(member.id) == row[SHEET_ID_IDX - 1]:
                         old_mmr = float(row[SHEET_MMR_IDX - 1])
-                        new_mmr = old_mmr + 32 * (0 - (1 - self.blue_team_win))
+                        new_mmr = old_mmr + (32 * (0 - (1 - self.blue_team_win)))
                         row[SHEET_MMR_IDX - 1] = new_mmr
             # Grab the list/dict for blue team, calculate how much they won, and distribute accordingly.
             for member_id in self.blue_team_bet:
@@ -507,13 +529,13 @@ class MoneyCog(commands.Cog):
                     if str(member.id) == row[SHEET_ID_IDX - 1]:
                         row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + 200
                         old_mmr = float(row[SHEET_MMR_IDX - 1])
-                        new_mmr = old_mmr + 32 * (1 - (1 - self.blue_team_win))
+                        new_mmr = old_mmr + (32 * (1 - (1 - self.blue_team_win)))
                         row[SHEET_MMR_IDX - 1] = new_mmr
                 # Blue team when red win
                 for member in self.blue_team:
                     if str(member.id) == row[SHEET_ID_IDX - 1]:
                         old_mmr = float(row[SHEET_MMR_IDX - 1])
-                        new_mmr = old_mmr + 32 * (0 - self.blue_team_win)
+                        new_mmr = old_mmr + (32 * (0 - self.blue_team_win))
                         row[SHEET_MMR_IDX - 1] = new_mmr
             # Grab the list/dict for red team, calculate how much they won, and distribute accordingly.
             for member_id in self.red_team_bet:
@@ -538,7 +560,7 @@ class MoneyCog(commands.Cog):
         self.red_multiplier = 0
         self.blue_team_bet.clear()
         self.red_team_bet.clear()
-        await self.calculate_ranks()
+        await self.calculate_ranks(ctx)
         await self.update_whole_sheet()
     
     @is_approved()
