@@ -92,6 +92,8 @@ class MoneyCog(commands.Cog):
         self.broke = False
         self.blue_team_name = "Blue Side"
         self.red_team_name = "Red Side"
+        self.rich_test_id = 665644125286039552
+        self.poor_test_id = 665644198053150730
         self.baron_id = 663256952742084637
         self.peasant_id = 663605505809186847
 
@@ -189,26 +191,32 @@ class MoneyCog(commands.Cog):
     async def assign_roles(self, ctx):
         """ Assign proper roles to each person based on money."""
         guild = ctx.guild
+        # Remove existing baron roles, and assign new ones
         highest_money = self.money_ranking[0][2]
         for name, id_, money, mmr, money_rank, mmr_rank in self.money_ranking:
             member = discord.utils.get(guild.members, id=int(id_))
             if money == highest_money:
-                await member.add_roles(guild.get_role(self.baron_id))
+                await member.add_roles(guild.get_role(self.rich_test_id))
+                # await member.add_roles(guild.get_role(self.baron_id))
             else:
-                await member.remove_roles(guild.get_role(self.baron_id))
+                await member.remove_roles(guild.get_role(self.rich_test_id))
+                # await member.remove_roles(guild.get_role(self.baron_id))
+        # Remove existing peasant roles, and assign new ones
         lowest_money = self.money_ranking[-1][2]
         for name, id_, money, mmr, money_rank, mmr_rank in reversed(self.money_ranking):
             member = discord.utils.get(guild.members, id=int(id_))
             if money == lowest_money:
-                await member.add_roles(guild.get_role(self.peasant_id))
+                await member.add_roles(guild.get_role(self.poor_test_id))
+                # await member.add_roles(guild.get_role(self.peasant_id))
             else:
-                await member.remove_roles(guild.get_role(self.peasant_id))
+                await member.remove_roles(guild.get_role(self.poor_test_id))
+                # await member.remove_roles(guild.get_role(self.peasant_id))
 
     @is_approved()
     @commands.command(hidden=True)
     @retry_authorize(gspread.exceptions.APIError)
     async def update_the_sheet(self, ctx):
-        """ (ADMIN) Come on, read the name """
+        """ (ADMIN) Force update the sheet manually """
         await self.calculate_ranks(ctx)
         await self.update_whole_sheet()
 
@@ -517,8 +525,7 @@ class MoneyCog(commands.Cog):
                 temp = self.blue_team_bet[member_id]
                 self.blue_team_bet[member_id] *= (1 + self.blue_multiplier)
                 member = discord.utils.get(server.members, id=member_id)
-                msg += f"{member.name}: {int(self.blue_team_bet[member_id]) - temp}\n"
-                print(msg)
+                msg += f"{member.name}: {int(self.blue_team_bet[member_id])}\n"
                 for row in self.cache:
                     if row[SHEET_ID_IDX - 1] == str(member_id):
                         row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + int(self.blue_team_bet[member_id])
@@ -544,7 +551,7 @@ class MoneyCog(commands.Cog):
                 temp = self.red_team_bet[member_id]
                 self.red_team_bet[member_id] *= (1 + self.red_multiplier)
                 member = discord.utils.get(server.members, id=member_id)
-                msg += f"{member.name}: {int(self.red_team_bet[member_id] - temp)}\n"
+                msg += f"{member.name}: {int(self.red_team_bet[member_id])}\n"
                 for row in self.cache:
                     if row[SHEET_ID_IDX - 1] == str(member_id):
                         row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + int(self.red_team_bet[member_id])
