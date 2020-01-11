@@ -177,6 +177,7 @@ class MoneyCog(commands.Cog):
         await self.assign_roles(ctx)
     
     async def get_ranks(self, userid:int):
+        """ Returns current rank of given player """
         money_rank, mmr_rank = None, None
         for row in self.cache:
             if row[SHEET_ID_IDX - 1] == str(userid):
@@ -208,6 +209,7 @@ class MoneyCog(commands.Cog):
     @retry_authorize(gspread.exceptions.APIError)
     async def update_the_sheet(self, ctx):
         """ (ADMIN) Come on, read the name """
+        await self.calculate_ranks(ctx)
         await self.update_whole_sheet()
 
     @commands.command(name="join$")
