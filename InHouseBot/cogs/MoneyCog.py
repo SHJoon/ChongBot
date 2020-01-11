@@ -196,11 +196,11 @@ class MoneyCog(commands.Cog):
         for name, id_, money, mmr, money_rank, mmr_rank in self.money_ranking:
             member = discord.utils.get(guild.members, id=int(id_))
             if money == highest_money:
-                await member.add_roles(guild.get_role(self.rich_test_id))
-                # await member.add_roles(guild.get_role(self.baron_id))
+                # await member.add_roles(guild.get_role(self.rich_test_id))
+                await member.add_roles(guild.get_role(self.baron_id))
             else:
-                await member.remove_roles(guild.get_role(self.rich_test_id))
-                # await member.remove_roles(guild.get_role(self.baron_id))
+                # await member.remove_roles(guild.get_role(self.rich_test_id))
+                await member.remove_roles(guild.get_role(self.baron_id))
         # Remove existing peasant roles, and assign new ones
         lowest_money = self.money_ranking[-1][2]
         for name, id_, money, mmr, money_rank, mmr_rank in reversed(self.money_ranking):
