@@ -206,11 +206,11 @@ class MoneyCog(commands.Cog):
         for name, id_, money, mmr, money_rank, mmr_rank in reversed(self.money_ranking):
             member = discord.utils.get(guild.members, id=int(id_))
             if money == lowest_money:
-                await member.add_roles(guild.get_role(self.poor_test_id))
-                # await member.add_roles(guild.get_role(self.peasant_id))
+                # await member.add_roles(guild.get_role(self.poor_test_id))
+                await member.add_roles(guild.get_role(self.peasant_id))
             else:
-                await member.remove_roles(guild.get_role(self.poor_test_id))
-                # await member.remove_roles(guild.get_role(self.peasant_id))
+                # await member.remove_roles(guild.get_role(self.poor_test_id))
+                await member.remove_roles(guild.get_role(self.peasant_id))
 
     @is_approved()
     @commands.command(hidden=True)
