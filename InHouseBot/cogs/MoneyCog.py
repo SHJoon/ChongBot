@@ -3,7 +3,6 @@ import httpx
 import os
 import random
 import asyncio
-from pprint import pprint
 from functools import wraps
 from tempfile import NamedTemporaryFile
 
@@ -18,6 +17,8 @@ SHEET_MONEY_IDX = 3
 SHEET_MMR_IDX = 4
 SHEET_MONEY_RANK_IDX = 5
 SHEET_MMR_RANK_IDX = 6
+SHEET_GAMES_IDX = 7
+SHEET_WINS_IDX = 8
 
 creds = None
 gclient = None
@@ -26,7 +27,7 @@ google_oauth_json = None
 if "GOOGLE_OAUTH_JSON" in os.environ:
     google_oauth_json = os.environ["GOOGLE_OAUTH_JSON"]
 elif os.path.isfile("InHouseTest.json"):
-    print("Grabbed local json file for test spreadsheet")
+    print("Grabbed local json file for test spreadsheet.")
     with open("InHouseTest.json", "r") as f:
         google_oauth_json = f.read()
 
@@ -113,9 +114,11 @@ class MoneyCog(commands.Cog):
 
         # Lets cache on init
         self.cache = self.sheet.get_all_values()
+        # Ignoring column "I" of spreadsheet, as calculation is done on the spreadsheet
+        self.cache = [x[:-1] for x in self.cache]
         self.money_ranking = sorted(self.cache[1:], key=lambda inner: int(inner[2]), reverse=True)
         self.mmr_ranking = sorted(self.cache[1:], key=lambda inner: float(inner[3]),reverse=True)
-    
+
     async def is_positive_money(self, ctx, money):
         """ Lazy function to check if amount is Non-negative """
         if money < 0:
@@ -145,8 +148,7 @@ class MoneyCog(commands.Cog):
     
     async def update_whole_sheet(self):
         """ Update the whole spreadsheet. Used to minimize API calls """
-        cache_len = len(self.cache)
-        sheet_range_A1 = f'A2:F{cache_len}'
+        sheet_range_A1 = f'A2:H{len(self.cache)}'
         cell_list = self.sheet.range(sheet_range_A1)
         index = 0
         for row in self.money_ranking:
@@ -159,23 +161,28 @@ class MoneyCog(commands.Cog):
         """ Sort the cache by ranks and update them """
         self.money_ranking = sorted(self.cache[1:], key=lambda inner: int(inner[2]),reverse=True)
         self.mmr_ranking = sorted(self.cache[1:], key=lambda inner: float(inner[3]),reverse=True)
+
         prev_money = 0
-        index = 0
-        
-        for idx, (name, id_, money, mmr, money_rank, mmr_rank) in enumerate(self.money_ranking):
+        rank = 0
+        for idx, (name, id_, money, mmr, money_rank, mmr_rank, games, wins) in enumerate(self.money_ranking):
             if money != prev_money:
-                index = idx + 1
-            self.money_ranking[idx][4] = str(index)
+                rank = idx + 1
+            self.money_ranking[idx][4] = str(rank)
             prev_money = money
 
         prev_mmr = 0
+        rank = 1
         index = 0
-        for idx, (name, id_, money, mmr, money_rank, mmr_rank) in enumerate(self.mmr_ranking):
-            if mmr != prev_mmr:
-                index = idx + 1
-            self.mmr_ranking[idx][5] = str(index)
+        for idx, (name, id_, money, mmr, money_rank, mmr_rank, games, wins) in enumerate(self.mmr_ranking):
+            if games in (0,"0"):
+                self.mmr_ranking[idx][5] = 0
+            else: 
+                if mmr != prev_mmr:
+                    rank = index + 1
+                self.mmr_ranking[idx][5] = str(rank)
+                index += 1
             prev_mmr = mmr
-        
+
         await self.assign_roles(ctx)
     
     async def get_ranks(self, userid:int):
@@ -193,7 +200,7 @@ class MoneyCog(commands.Cog):
         guild = ctx.guild
         # Remove existing baron roles, and assign new ones
         highest_money = self.money_ranking[0][2]
-        for name, id_, money, mmr, money_rank, mmr_rank in self.money_ranking:
+        for name, id_, money, mmr, money_rank, mmr_rank, games, wins in self.money_ranking:
             member = discord.utils.get(guild.members, id=int(id_))
             if money == highest_money:
                 # await member.add_roles(guild.get_role(self.rich_test_id))
@@ -203,7 +210,7 @@ class MoneyCog(commands.Cog):
                 await member.remove_roles(guild.get_role(self.baron_id))
         # Remove existing peasant roles, and assign new ones
         lowest_money = self.money_ranking[-1][2]
-        for name, id_, money, mmr, money_rank, mmr_rank in reversed(self.money_ranking):
+        for name, id_, money, mmr, money_rank, mmr_rank, games, wins in reversed(self.money_ranking):
             member = discord.utils.get(guild.members, id=int(id_))
             if money == lowest_money:
                 # await member.add_roles(guild.get_role(self.poor_test_id))
@@ -236,11 +243,11 @@ class MoneyCog(commands.Cog):
             user = author.name
             userid = author.id
         
-        userlist = [user, str(userid), "1000", "1400", 0, 0]
+        userlist = [user, str(userid), "1000", "1400", 0, 0, 0, 0]
         self.cache.append(userlist)
         await self.calculate_ranks(ctx)
         money_rank, mmr_rank = await self.get_ranks(userid)
-        userlist = [user, str(userid), "1000", "1400", money_rank, mmr_rank]
+        userlist = [user, str(userid), "1000", "1400", money_rank, mmr_rank, 0, 0]
         self.cache[-1] = userlist
         await self.update_whole_sheet()
 
@@ -289,21 +296,25 @@ class MoneyCog(commands.Cog):
         if key.lower() == "money":
             title = "Money Rank"
             if page == 0:
-                for idx, (name, id_, money, mmr, money_rank, mmr_rank) in enumerate(self.money_ranking):
+                for idx, (name, id_, money, mmr, money_rank, mmr_rank, games, wins) in enumerate(self.money_ranking):
                     message += f"**#{money_rank}**: {name} - ${money}\n"
             else:
-                for idx, (name, id_, money, mmr, money_rank, mmr_rank) in enumerate(self.money_ranking):
+                for idx, (name, id_, money, mmr, money_rank, mmr_rank, games, wins) in enumerate(self.money_ranking):
                     if start_element <= idx <= end_element:
                         message += f"**#{money_rank}**: {name} - ${money}\n"
         elif key.lower() == "mmr":
             title = "MMR Rank"
             if page == 0:
-                for idx, (name, id_, money, mmr, money_rank, mmr_rank) in enumerate(self.mmr_ranking):
+                for idx, (name, id_, money, mmr, money_rank, mmr_rank, games, wins) in enumerate(self.mmr_ranking):
+                    if mmr_rank in (0,"0"):
+                        continue
                     mmr = float(mmr)
                     message += f"**#{mmr_rank}**: {name} - {int(mmr)}\n"
             else:
-                for idx, (name, id_, money, mmr, money_rank, mmr_rank) in enumerate(self.mmr_ranking):
+                for idx, (name, id_, money, mmr, money_rank, mmr_rank, games, wins) in enumerate(self.mmr_ranking):
                     if start_element <= idx <= end_element:
+                        if mmr_rank in (0,"0"):
+                            continue
                         mmr = float(mmr)
                         message += f"**#{mmr_rank}**: {name} - {int(mmr)}\n"
         else:
@@ -514,12 +525,15 @@ class MoneyCog(commands.Cog):
                         old_mmr = float(row[SHEET_MMR_IDX - 1])
                         new_mmr = old_mmr + (32 * (1 - self.blue_team_win))
                         row[SHEET_MMR_IDX - 1] = new_mmr
+                        row[SHEET_GAMES_IDX - 1] = int(row[SHEET_GAMES_IDX - 1]) + 1
+                        row[SHEET_WINS_IDX - 1] = int(row[SHEET_WINS_IDX - 1]) + 1
                 # Red team when blue win
                 for member in self.red_team:
                     if str(member.id) == row[SHEET_ID_IDX - 1]:
                         old_mmr = float(row[SHEET_MMR_IDX - 1])
                         new_mmr = old_mmr + (32 * (0 - (1 - self.blue_team_win)))
                         row[SHEET_MMR_IDX - 1] = new_mmr
+                        row[SHEET_GAMES_IDX - 1] = int(row[SHEET_GAMES_IDX - 1]) + 1
             # Grab the list/dict for blue team, calculate how much they won, and distribute accordingly.
             for member_id in self.blue_team_bet:
                 temp = self.blue_team_bet[member_id]
@@ -540,12 +554,15 @@ class MoneyCog(commands.Cog):
                         old_mmr = float(row[SHEET_MMR_IDX - 1])
                         new_mmr = old_mmr + (32 * (1 - (1 - self.blue_team_win)))
                         row[SHEET_MMR_IDX - 1] = new_mmr
+                        row[SHEET_GAMES_IDX - 1] = int(row[SHEET_GAMES_IDX - 1]) + 1
+                        row[SHEET_WINS_IDX - 1] = int(row[SHEET_WINS_IDX - 1]) + 1
                 # Blue team when red win
                 for member in self.blue_team:
                     if str(member.id) == row[SHEET_ID_IDX - 1]:
                         old_mmr = float(row[SHEET_MMR_IDX - 1])
                         new_mmr = old_mmr + (32 * (0 - self.blue_team_win))
                         row[SHEET_MMR_IDX - 1] = new_mmr
+                        row[SHEET_GAMES_IDX - 1] = int(row[SHEET_GAMES_IDX - 1]) + 1
             # Grab the list/dict for red team, calculate how much they won, and distribute accordingly.
             for member_id in self.red_team_bet:
                 temp = self.red_team_bet[member_id]
