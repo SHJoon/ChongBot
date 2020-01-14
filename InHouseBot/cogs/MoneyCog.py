@@ -147,7 +147,7 @@ class MoneyCog(commands.Cog):
                 return int(row[SHEET_MONEY_IDX - 1])
     
     async def update_whole_sheet(self):
-        """ Update the whole spreadsheet. Used to minimize API calls """
+        """ Update the whole spreadsheet. """
         sheet_range_A1 = f'A2:H{len(self.cache)}'
         cell_list = self.sheet.range(sheet_range_A1)
         index = 0
@@ -282,7 +282,12 @@ class MoneyCog(commands.Cog):
                     mmr = int(mmr)
                     money_rank, mmr_rank = await self.get_ranks(author.id)
             avatar = author.avatar_url
-        embed = discord.Embed(title=f"{name}'s profile", description=f"Money: {money} NunuBucks (#{money_rank})\nMMR: {mmr} (#{mmr_rank})")
+        msg = ""
+        if mmr_rank in (0,"0"):
+            msg = f"Money: {money} NunuBucks (#{money_rank})\nMMR: You need to play a game!"
+        else:
+            msg = f"Money: {money} NunuBucks (#{money_rank})\nMMR: {mmr} (#{mmr_rank})"
+        embed = discord.Embed(title=f"{name}'s profile", description=msg)
         embed.set_thumbnail(url=avatar)
         await ctx.send(embed=embed)
     
