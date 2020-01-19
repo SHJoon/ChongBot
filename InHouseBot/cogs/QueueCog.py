@@ -104,7 +104,12 @@ class QueueCog(commands.Cog):
         embed = discord.Embed(description=message, colour=discord.Colour.green())
         embed.set_footer(text="Join the queue with !add / Leave the queue with !leave")
         self.queuemsg = await ctx.send(embed=embed)
-        await ctx.message.delete()
+        await self.queuemsg.add_reaction("<:join:668410201099206680>")
+        await self.queuemsg.add_reaction("<:drop:668410288667885568>")
+        try:
+            await ctx.message.delete()
+        except Exception:
+            pass
     
     @commands.command(aliases=["qtime","settime"])
     async def queuetime(self, ctx, *, _time):

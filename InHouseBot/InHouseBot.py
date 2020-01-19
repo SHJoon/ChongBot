@@ -138,21 +138,34 @@ roles = {649426239706234886:[569662747915321344, 569978007591190539],# Top
 649426225961500713:[569662844556148741, 569977972929462283],# Mid
 649463087476375573:[569662919055245312, 569977902993506305],# Bot
 649426197918515211:[569662971484176395, 569978337502691333],# Support
-649426272933642240:[569663143786184727, 569980965582012416]# Fill
+649426272933642240:[569663143786184727, 569980965582012416] # Fill
 }
 
 main_role_msg_id = 649464520179187765
 sub_role_msg_id = 649464528102490123
 
+# queue_emojis = [join_id, drop_id]
+queue_emojis = [668410201099206680,668410288667885568]
+
 @bot.event
 async def on_raw_reaction_add(reaction):
     if reaction.user_id == bot.user.id:
         return
-    if not reaction.emoji.id in roles:
+    if not ((reaction.emoji.id in roles) or (reaction.emoji.id in queue_emojis)):
         return
     
     guild = await bot.fetch_guild(reaction.guild_id)
     user = await guild.fetch_member(reaction.user_id)
+    channel = bot.get_channel(reaction.channel_id)
+    message = await channel.fetch_message(reaction.message_id)
+    ctx = await bot.get_context(message)
+
+    if reaction.emoji.id == 668410201099206680:
+        await ctx.invoke(bot.get_command("forceadd"),user)
+        return
+    elif reaction.emoji.id == 668410288667885568:
+        await ctx.invoke(bot.get_command("forceremove"),user)
+        return
 
     if reaction.message_id == main_role_msg_id:
         emojiID = roles.get(reaction.emoji.id)

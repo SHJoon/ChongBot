@@ -357,7 +357,6 @@ class MoneyCog(commands.Cog):
                     if row[SHEET_ID_IDX - 1] == str(member.id):
                         current_money = int(row[SHEET_MONEY_IDX - 1])
                         new_money = current_money + money
-                        # self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, new_money)
                         row[SHEET_MONEY_IDX - 1] = new_money
                         break
         else:
@@ -377,7 +376,6 @@ class MoneyCog(commands.Cog):
                     if row[SHEET_ID_IDX - 1] == str(member.id):
                         current_money = int(row[SHEET_MONEY_IDX - 1])
                         new_money = current_money - money
-                        # self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, new_money)
                         row[SHEET_MONEY_IDX - 1] = new_money
                         break
         else:
@@ -400,11 +398,9 @@ class MoneyCog(commands.Cog):
                             # Deduct amount from command invoker
                             if row[SHEET_ID_IDX - 1] == str(author.id):
                                 row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) - money
-                                # self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, row[SHEET_MONEY_IDX - 1])
                             # Give amount to target person
                             if row[SHEET_ID_IDX - 1] == str(member.id):
                                 row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + money
-                                # self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, row[SHEET_MONEY_IDX - 1])
                     else:
                         await ctx.send("The person is not in the database yet!")
                         return
