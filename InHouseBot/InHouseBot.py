@@ -187,7 +187,6 @@ async def on_raw_reaction_remove(reaction):
         return
 
 token = None
-creds = None
 
 if "BOT_KEY" in os.environ:
     token = os.environ["BOT_KEY"]

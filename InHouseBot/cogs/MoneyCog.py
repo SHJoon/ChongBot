@@ -85,6 +85,12 @@ class MoneyCog(commands.Cog):
 
         self.creds = creds
         self.gclient = gclient
+        self.rich_test_id = 665644125286039552
+        self.poor_test_id = 665644198053150730
+        self.baron_id = 663256952742084637
+        self.peasant_id = 663605505809186847
+        self.rich_id = None
+        self.poor_id = None
         self._init_sheet()
         self.sheet_name = None
 
@@ -93,10 +99,6 @@ class MoneyCog(commands.Cog):
         self.broke = False
         self.blue_team_name = "Blue Side"
         self.red_team_name = "Red Side"
-        self.rich_test_id = 665644125286039552
-        self.poor_test_id = 665644198053150730
-        self.baron_id = 663256952742084637
-        self.peasant_id = 663605505809186847
 
         self.blue_team = []
         self.red_team = []
@@ -107,8 +109,12 @@ class MoneyCog(commands.Cog):
     def _init_sheet(self):
         if "GOOGLE_OAUTH_JSON" in os.environ:
             self.sheet_name = "InHouseData"
+            self.rich_id = self.baron_id
+            self.poor_id = self.peasant_id
         elif os.path.isfile("InHouseTest.json"):
             self.sheet_name = "InHouseDataTest"
+            self.rich_id = self.rich_test_id
+            self.poor_id = self.poor_test_id
             
         self.sheet = gclient.open(self.sheet_name).worksheet("Player_Profile")
 
@@ -200,24 +206,26 @@ class MoneyCog(commands.Cog):
         guild = ctx.guild
         # Remove existing baron roles, and assign new ones
         highest_money = self.money_ranking[0][2]
+        rich_role = guild.get_role(self.rich_id)
+        for member in rich_role.members:
+            await member.remove_roles(rich_role)
         for name, id_, money, mmr, money_rank, mmr_rank, games, wins in self.money_ranking:
             member = discord.utils.get(guild.members, id=int(id_))
             if money == highest_money:
-                # await member.add_roles(guild.get_role(self.rich_test_id))
-                await member.add_roles(guild.get_role(self.baron_id))
+                await member.add_roles(guild.get_role(self.rich_id))
             else:
-                # await member.remove_roles(guild.get_role(self.rich_test_id))
-                await member.remove_roles(guild.get_role(self.baron_id))
+                break
         # Remove existing peasant roles, and assign new ones
         lowest_money = self.money_ranking[-1][2]
+        poor_role = guild.get_role(self.poor_id)
+        for person in poor_role.members:
+            await person.remove_roles(poor_role)
         for name, id_, money, mmr, money_rank, mmr_rank, games, wins in reversed(self.money_ranking):
             member = discord.utils.get(guild.members, id=int(id_))
             if money == lowest_money:
-                # await member.add_roles(guild.get_role(self.poor_test_id))
-                await member.add_roles(guild.get_role(self.peasant_id))
+                await member.add_roles(guild.get_role(self.poor_id))
             else:
-                # await member.remove_roles(guild.get_role(self.poor_test_id))
-                await member.remove_roles(guild.get_role(self.peasant_id))
+                break
 
     @is_approved()
     @commands.command(hidden=True)
@@ -233,6 +241,9 @@ class MoneyCog(commands.Cog):
         """ Join our currency database! """
         user = userid = money_rank = mmr_rank = None
         if member is not None:
+            if await self.is_in_database(str(member.id)):
+                await ctx.send(f"{member.name} is already part of our database!")
+                return
             user = member.name
             userid = member.id
         else:
@@ -346,8 +357,9 @@ class MoneyCog(commands.Cog):
                     if row[SHEET_ID_IDX - 1] == str(member.id):
                         current_money = int(row[SHEET_MONEY_IDX - 1])
                         new_money = current_money + money
-                        self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, new_money)
+                        # self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, new_money)
                         row[SHEET_MONEY_IDX - 1] = new_money
+                        break
         else:
             await ctx.send("The member is not part of the database yet!")
             return
@@ -365,8 +377,9 @@ class MoneyCog(commands.Cog):
                     if row[SHEET_ID_IDX - 1] == str(member.id):
                         current_money = int(row[SHEET_MONEY_IDX - 1])
                         new_money = current_money - money
-                        self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, new_money)
+                        # self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, new_money)
                         row[SHEET_MONEY_IDX - 1] = new_money
+                        break
         else:
             await ctx.send("The member is not part of the database yet!")
             return
@@ -387,11 +400,11 @@ class MoneyCog(commands.Cog):
                             # Deduct amount from command invoker
                             if row[SHEET_ID_IDX - 1] == str(author.id):
                                 row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) - money
-                                self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, row[SHEET_MONEY_IDX - 1])
+                                # self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, row[SHEET_MONEY_IDX - 1])
                             # Give amount to target person
                             if row[SHEET_ID_IDX - 1] == str(member.id):
                                 row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + money
-                                self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, row[SHEET_MONEY_IDX - 1])
+                                # self.sheet.update_cell(idx + 1, SHEET_MONEY_IDX, row[SHEET_MONEY_IDX - 1])
                     else:
                         await ctx.send("The person is not in the database yet!")
                         return
