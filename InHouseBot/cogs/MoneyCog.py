@@ -550,7 +550,6 @@ class MoneyCog(commands.Cog):
                         row[SHEET_GAMES_IDX - 1] = int(row[SHEET_GAMES_IDX - 1]) + 1
             # Grab the list/dict for blue team, calculate how much they won, and distribute accordingly.
             for member_id in self.blue_team_bet:
-                temp = self.blue_team_bet[member_id]
                 self.blue_team_bet[member_id] *= (1 + self.blue_multiplier)
                 member = discord.utils.get(server.members, id=member_id)
                 msg += f"{member.name}: {int(self.blue_team_bet[member_id])}\n"
@@ -579,7 +578,6 @@ class MoneyCog(commands.Cog):
                         row[SHEET_GAMES_IDX - 1] = int(row[SHEET_GAMES_IDX - 1]) + 1
             # Grab the list/dict for red team, calculate how much they won, and distribute accordingly.
             for member_id in self.red_team_bet:
-                temp = self.red_team_bet[member_id]
                 self.red_team_bet[member_id] *= (1 + self.red_multiplier)
                 member = discord.utils.get(server.members, id=member_id)
                 msg += f"{member.name}: {int(self.red_team_bet[member_id])}\n"
