@@ -503,36 +503,6 @@ class MoneyCog(commands.Cog):
                 await ctx.send("You're not in the database yet! Use `!join$` now!")
         else:
             await ctx.send("You need to finalize the team with `!break` to start betting!")
-    
-    @commands.command()
-    async def bets(self, ctx):
-        """ Show the list of bets """
-        server = ctx.guild
-        embed = discord.Embed()
-        if self.bets_msg is not None:
-            await self.bets_msg.delete()
-        message = "**Blue Team Multiplier:** {:.2f} \n \
-            **Red Team Multiplier:** {:.2f}".format(1 + self.blue_multiplier, 1 + self.red_multiplier)
-        embed.description = message
-
-        message = "**Blue Team Bets**"
-        for member_id, bet_amt in self.blue_team_bet.items():
-            member = discord.utils.get(server.members, id=member_id)
-            name = member.nick if member.nick else member.name
-            message += f"\n{name}: {bet_amt}"
-        embed.add_field(name="\u200b",value = message,inline=True)
-        
-        message = "**Red Team Bets**"
-        for member_id, bet_amt in self.red_team_bet.items():
-            member = discord.utils.get(server.members, id=member_id)
-            name = member.nick if member.nick else member.name
-            message += f"\n{name}: {bet_amt}"
-        embed.add_field(name="\u200b",value = message,inline=True)
-        embed.colour=discord.Colour.green()
-        
-        embed.set_footer(text="Use !bets to display this message.\n!bet blue/red amount")
-        self.bets_msg = await ctx.send(embed=embed)
-        await ctx.message.delete()
 
     @is_approved()
     @commands.command(aliases=["payout"])
@@ -550,7 +520,7 @@ class MoneyCog(commands.Cog):
                 # Blue team when blue win
                 for member in self.blue_team:
                     if str(member.id) == row[SHEET_ID_IDX - 1]:
-                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + 0
+                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + 200
                         old_mmr = float(row[SHEET_MMR_IDX - 1])
                         new_mmr = old_mmr + (32 * (1 - self.blue_team_win))
                         row[SHEET_MMR_IDX - 1] = new_mmr
@@ -578,7 +548,7 @@ class MoneyCog(commands.Cog):
                 # Red team when red win
                 for member in self.red_team:
                     if str(member.id) == row[SHEET_ID_IDX - 1]:
-                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + 0
+                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + 200
                         old_mmr = float(row[SHEET_MMR_IDX - 1])
                         new_mmr = old_mmr + (32 * (1 - (1 - self.blue_team_win)))
                         row[SHEET_MMR_IDX - 1] = new_mmr
@@ -731,6 +701,36 @@ class MoneyCog(commands.Cog):
         self.bet_toggle = False
         await ctx.send("**The bets are now closed!**")
         await ctx.invoke(self.bets)
+    
+    @commands.command()
+    async def bets(self, ctx):
+        """ Show the list of bets """
+        server = ctx.guild
+        embed = discord.Embed()
+        if self.bets_msg is not None:
+            await self.bets_msg.delete()
+        message = "**Blue Team Multiplier:** {:.2f} \n \
+            **Red Team Multiplier:** {:.2f}".format(1 + self.blue_multiplier, 1 + self.red_multiplier)
+        embed.description = message
+
+        message = "**Blue Team Bets**"
+        for member_id, bet_amt in self.blue_team_bet.items():
+            member = discord.utils.get(server.members, id=member_id)
+            name = member.nick if member.nick else member.name
+            message += f"\n{name}: {bet_amt}"
+        embed.add_field(name="\u200b",value = message,inline=True)
+        
+        message = "**Red Team Bets**"
+        for member_id, bet_amt in self.red_team_bet.items():
+            member = discord.utils.get(server.members, id=member_id)
+            name = member.nick if member.nick else member.name
+            message += f"\n{name}: {bet_amt}"
+        embed.add_field(name="\u200b",value = message,inline=True)
+        embed.colour=discord.Colour.green()
+        
+        embed.set_footer(text="Use !bets to display this message.\n!bet blue/red amount")
+        self.bets_msg = await ctx.send(embed=embed)
+        await ctx.message.delete()
 
     @is_approved()
     @commands.command()
