@@ -332,7 +332,7 @@ class MoneyCog(commands.Cog):
                         continue
                     mmr = float(mmr)
                     if mmr_rank in  (1,"1"):
-                        message += f"\U0001F451: {name} - {mmr}\n"
+                        message += f"\U0001F451: {name} - {int(mmr)}\n"
                         continue
                     message += f"**#{mmr_rank}**: {name} - {int(mmr)}\n"
             else:

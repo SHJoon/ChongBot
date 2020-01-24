@@ -151,6 +151,15 @@ class MemeCog(commands.Cog):
         await ctx.send("https://i.imgflip.com/38i4t9.jpg")
     
     @commands.command()
+    async def truco(self, ctx):
+        """ He has become what he hates the most """
+        embed = discord.Embed()
+        embed.set_image(
+            url="https://cdn.discordapp.com/attachments/569646728224178184/661008639112249404/unknown.png"
+        )
+        await ctx.send(embed=embed)
+    
+    @commands.command()
     async def truggered(self, ctx):
         """ Mad Truc Disease """
         embed = discord.Embed()
