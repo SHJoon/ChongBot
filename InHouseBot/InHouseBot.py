@@ -67,17 +67,26 @@ async def change_status():
             activity=discord.Activity(type=discord.ActivityType.listening, name=phrase)
         )
 
+@tasks.loop(hours=12)
+async def say_phrases():
+    await bot.wait_until_ready()
+    phrases = ["troi duc oi", "What a champ", "Bet", "die duck guy",
+    "<:grabhandL:668730434984869888> <:thereallickle:670051941296111616> <:grabhandR:668730456333877248>"]
+    channel = bot.get_channel(611413760266993675)
+    phrase = random.choice(phrases)
+    await channel.send(phrase)
 
 @bot.event
 async def on_ready():
     print(bot.user.name)
     print(bot.user.id)
+    change_status.start()
+    say_phrases.start()
     # I want to get notified when the bot resets
     user = bot.get_user(219726815663620096)
-    channel = bot.get_channel(569974088932655134)
     await user.send('Bot has been reset.')
+    channel = bot.get_channel(569974088932655134)
     await channel.send('Bot has been reset.')
-    change_status.start()
 
 def levenshtein(msg1, msg2):
     rows = len(msg1) + 1
