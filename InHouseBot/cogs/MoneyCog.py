@@ -165,8 +165,8 @@ class MoneyCog(commands.Cog):
     
     async def calculate_ranks(self, ctx, cached):
         """ Sort the cache by ranks and update them """
-        self.money_ranking = sorted(self.cache[1:], key=lambda inner: int(inner[2]),reverse=True)
-        self.mmr_ranking = sorted(self.cache[1:], key=lambda inner: float(inner[3]),reverse=True)
+        self.money_ranking = sorted(cached[1:], key=lambda inner: int(inner[2]),reverse=True)
+        self.mmr_ranking = sorted(cached[1:], key=lambda inner: float(inner[3]),reverse=True)
 
         prev_money = 0
         rank = 0
