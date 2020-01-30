@@ -153,11 +153,11 @@ class MoneyCog(commands.Cog):
             if row[SHEET_ID_IDX - 1] == str(author.id):
                 return int(row[SHEET_MONEY_IDX - 1])
     
-    async def get_ranks(self, userid:int):
+    async def get_ranks(self, cached, userid:int):
         """ Returns current rank of given player """
         money_rank, mmr_rank = None, None
-        for row in self.cache:
-            if row[SHEET_ID_IDX - 1] == str(userid):
+        for row in cached[1:]:
+            if int(row[SHEET_ID_IDX - 1]) == userid:
                 money_rank = row[SHEET_MONEY_RANK_IDX - 1]
                 mmr_rank = row[SHEET_MMR_RANK_IDX - 1]
                 break
@@ -259,7 +259,7 @@ class MoneyCog(commands.Cog):
         userlist = [user, str(userid), "1000", "1400", 0, 0, 0, 0]
         temp_cache.append(userlist)
         await self.calculate_ranks(ctx, temp_cache)
-        money_rank, mmr_rank = await self.get_ranks(userid)
+        money_rank, mmr_rank = await self.get_ranks(temp_cache, userid)
         userlist = [user, str(userid), "1000", "1400", money_rank, mmr_rank, 0, 0]
         temp_cache[-1] = userlist
         await self.update_whole_sheet(temp_cache)
@@ -282,7 +282,7 @@ class MoneyCog(commands.Cog):
                     money = row[SHEET_MONEY_IDX - 1]
                     mmr = float(row[SHEET_MMR_IDX - 1])
                     mmr = int(mmr)
-                    money_rank, mmr_rank = await self.get_ranks(person.id)
+                    money_rank, mmr_rank = await self.get_ranks(self.cache, person.id)
         else:
             if not await self.is_in_database(str(author.id)):
                 await ctx.send("You have not joined our currency database yet! Use `!join$` now!")
@@ -294,7 +294,7 @@ class MoneyCog(commands.Cog):
                     money = row[SHEET_MONEY_IDX - 1]
                     mmr = float(row[SHEET_MMR_IDX - 1])
                     mmr = int(mmr)
-                    money_rank, mmr_rank = await self.get_ranks(author.id)
+                    money_rank, mmr_rank = await self.get_ranks(self.cache, author.id)
             avatar = author.avatar_url
         msg = ""
         if mmr_rank in (0,"0"):
@@ -514,6 +514,7 @@ class MoneyCog(commands.Cog):
         msg = ""
         temp_cache = copy.deepcopy(self.cache)
         if team.lower() == "blue":
+            temp_blue_bets = copy.deepcopy(self.blue_team_bet)
             # Give the Blue team members their winnings.
             # Additionally, calculate the new MMR of each players
             for row in temp_cache:
@@ -534,15 +535,16 @@ class MoneyCog(commands.Cog):
                         row[SHEET_MMR_IDX - 1] = new_mmr
                         row[SHEET_GAMES_IDX - 1] = int(row[SHEET_GAMES_IDX - 1]) + 1
             # Grab the list/dict for blue team, calculate how much they won, and distribute accordingly.
-            for member_id in self.blue_team_bet:
-                self.blue_team_bet[member_id] *= (1 + self.blue_multiplier)
+            for member_id in temp_blue_bets:
+                temp_blue_bets[member_id] *= (1 + self.blue_multiplier)
                 member = discord.utils.get(server.members, id=member_id)
-                msg += f"{member.name}: {int(self.blue_team_bet[member_id])}\n"
+                msg += f"{member.name}: {int(temp_blue_bets[member_id])}\n"
                 for row in temp_cache:
                     if row[SHEET_ID_IDX - 1] == str(member_id):
-                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + int(self.blue_team_bet[member_id])
+                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + int(temp_blue_bets[member_id])
             winning_team = "Blue Team"
         elif team.lower() == "red":
+            temp_red_bets = copy.deepcopy(self.red_team_bet)
             # Give the Red team members their winnings.
             for row in temp_cache:
                 # Red team when red win
@@ -562,13 +564,13 @@ class MoneyCog(commands.Cog):
                         row[SHEET_MMR_IDX - 1] = new_mmr
                         row[SHEET_GAMES_IDX - 1] = int(row[SHEET_GAMES_IDX - 1]) + 1
             # Grab the list/dict for red team, calculate how much they won, and distribute accordingly.
-            for member_id in self.red_team_bet:
-                self.red_team_bet[member_id] *= (1 + self.red_multiplier)
+            for member_id in temp_red_bets:
+                temp_red_bets[member_id] *= (1 + self.red_multiplier)
                 member = discord.utils.get(server.members, id=member_id)
-                msg += f"{member.name}: {int(self.red_team_bet[member_id])}\n"
+                msg += f"{member.name}: {int(temp_red_bets[member_id])}\n"
                 for row in temp_cache:
                     if row[SHEET_ID_IDX - 1] == str(member_id):
-                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + int(self.red_team_bet[member_id])
+                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + int(temp_red_bets[member_id])
             winning_team = "Red Team"
         else:
             await ctx.send("The possible choices are either Blue or Red! For example: `!win Blue`")
