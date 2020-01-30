@@ -222,7 +222,7 @@ class MoneyCog(commands.Cog):
         sheet_range_A2 = f'A2:H{len(cached)}'
         cell_list = self.sheet.range(sheet_range_A2)
         index = 0
-        for row in self.money_ranking:
+        for row in self.mmr_ranking:
             for val in row:
                 cell_list[index].value = val
                 index += 1
