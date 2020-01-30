@@ -105,6 +105,8 @@ class MoneyCog(commands.Cog):
         self.red_team = []
         self.blue_team_bet = {}
         self.red_team_bet = {}
+        self.blue_winnings = 0
+        self.red_winnings = 0
         self.bets_msg = None
 
     def _init_sheet(self):
@@ -306,45 +308,40 @@ class MoneyCog(commands.Cog):
         await ctx.send(embed=embed)
     
     @commands.command(aliases=["ranks", "ranking", "rankings"])
-    async def rank(self, ctx, key:str="", page:int=0):
+    async def rank(self, ctx, *, key:str=""):
         """ Display ranks of our server! !rank (money/mmr) page# """
-        end_element = (page*15) - 1
-        start_element = end_element - 14
         title = None
         message = ""
         if key.lower() == "money":
             title = "Money Rank"
-            if page == 0:
-                for idx, (name, id_, money, mmr, money_rank, mmr_rank, games, wins) in enumerate(self.money_ranking):
-                    if money_rank in  (1,"1"):
-                        message += f"\U0001F451: {name} - ${money}\n"
-                        continue
-                    message += f"**#{money_rank}**: {name} - ${money}\n"
-            else:
-                for idx, (name, id_, money, mmr, money_rank, mmr_rank, games, wins) in enumerate(self.money_ranking):
-                    if start_element <= idx <= end_element:
-                        message += f"**#{money_rank}**: {name} - ${money}\n"
+            for idx, (name, id_, money, mmr, money_rank, mmr_rank, games, wins) in enumerate(self.money_ranking):
+                if money_rank in  (1,"1"):
+                    message += f"\U0001F451: {name} - ${money}\n"
+                    continue
+                message += f"**#{money_rank}**: {name} - ${money}\n"
         elif key.lower() == "mmr":
             title = "MMR Rank"
-            if page == 0:
-                for idx, (name, id_, money, mmr, money_rank, mmr_rank, games, wins) in enumerate(self.mmr_ranking):
-                    if mmr_rank in (0,"0"):
-                        continue
-                    mmr = float(mmr)
-                    if mmr_rank in  (1,"1"):
-                        message += f"\U0001F451: {name} - {int(mmr)}\n"
-                        continue
-                    message += f"**#{mmr_rank}**: {name} - {int(mmr)}\n"
-            else:
-                for idx, (name, id_, money, mmr, money_rank, mmr_rank, games, wins) in enumerate(self.mmr_ranking):
-                    if start_element <= idx <= end_element:
-                        if mmr_rank in (0,"0"):
-                            continue
-                        mmr = float(mmr)
-                        message += f"**#{mmr_rank}**: {name} - {int(mmr)}\n"
-        else:
+            for idx, (name, id_, money, mmr, money_rank, mmr_rank, games, wins) in enumerate(self.mmr_ranking):
+                if mmr_rank in (0,"0"):
+                    continue
+                mmr = float(mmr)
+                if mmr_rank in  (1,"1"):
+                    message += f"\U0001F451: {name} - {int(mmr)}\n"
+                    continue
+                message += f"**#{mmr_rank}**: {name} - {int(mmr)}\n"
+        elif key == "":
             await ctx.send("We have rankings based on either money or mmr! (`!rank money`) or (`!rank mmr`)")
             return
+        else:
+            title = f"{key} Rank"
+            server = ctx.guild
+            userlist = []
+            for row in self.cache[1:]:
+                user = discord.utils.get(server.members, id=int(row[SHEET_ID_IDX - 1]))
+                userlist.append(user)
+            random.shuffle(userlist)
+            for idx, user in enumerate(userlist):
+                message += f"**#{idx+1}**: {user.name}\n"
         if message == "":
             message = "No one in this page!"
         embed = discord.Embed(title=title, description=message)
@@ -352,7 +349,6 @@ class MoneyCog(commands.Cog):
             embed.colour = discord.Colour.gold()
         else:
             embed.colour = discord.Colour.greyple()
-        # embed.set_footer(text="To access different pages, !rank (money/mmr) (page#)")
         await ctx.send(embed=embed)
     
     @is_approved()
@@ -521,7 +517,7 @@ class MoneyCog(commands.Cog):
                 # Blue team when blue win
                 for member in self.blue_team:
                     if str(member.id) == row[SHEET_ID_IDX - 1]:
-                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + 200
+                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + self.blue_winnings
                         old_mmr = float(row[SHEET_MMR_IDX - 1])
                         new_mmr = old_mmr + (32 * (1 - self.blue_team_win))
                         row[SHEET_MMR_IDX - 1] = new_mmr
@@ -550,7 +546,7 @@ class MoneyCog(commands.Cog):
                 # Red team when red win
                 for member in self.red_team:
                     if str(member.id) == row[SHEET_ID_IDX - 1]:
-                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + 200
+                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + self.red_winnings
                         old_mmr = float(row[SHEET_MMR_IDX - 1])
                         new_mmr = old_mmr + (32 * (1 - (1 - self.blue_team_win)))
                         row[SHEET_MMR_IDX - 1] = new_mmr
@@ -692,6 +688,14 @@ class MoneyCog(commands.Cog):
         self.blue_multiplier = (1 - self.blue_team_win) / self.blue_team_win
         self.red_multiplier = 1 / self.blue_multiplier
 
+        self.blue_winnings = int(red_avg_MMR / len(red_team_MMRs))
+        self.red_winnings = int(blue_avg_MMR / len(blue_team_MMRs))
+
+        if self.blue_winnings < 200:
+            self.blue_winnings = 200
+        if self.red_winnings < 200:
+            self.red_winnings < 200
+
         self.bet_toggle = True
         await ctx.send("**Betting starts now! You have 15 minutes until the bets close.**")
         await ctx.invoke(self.bets)
@@ -711,9 +715,14 @@ class MoneyCog(commands.Cog):
         embed = discord.Embed()
         if self.bets_msg is not None:
             await self.bets_msg.delete()
+        
+        message = f"**Blue Team winnings:** {self.blue_winnings}\n\
+            **Red Team winnings:** {self.red_winnings}"
+        embed.description = message
+
         message = "**Blue Team Multiplier:** {:.2f} \n \
             **Red Team Multiplier:** {:.2f}".format(1 + self.blue_multiplier, 1 + self.red_multiplier)
-        embed.description = message
+        embed.add_field(name = "\u200b", value = message, inline = False)
 
         message = "**Blue Team Bets**"
         for member_id, bet_amt in self.blue_team_bet.items():
