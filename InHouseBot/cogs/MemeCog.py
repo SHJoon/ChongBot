@@ -189,3 +189,11 @@ class MemeCog(commands.Cog):
         await ctx.send(
             f"im wade, top lane blows dick and i dont think anyone can be good at league of legends except me"
         )
+
+    @commands.command(aliases=["king"])
+    async def wadetendo(self, ctx):
+        """ WADETENDO KING """
+        embed = discord.Embed()
+        embed.set_image(url="https://cdn.discordapp.com/attachments/569646728224178184/672295666923601920/unknown.png")
+        embed.colour = discord.Colour.red()
+        await ctx.send(embed=embed)
