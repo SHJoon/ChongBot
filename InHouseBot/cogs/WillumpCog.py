@@ -34,6 +34,7 @@ class WillumpCog(commands.Cog):
         }
         self.typo_replace_chance = 10
         self.typo_add_chance = 10
+        self.bot = bot
 
     @commands.command(pass_context=True)
     async def flip(self, ctx):
@@ -213,3 +214,8 @@ class WillumpCog(commands.Cog):
     @commands.command(aliases=["race"])
     async def gg(self, ctx):
         await ctx.send("https://zeal.gg/YyQQtnh\nhttps://zeal.gg/-cHZ680")
+
+    @commands.command()
+    async def sd(self, ctx, *, msg):
+        channel = self.bot.get_channel(569646728224178184)
+        await channel.send(msg)
