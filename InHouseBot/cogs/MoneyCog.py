@@ -312,7 +312,7 @@ class MoneyCog(commands.Cog):
         """ Display ranks of our server! !rank (money/mmr) page# """
         title = None
         message = ""
-        if key.lower() == "money":
+        if key.lower() in ("money", "$", "rich"):
             title = "Money Rank"
             for idx, (name, id_, money, mmr, money_rank, mmr_rank, games, wins) in enumerate(self.money_ranking):
                 if money_rank in  (1,"1"):
@@ -571,6 +571,8 @@ class MoneyCog(commands.Cog):
         else:
             await ctx.send("The possible choices are either Blue or Red! For example: `!win Blue`")
             return
+        if msg == "":
+            msg = "No payout this time!"
         await self.calculate_ranks(ctx, temp_cache)
         await self.update_whole_sheet(temp_cache)
         message = await ctx.send(f"{winning_team} has won! Now distributing the payout...")
@@ -759,6 +761,7 @@ class MoneyCog(commands.Cog):
         """ (ADMIN) Extend the betting time (!extend minutes)"""
         minute = num * 60
         self.bet_toggle = True
+        await ctx.send(f"Betting is open for {num} minute(s)")
         await asyncio.sleep(minute)
         await ctx.send("Betting is now closed.")
         self.bet_toggle = False
@@ -789,7 +792,9 @@ class MoneyCog(commands.Cog):
     async def steal(self, ctx, member:discord.Member):
         """ Steal money from target person (!steal @person) """
         # We can add as many funny URL's as we want
-        image_URLs = ["https://i.redd.it/1wbz4b15vcd31.jpg"]
+        image_URLs = [
+            "https://i.redd.it/1wbz4b15vcd31.jpg", "https://cdn.discordapp.com/attachments/224084353779630080/670051783820705802/image0.jpg",
+        ]
         image_URL = random.choice(image_URLs)
         embed = discord.Embed()
         embed.set_image(url=image_URL)

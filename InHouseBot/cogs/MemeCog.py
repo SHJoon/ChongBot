@@ -1,4 +1,5 @@
 import discord
+import random
 from discord.ext import commands
 
 class MemeCog(commands.Cog):
@@ -177,6 +178,21 @@ class MemeCog(commands.Cog):
         )
         embed.colour = discord.Colour.orange()
         await ctx.send(embed=embed)
+    
+    @commands.command()
+    async def trucard(self, ctx):
+        """ Truc excuses """
+        phrases = [
+            '"This guy\'s deck is CRAZY!" \U00002611',
+            '"My deck can\'t win against a deck like that" \U00002611',
+            '"He NEEDED precisely those two cards to win" \U00002611',
+            '"He topdecked the only card that could beat me" \U00002611',
+            '"He had the perfect cards" \U00002611',
+            '"There was nothing I could do" \U00002611',
+            '"I played that perfectly" \U00002611'
+        ]
+        phrase = random.choice(phrases)
+        await ctx.send(phrase)
     
     @commands.command(aliases = ["ethan"])
     async def valley(self, ctx):
