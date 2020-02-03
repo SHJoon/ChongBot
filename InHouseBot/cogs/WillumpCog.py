@@ -35,7 +35,6 @@ class WillumpCog(commands.Cog):
         self.typo_replace_chance = 10
         self.typo_add_chance = 10
         self.bot = bot
-        self.channel = self.bot.get_channel(569646728224178184)
 
     @commands.command(pass_context=True)
     async def flip(self, ctx):
@@ -220,4 +219,5 @@ class WillumpCog(commands.Cog):
     @commands.command()
     async def sd(self, ctx, *, msg):
         """ Only Danny and I know what this does """
-        await self.channel.send(msg)
+        channel = self.bot.get_channel(569646728224178184)
+        await channel.send(msg)

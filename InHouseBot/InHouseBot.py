@@ -67,7 +67,7 @@ async def change_status():
             activity=discord.Activity(type=discord.ActivityType.listening, name=phrase)
         )
 
-@tasks.loop(hours=12)
+@tasks.loop(hours=10, minutes=30)
 async def say_phrases():
     await bot.wait_until_ready()
     phrases = ["troi duc oi", "What a champ", "Bet", "die duck guy",
