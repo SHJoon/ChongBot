@@ -42,9 +42,10 @@ class WillumpCog(commands.Cog):
         """ Heads or Tails """
         flip = ["Heads", "Tails"]
         ranflip = random.choice(flip)
-        if random.randrange(15) == 14:
+        if random.randrange(50) == 49:
             ranflip = "Sides"
-        elif self.flip_count == 15:
+            self.flip_count = 0
+        elif self.flip_count == 50:
             ranflip = "Sides"
             self.flip_count = 0
 
