@@ -307,32 +307,13 @@ class MoneyCog(commands.Cog):
         embed.set_thumbnail(url=avatar)
         await ctx.send(embed=embed)
     
-    @commands.command(aliases=["ranks", "ranking", "rankings"])
-    async def rank(self, ctx, *, key:str=""):
+    @commands.group(aliases=["ranks", "ranking", "rankings"])
+    async def rank(self, ctx):
         """ Display ranks of our server! !rank (money/mmr) page# """
-        title = None
-        message = ""
-        if key.lower() in ("money", "$", "rich"):
-            title = "Money Rank"
-            for idx, (name, id_, money, mmr, money_rank, mmr_rank, games, wins) in enumerate(self.money_ranking):
-                if money_rank in  (1,"1"):
-                    message += f"\U0001F451: {name} - ${money}\n"
-                    continue
-                message += f"**#{money_rank}**: {name} - ${money}\n"
-        elif key.lower() == "mmr":
-            title = "MMR Rank"
-            for idx, (name, id_, money, mmr, money_rank, mmr_rank, games, wins) in enumerate(self.mmr_ranking):
-                if mmr_rank in (0,"0"):
-                    continue
-                mmr = float(mmr)
-                if mmr_rank in  (1,"1"):
-                    message += f"\U0001F451: {name} - {int(mmr)}\n"
-                    continue
-                message += f"**#{mmr_rank}**: {name} - {int(mmr)}\n"
-        elif key == "":
-            await ctx.send("We have rankings based on either money or mmr! (`!rank money`) or (`!rank mmr`)")
-            return
-        else:
+        if ctx.invoked_subcommand is None:
+            cmd = ctx.message.content.split(" ", 1)
+            key = cmd[1]
+            message = ""
             title = f"{key} Rank"
             server = ctx.guild
             userlist = []
@@ -342,13 +323,38 @@ class MoneyCog(commands.Cog):
             random.shuffle(userlist)
             for idx, user in enumerate(userlist):
                 message += f"**#{idx+1}**: {user.name}\n"
+            embed = discord.Embed(title=title, description=message, colour = discord.Colour.dark_green())
+            await ctx.send(embed=embed)
+
+    @rank.command()
+    async def money(self, ctx):
+        message = ""
+        title = "Money Rank"
+        for idx, (name, id_, money, mmr, money_rank, mmr_rank, games, wins) in enumerate(self.money_ranking):
+            if money_rank in  (1,"1"):
+                message += f"\U0001F451: {name} - ${money}\n"
+                continue
+            message += f"**#{money_rank}**: {name} - ${money}\n"
         if message == "":
             message = "No one in this page!"
-        embed = discord.Embed(title=title, description=message)
-        if key.lower() == "money":
-            embed.colour = discord.Colour.gold()
-        else:
-            embed.colour = discord.Colour.greyple()
+        embed = discord.Embed(title=title, description=message, colour = discord.Colour.gold())
+        await ctx.send(embed=embed)
+    
+    @rank.command()
+    async def mmr(self, ctx):
+        message = ""
+        title = "MMR Rank"
+        for idx, (name, id_, money, mmr, money_rank, mmr_rank, games, wins) in enumerate(self.mmr_ranking):
+            if mmr_rank in (0,"0"):
+                continue
+            mmr = float(mmr)
+            if mmr_rank in  (1,"1"):
+                message += f"\U0001F451: {name} - {int(mmr)}\n"
+                continue
+            message += f"**#{mmr_rank}**: {name} - {int(mmr)}\n"
+        if message == "":
+            message = "No one in this page!"
+        embed = discord.Embed(title=title, description=message, colour = discord.Colour.orange())
         await ctx.send(embed=embed)
     
     @is_approved()

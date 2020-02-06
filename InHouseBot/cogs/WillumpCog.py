@@ -18,6 +18,7 @@ class WillumpCog(commands.Cog):
         bot.help_command = AliasHelpCommand()
         bot.help_command.cog = self
 
+        self.flip_count = 0
         # Set up our typo structs for lulcaptains()
         self.keyboard_array = [
             # A string is just an array of characters
@@ -41,8 +42,11 @@ class WillumpCog(commands.Cog):
         """ Heads or Tails """
         flip = ["Heads", "Tails"]
         ranflip = random.choice(flip)
-        if random.randrange(50) == 49:
+        if random.randrange(15) == 14:
             ranflip = "Sides"
+        elif self.flip_count == 15:
+            ranflip = "Sides"
+            self.flip_count = 0
 
         embed = discord.Embed(title=ranflip)
 
@@ -62,11 +66,14 @@ class WillumpCog(commands.Cog):
             embed.colour = discord.Colour.blue()
         else:
             embed.set_image(
-                url="https://i.imgur.com/P3EbqRH.gif"
+                url="https://cdn.discordapp.com/attachments/224084353779630080/674848939085922364/EQEaufMUUAIM0aW.png"
+                # "https://i.imgur.com/P3EbqRH.gif"
                 # "https://lolskinshop.com/wp-content/uploads/2015/04/Poppy_2.jpg"
             )
             embed.colour = discord.Colour.green()
-            
+        
+        self.flip_count += 1
+        print(self.flip_count)
         await ctx.send(embed=embed)
     
     @commands.command(hidden = True)
