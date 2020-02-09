@@ -8,6 +8,7 @@ class MemeCog(commands.Cog):
         self.trucID = 132709848864391170
         self.ksaperID = 131626920738684928
         self.ethanID = 303289460970487811
+        self.showernum = 10
     
     @commands.command(pass_context=True)
     async def fuckchong(self, ctx):
@@ -133,8 +134,8 @@ class MemeCog(commands.Cog):
     @commands.command(aliases=["shower"])
     async def dare(self, ctx):
         """ How long has it been since Dare showered? """
-        rannum = random.randint(10, 200)
-        await ctx.send(f"It has been {rannum} days since Dare showered...")
+        self.showernum += random.randint(10, 100)
+        await ctx.send(f"It has been {self.showernum} days since Dare showered...")
 
     @commands.command(aliases=["boobsareass", "evelyn"])
     async def evelynn(self, ctx):
