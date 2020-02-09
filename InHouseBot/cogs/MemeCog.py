@@ -129,6 +129,12 @@ class MemeCog(commands.Cog):
         await ctx.send(
             f"https://i.imgflip.com/384zeu.jpg"
         )
+    
+    @commands.command(aliases=["shower"])
+    async def dare(self, ctx):
+        """ How long has it been since Dare showered? """
+        rannum = random.randint(10, 200)
+        await ctx.send(f"It has been {rannum} days since Dare showered...")
 
     @commands.command(aliases=["boobsareass", "evelyn"])
     async def evelynn(self, ctx):
