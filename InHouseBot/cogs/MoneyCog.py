@@ -326,7 +326,7 @@ class MoneyCog(commands.Cog):
             embed = discord.Embed(title=title, description=message, colour = discord.Colour.dark_green())
             await ctx.send(embed=embed)
 
-    @rank.command()
+    @rank.command(aliases=["$", "rich"])
     async def money(self, ctx):
         message = ""
         title = "Money Rank"
@@ -620,17 +620,9 @@ class MoneyCog(commands.Cog):
         else:
             await ctx.send("The format is `!register team @person @person...`")
     
-    @commands.command(name="break")
-    async def _break(self, ctx):
-        """ Generates a prodraft lobby and records blue/red team memebers. """
-
-        if not self.blue_team:
-            await ctx.send("You must register **blue team** members using !register command.")
-            return
-        elif not self.red_team:
-            await ctx.send("You must register **red team** members using !register command.")
-            return
-
+    @commands.command()
+    async def prodraft(self, ctx):
+        """ Generates a prodraft lobby """
         draft_lobby_req = await self.client.post(
             "http://prodraft.leagueoflegends.com/draft",
             json={
@@ -644,15 +636,28 @@ class MoneyCog(commands.Cog):
 
         _id = draft_lobby_resp["id"]
         _blue_auth, _red_auth = draft_lobby_resp["auth"]
-        blue_url = f"http://prodraft.leagueoflegends.com?draft={_id}&auth={_blue_auth}&locale=en_US"
-        red_url = f"http://prodraft.leagueoflegends.com?draft={_id}&auth={_red_auth}&locale=en_US"
-        spec_url = f"http://prodraft.leagueoflegends.com?draft={_id}&locale=en_US"
+        blue_url = f"<http://prodraft.leagueoflegends.com?draft={_id}&auth={_blue_auth}&locale=en_US>"
+        red_url = f"<http://prodraft.leagueoflegends.com?draft={_id}&auth={_red_auth}&locale=en_US>"
+        spec_url = f"<http://prodraft.leagueoflegends.com?draft={_id}&locale=en_US>"
 
         message = (
             f"BLUE TEAM:\n{blue_url}\n\nRED TEAM:\n{red_url}\n\nSPEC:\n{spec_url}\n"
         )
 
         await ctx.send(message)
+    
+    @commands.command(name="break")
+    async def _break(self, ctx):
+        """ Generates a prodraft lobby and records blue/red team memebers. """
+
+        if not self.blue_team:
+            await ctx.send("You must register **blue team** members using !register command.")
+            return
+        elif not self.red_team:
+            await ctx.send("You must register **red team** members using !register command.")
+            return
+
+        await ctx.invoke(self.prodraft)
 
         self.broke = True
 

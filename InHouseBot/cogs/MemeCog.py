@@ -135,6 +135,8 @@ class MemeCog(commands.Cog):
     async def dare(self, ctx):
         """ How long has it been since Dare showered? """
         self.showernum += random.randint(10, 100)
+        if random.randrange(50) == 49:
+            self.showernum = 0
         await ctx.send(f"It has been {self.showernum} days since Dare showered...")
 
     @commands.command(aliases=["boobsareass", "evelyn"])
