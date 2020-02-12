@@ -197,24 +197,24 @@ class MoneyCog(commands.Cog):
         """ Assign proper roles to each person based on money."""
         guild = ctx.guild
         # Remove existing baron roles, and assign new ones
-        highest_money = self.money_ranking[0][2]
+        highest_money = int(self.money_ranking[0][2])
         rich_role = guild.get_role(self.rich_id)
         for member in rich_role.members:
             await member.remove_roles(rich_role)
         for name, id_, money, mmr, money_rank, mmr_rank, games, wins in self.money_ranking:
             member = discord.utils.get(guild.members, id=int(id_))
-            if money == highest_money:
+            if int(money) == highest_money:
                 await member.add_roles(guild.get_role(self.rich_id))
             else:
                 break
         # Remove existing peasant roles, and assign new ones
-        lowest_money = self.money_ranking[-1][2]
+        lowest_money = int(self.money_ranking[-1][2])
         poor_role = guild.get_role(self.poor_id)
         for person in poor_role.members:
             await person.remove_roles(poor_role)
         for name, id_, money, mmr, money_rank, mmr_rank, games, wins in reversed(self.money_ranking):
             member = discord.utils.get(guild.members, id=int(id_))
-            if money == lowest_money:
+            if int(money) == lowest_money:
                 await member.add_roles(guild.get_role(self.poor_id))
             else:
                 break
