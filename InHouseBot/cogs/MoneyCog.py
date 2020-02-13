@@ -86,21 +86,25 @@ class MoneyCog(commands.Cog):
 
         self.creds = creds
         self.gclient = gclient
+
+        # For In-House spreadsheet
         self.rich_test_id = 665644125286039552
         self.poor_test_id = 665644198053150730
+        self.chief_test_id = 677310051731636239
+        # For Test spreadsheet
         self.baron_id = 663256952742084637
         self.peasant_id = 663605505809186847
-        self.rich_id = None
-        self.poor_id = None
-        self._init_sheet()
-        self.sheet_name = None
+        self.chief_id = 651544745868525597
 
-        # Variables for !break command
+        self._init_sheet()
+
+        # Variables for !prodraft command
         self.client = httpx.AsyncClient()
         self.broke = False
         self.blue_team_name = "Blue Side"
         self.red_team_name = "Red Side"
 
+        # Variables for !break command
         self.blue_team = []
         self.red_team = []
         self.blue_team_bet = {}
@@ -114,10 +118,12 @@ class MoneyCog(commands.Cog):
             self.sheet_name = "InHouseData"
             self.rich_id = self.baron_id
             self.poor_id = self.peasant_id
+            self.high_mmr_id = self.chief_id
         elif os.path.isfile("InHouseTest.json"):
             self.sheet_name = "InHouseDataTest"
             self.rich_id = self.rich_test_id
             self.poor_id = self.poor_test_id
+            self.high_mmr_id = self.chief_test_id
             
         self.sheet = gclient.open(self.sheet_name).worksheet("Player_Profile")
 
@@ -216,6 +222,17 @@ class MoneyCog(commands.Cog):
             member = discord.utils.get(guild.members, id=int(id_))
             if int(money) == lowest_money:
                 await member.add_roles(guild.get_role(self.poor_id))
+            else:
+                break
+        # Remove existing chief roles, and assign new ones
+        highest_mmr = str(self.mmr_ranking[0][3])
+        chief_role = guild.get_role(self.high_mmr_id)
+        for member in chief_role.members:
+            await member.remove_roles(chief_role)
+        for name, id_, money, mmr, money_rank, mmr_rank, games, wins in self.mmr_ranking:
+            member = discord.utils.get(guild.members, id=int(id_))
+            if str(mmr) == highest_mmr:
+                await member.add_roles(guild.get_role(self.high_mmr_id))
             else:
                 break
     
