@@ -113,6 +113,9 @@ class MoneyCog(commands.Cog):
         self.red_winnings = 0
         self.bets_msg = None
 
+        self.side_bets = {}
+        self.side_bets_msg = None
+
     def _init_sheet(self):
         if "GOOGLE_OAUTH_JSON" in os.environ:
             self.sheet_name = "InHouseData"
@@ -610,6 +613,75 @@ class MoneyCog(commands.Cog):
         self.red_team_bet.clear()
         self.cache = temp_cache
     
+    @commands.command()
+    async def sidebet(self, ctx, topic, money:int):
+        """ Bet on which topic you think will win! (!bet topic amount) """
+        topic = topic.upper()
+        author = ctx.message.author
+        if await self.is_in_database(str(author.id)):
+            if await self.is_positive_money(ctx, money):
+                current_money = await self.get_current_money(ctx)
+                # For replacing existing bet, return the money
+                # Iterate through each topics
+                for bets in self.side_bets:
+                    if (author.id in self.side_bets[bets]) and (topic == bets):
+                        for member_id, bet in self.side_bets[bets].items():
+                            if author.id == member_id:
+                                for row in self.cache:
+                                    if row[SHEET_ID_IDX - 1] == str(author.id):
+                                        if money > (current_money + bet):
+                                            await ctx.send("You don't have enough money to bet that amount!")
+                                            return
+                                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + bet
+                    else:
+                        if money > current_money:
+                            await ctx.send("You don't have enough money to bet that amount!")
+                            return
+                if topic in self.side_bets:
+                    self.side_bets[topic].update({author.id:money})
+                else:
+                    self.side_bets[topic] = {author.id:money}
+                for row in self.cache:
+                    if row[SHEET_ID_IDX - 1] == str(author.id):
+                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) - money
+                        break
+                await ctx.invoke(self.sidebets)
+            else:
+                return
+        else:
+            await ctx.send("You're not in the database yet! Use `!join$` now!")
+            return
+    
+    @is_approved()
+    @commands.command()
+    @retry_authorize(gspread.exceptions.APIError)
+    async def sidewin(self, ctx, topic):
+        """ (ADMIN) Decide on who the winner is, and payout accordingly for side bets! """
+        topic = topic.upper()
+        if topic not in self.side_bets:
+            await ctx.send("That is not one of the choice for sidebets!")
+            return
+        temp_cache = copy.deepcopy(self.cache)
+        server = ctx.guild
+        msg = ""
+        for member_id, bet in self.side_bets[topic].items():
+            for row in temp_cache:
+                if row[SHEET_ID_IDX - 1] == str(member_id):
+                    payout = bet * 2
+                    row[SHEET_MONEY_IDX - 1] = str(int(row[SHEET_MONEY_IDX - 1]) + (payout))
+                    member = discord.utils.get(server.members, id=member_id)
+                    msg += f"{member.name}: {payout}\n"
+
+        await self.calculate_ranks(ctx, temp_cache)
+        await self.update_whole_sheet(temp_cache)
+        message = await ctx.send(f"Winner: **{topic}**. Distributing payout(s)...")
+        avatar = message.author.avatar_url
+        embed = discord.Embed(title="Side Bet Payouts",description=msg, colour = discord.Colour.dark_gold())
+        embed.set_thumbnail(url=avatar)
+        await ctx.send(embed=embed)
+        self.side_bets.clear()
+        self.cache = temp_cache
+
     @is_approved()
     @commands.command(name="register")
     async def _register(self, ctx, team, *members:discord.Member):
@@ -772,6 +844,27 @@ class MoneyCog(commands.Cog):
         embed.set_footer(text="Use !bets to display this message.\n!bet blue/red amount")
         self.bets_msg = await ctx.send(embed=embed)
         await ctx.message.delete()
+    
+    @commands.command()
+    async def sidebets(self, ctx):
+        """ Show the list of side bets """
+        server = ctx.guild
+        embed = discord.Embed ()
+        if self.side_bets_msg is not None:
+            await self.side_bets_msg.delete()
+
+        for topic in self.side_bets:
+            message = ""
+            for member_id, bet_amt in self.side_bets[topic].items():
+                member = discord.utils.get(server.members, id=member_id)
+                name = member.nick if member.nick else member.name
+                message += f"\n{name}: {bet_amt}"
+            embed.add_field(name=topic,value = message,inline=True)
+        embed.colour=discord.Colour.dark_orange()
+        
+        embed.set_footer(text="Use !sidebets to display this message.\n!sidebet topic amount")
+        self.side_bets_msg = await ctx.send(embed=embed)
+        await ctx.message.delete()
 
     @is_approved()
     @commands.command()
@@ -803,11 +896,13 @@ class MoneyCog(commands.Cog):
             for row in self.cache:
                 if row[SHEET_ID_IDX - 1] == str(member_id):
                     row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + bet
+                    break
         # Return the betting money for red team
         for member_id, bet in self.red_team_bet.items():
             for row in self.cache:
                 if row[SHEET_ID_IDX - 1] == str(member_id):
                     row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + bet
+                    break
         # Reset to all the default values
         self.broke = False
         self.blue_multiplier = 0
@@ -815,6 +910,19 @@ class MoneyCog(commands.Cog):
         self.blue_team_bet.clear()
         self.red_team_bet.clear()
         await ctx.send("All the bets have been reset.")
+    
+    @is_approved()
+    @commands.command()
+    async def sidereset(self, ctx):
+        """ (ADMIN) Reset the side bets and return all the money. """
+        for topic in self.side_bets:
+            for member_id, bet in self.side_bets[topic].items():
+                for row in self.cache:
+                    if row[SHEET_ID_IDX - 1] == str(member_id):
+                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + bet
+                        break
+        self.side_bets.clear()
+        await ctx.send("All the sidebets have been reset.")
 
     @commands.command()
     async def steal(self, ctx, member:discord.Member):
