@@ -160,7 +160,7 @@ class MemeCog(commands.Cog):
         """ ConsTRUCtive flaming """
         await ctx.send("https://i.imgflip.com/38i4t9.jpg")
     
-    @commands.command(aliases="getfuckedtruc")
+    @commands.command(aliases=["getfuckedtruc"])
     async def truc(self, ctx):
         embed = discord.Embed(colour=discord.Colour.teal())
         embed.set_image(
