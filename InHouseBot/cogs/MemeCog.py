@@ -8,6 +8,7 @@ class MemeCog(commands.Cog):
         self.trucID = 132709848864391170
         self.ksaperID = 131626920738684928
         self.ethanID = 303289460970487811
+        self.dareID = 141733872315400193
         self.showernum = 10
     
     @commands.command(pass_context=True)
@@ -18,12 +19,31 @@ class MemeCog(commands.Cog):
         await msg.add_reaction("\U0001F1FA")
         await msg.add_reaction("\U0001F1E8")
         await msg.add_reaction("\U0001F1F0")
+
         await msg.add_reaction("\U000021AA")
         await msg.add_reaction("\U0001F1ED")
         await msg.add_reaction("\U0001F1F4")
         await msg.add_reaction("\U0001F1F3")
         await msg.add_reaction("\U0001F1EC")
+
         emoji = "<:FuckChong:598605265641930757>"
+        await msg.add_reaction(emoji)
+    
+    @commands.command()
+    async def fuckdare(self, ctx):
+        """ Please """
+        msg = await ctx.send(f"FUCK DARE")
+        await msg.add_reaction("\U0001F1EB")
+        await msg.add_reaction("\U0001F1FA")
+        await msg.add_reaction("\U0001F1E8")
+        await msg.add_reaction("\U0001F1F0")
+
+        await msg.add_reaction("\U0001F1E9")
+        await msg.add_reaction("\U0001F1E6")
+        await msg.add_reaction("\U0001F1F7")
+        await msg.add_reaction("\U0001F1EA")
+
+        emoji = "<:DareW:679993204589854769>"
         await msg.add_reaction(emoji)
     
     @commands.command()
@@ -34,10 +54,12 @@ class MemeCog(commands.Cog):
         await msg.add_reaction("\U0001F1FA")
         await msg.add_reaction("\U0001F1E8")
         await msg.add_reaction("\U0001F1F0")
+
         await msg.add_reaction("\U0001F1F9")
         await msg.add_reaction("\U0001F1F7")
         await msg.add_reaction("\U000026CE")
         await msg.add_reaction("\U000021AA")
+
         await msg.add_reaction("\U0001F69A")
     
     @commands.command(aliases=["gdiethan","goddamnit","goddamnitethan"])
@@ -64,6 +86,8 @@ class MemeCog(commands.Cog):
             await ctx.invoke(self.fucktruc)
         elif author.id == self.ethanID:
             await ctx.invoke(self.gdi)
+        elif author.id == self.dareID:
+            await ctx.invoke(self.fuckdare)
         else:
             return
     
