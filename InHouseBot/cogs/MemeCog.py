@@ -179,7 +179,7 @@ class MemeCog(commands.Cog):
         embed.colour = discord.Colour.purple()
         await ctx.send(f"Did some bimbo 1st, 2nd, or 3rd pick Ksaper?!?!",embed=embed)
 
-    @commands.command(hidden=True)
+    @commands.command(aliases=["flame"],hidden=True)
     async def flames(self, ctx):
         """ ConsTRUCtive flaming """
         await ctx.send("https://i.imgflip.com/38i4t9.jpg")
