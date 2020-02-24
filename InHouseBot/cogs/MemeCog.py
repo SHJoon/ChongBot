@@ -186,6 +186,7 @@ class MemeCog(commands.Cog):
     
     @commands.command(aliases=["getfuckedtruc"])
     async def truc(self, ctx):
+        """ Get fucked Truc """
         embed = discord.Embed(colour=discord.Colour.teal())
         embed.set_image(
             url="https://cdn.discordapp.com/attachments/569646728224178184/678851818075193344/unknown.png"
