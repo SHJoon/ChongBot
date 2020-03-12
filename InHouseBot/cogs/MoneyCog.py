@@ -396,6 +396,7 @@ class MoneyCog(commands.Cog):
             return
         await self.calculate_ranks(ctx, temp_cache)
         await self.update_whole_sheet(temp_cache)
+        await ctx.send(f"{member.name} has been given {money} NunuBucks.")
         self.cache = temp_cache
     
     @is_approved()
@@ -417,6 +418,7 @@ class MoneyCog(commands.Cog):
             return
         await self.calculate_ranks(ctx, temp_cache)
         await self.update_whole_sheet(temp_cache)
+        await ctx.send(f"{member.name} has been deducted {money} NunuBucks.")
         self.cache = temp_cache
     
     @commands.command()
@@ -447,12 +449,12 @@ class MoneyCog(commands.Cog):
                 return
         await self.calculate_ranks(ctx, temp_cache)
         await self.update_whole_sheet(temp_cache)
+        await ctx.send(f"{ctx.author.name} has given {member.name} {money} NunuBucks.")
         self.cache = temp_cache
     
     @commands.command()
     async def bet(self, ctx, team:str = "", money:int = 0):
         """ Bet on the team you think will win! (!bet team amount) """
-        # !break will collect name/id of the players from each team via voice channels
         if self.broke:
             author = ctx.message.author
             if await self.is_in_database(str(author.id)):
