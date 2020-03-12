@@ -225,7 +225,7 @@ class WillumpCog(commands.Cog):
     @commands.command(aliases=["race"])
     async def gg(self, ctx):
         """ Show our list of zeal.gg links """
-        await ctx.send("https://zeal.gg/YyQQtnh\nhttps://zeal.gg/-cHZ680")
+        await ctx.send("https://zeal.gg/YyQQtnh\nhttps://zeal.gg/ytq2-rC")
 
     @commands.command()
     async def sd(self, ctx, *, msg):
