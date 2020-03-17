@@ -777,12 +777,21 @@ class MoneyCog(commands.Cog):
         elif not self.red_team:
             await ctx.send("You must register **red team** members using !register command.")
             return
-        print(self.blue_team)
-        print(self.red_team)
 
         await ctx.invoke(self.prodraft)
 
         self.broke = True
+
+        blue_channel = red_channel = None
+        if "GOOGLE_OAUTH_JSON" in os.environ:
+            blue_channel = ctx.guild.get_channel(689335228933996568)
+            red_channel = ctx.guild.get_channel(689335273502670911)
+        else:
+            blue_channel = ctx.guild.get_channel(689336015713992741)
+            red_channel = ctx.guild.get_channel(689336062589665303)
+
+        await blue_channel.send("This is start of a new session.")
+        await red_channel.send("This is start of a new session.")
 
         # If the player is not in the database yet, add them to the database.
         for member in self.blue_team:
