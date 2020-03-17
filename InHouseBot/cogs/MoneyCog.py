@@ -88,13 +88,17 @@ class MoneyCog(commands.Cog):
         self.gclient = gclient
 
         # For In-House spreadsheet
-        self.rich_test_id = 665644125286039552
-        self.poor_test_id = 665644198053150730
-        self.chief_test_id = 677310051731636239
-        # For Test spreadsheet
         self.baron_id = 663256952742084637
         self.peasant_id = 663605505809186847
         self.chief_id = 651544745868525597
+        self.blue_team_id = 689334904822956050
+        self.red_team_id = 689334969524551729
+        # For Test spreadsheet
+        self.rich_test_id = 665644125286039552
+        self.poor_test_id = 665644198053150730
+        self.chief_test_id = 677310051731636239
+        self.blue_test_id = 689336261793808390
+        self.red_test_id = 689336322875588712
 
         self._init_sheet()
 
@@ -122,11 +126,15 @@ class MoneyCog(commands.Cog):
             self.rich_id = self.baron_id
             self.poor_id = self.peasant_id
             self.high_mmr_id = self.chief_id
+            self.blue_role_id = self.blue_team_id
+            self.red_role_id = self.red_team_id
         elif os.path.isfile("InHouseTest.json"):
             self.sheet_name = "InHouseDataTest"
             self.rich_id = self.rich_test_id
             self.poor_id = self.poor_test_id
             self.high_mmr_id = self.chief_test_id
+            self.blue_role_id = self.blue_test_id
+            self.red_role_id = self.red_test_id
             
         self.sheet = gclient.open(self.sheet_name).worksheet("Player_Profile")
 
@@ -213,7 +221,7 @@ class MoneyCog(commands.Cog):
         for name, id_, money, mmr, money_rank, mmr_rank, games, wins in self.money_ranking:
             member = discord.utils.get(guild.members, id=int(id_))
             if int(money) == highest_money:
-                await member.add_roles(guild.get_role(self.rich_id))
+                await member.add_roles(rich_role)
             else:
                 break
         # Remove existing peasant roles, and assign new ones
@@ -224,7 +232,7 @@ class MoneyCog(commands.Cog):
         for name, id_, money, mmr, money_rank, mmr_rank, games, wins in reversed(self.money_ranking):
             member = discord.utils.get(guild.members, id=int(id_))
             if int(money) == lowest_money:
-                await member.add_roles(guild.get_role(self.poor_id))
+                await member.add_roles(poor_role)
             else:
                 break
         # Remove existing chief roles, and assign new ones
@@ -235,7 +243,7 @@ class MoneyCog(commands.Cog):
         for name, id_, money, mmr, money_rank, mmr_rank, games, wins in self.mmr_ranking:
             member = discord.utils.get(guild.members, id=int(id_))
             if str(mmr) == highest_mmr:
-                await member.add_roles(guild.get_role(self.high_mmr_id))
+                await member.add_roles(chief_role)
             else:
                 break
     
@@ -531,6 +539,9 @@ class MoneyCog(commands.Cog):
     @retry_authorize(gspread.exceptions.APIError)
     async def win(self, ctx, team = ""):
         """ (ADMIN) Decide on who the winner is, and payout accordingly! """
+        if not self.broke:
+            await ctx.send("You need to finalize the team with `!break` to start betting!")
+            return
         winning_team = None
         server = ctx.guild
         msg = ""
@@ -606,11 +617,21 @@ class MoneyCog(commands.Cog):
         embed = discord.Embed(title="Bet Payouts",description=msg, colour = discord.Colour.gold())
         embed.set_thumbnail(url=avatar)
         await ctx.send(embed=embed)
+
+        blue_team_role = server.get_role(self.blue_role_id)
+        for member in blue_team_role.members:
+            await member.remove_roles(blue_team_role)
+        red_team_role = server.get_role(self.red_role_id)
+        for member in red_team_role.members:
+            await member.remove_roles(red_team_role)
+
         self.broke = False
         self.blue_multiplier = 0
         self.red_multiplier = 0
         self.blue_team_bet.clear()
         self.red_team_bet.clear()
+        self.blue_team.clear()
+        self.red_team.clear()
         self.cache = temp_cache
     
     @commands.command()
@@ -686,22 +707,31 @@ class MoneyCog(commands.Cog):
     @commands.command(name="register")
     async def _register(self, ctx, team, *members:discord.Member):
         """ (ADMIN) Register players on the respective teams. """
+        guild = ctx.guild
         embed = discord.Embed()
         message = ""
         if team == "blue":
             message += "**Blue Team members:**"
+            blue_team_role = guild.get_role(self.blue_role_id)
             self.blue_team.clear()
+            for member in blue_team_role.members:
+                await member.remove_roles(blue_team_role)
             for member in members:
                 self.blue_team.append(member)
+                await member.add_roles(blue_team_role)
                 message += f"\n{member.name}"
             embed.description = message
             embed.colour = discord.Colour.blue()
             await ctx.send(embed=embed)
         elif team == "red":
             message += "**RED Team members:**"
+            red_team_role = guild.get_role(self.red_role_id)
             self.red_team.clear()
+            for member in red_team_role.members:
+                await member.remove_roles(red_team_role)
             for member in members:
                 self.red_team.append(member)
+                await member.add_roles(red_team_role)
                 message += f"\n{member.name}"
             embed.description = message
             embed.colour = discord.Colour.red()
@@ -737,7 +767,7 @@ class MoneyCog(commands.Cog):
     
     @commands.command(name="break")
     async def _break(self, ctx):
-        """ Generates a prodraft lobby and records blue/red team memebers. """
+        """ Generates a prodraft lobby and records blue/red team members. """
 
         if not self.blue_team:
             await ctx.send("You must register **blue team** members using !register command.")
@@ -745,6 +775,8 @@ class MoneyCog(commands.Cog):
         elif not self.red_team:
             await ctx.send("You must register **red team** members using !register command.")
             return
+        print(self.blue_team)
+        print(self.red_team)
 
         await ctx.invoke(self.prodraft)
 
@@ -891,6 +923,7 @@ class MoneyCog(commands.Cog):
     @commands.command()
     async def reset(self, ctx):
         """ (ADMIN) Reset the bets and return all the money. """
+        guild = ctx.guild
         # Return the betting money for blue team
         for member_id, bet in self.blue_team_bet.items():
             for row in self.cache:
@@ -903,10 +936,21 @@ class MoneyCog(commands.Cog):
                 if row[SHEET_ID_IDX - 1] == str(member_id):
                     row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + bet
                     break
+        # Remove "Blue Team" roles
+        blue_team_role = guild.get_role(self.blue_team_id)
+        for member in blue_team_role.members:
+            await member.remove_roles(blue_team_role)
+        # Remove "Red Team" roles
+        red_team_role = guild.get_role(self.red_team_id)
+        for member in red_team_role.members:
+            await member.remove_roles(red_team_role)
+
         # Reset to all the default values
         self.broke = False
         self.blue_multiplier = 0
         self.red_multiplier = 0
+        self.blue_team.clear()
+        self.red_team.clear()
         self.blue_team_bet.clear()
         self.red_team_bet.clear()
         await ctx.send("All the bets have been reset.")
