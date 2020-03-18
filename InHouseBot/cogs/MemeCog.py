@@ -182,7 +182,16 @@ class MemeCog(commands.Cog):
     @commands.command(aliases=["flame"],hidden=True)
     async def flames(self, ctx):
         """ ConsTRUCtive flaming """
-        await ctx.send("https://i.imgflip.com/38i4t9.jpg")
+        await ctx.send(
+            "https://i.imgflip.com/38i4t9.jpg"
+            )
+    
+    @commands.command(aliases=["memes"])
+    async def meme(self, ctx):
+        """ Imgur link for Ethan's shops """
+        await ctx.send(
+            "<https://imgur.com/a/Sy65OZd>"
+            )
     
     @commands.command(aliases=["getfuckedtruc"])
     async def truc(self, ctx):
@@ -239,7 +248,9 @@ class MemeCog(commands.Cog):
     @commands.command(aliases = ["ethan"])
     async def valley(self, ctx):
         """ Meme KING """
-        await ctx.send(f"https://www.youtube.com/channel/UCLlFPxjfcwQAT9XWOLpi0KQ")
+        await ctx.send(
+            f"https://www.youtube.com/channel/UCLlFPxjfcwQAT9XWOLpi0KQ"
+            )
     
     @commands.command(hidden=True)
     async def wade(self, ctx):
