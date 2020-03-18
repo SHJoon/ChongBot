@@ -52,11 +52,12 @@ class WillumpCog(commands.Cog):
         embed = discord.Embed(title=ranflip)
 
         if ranflip == "Heads":
-            embed.set_image(
-                url="https://cdn.discordapp.com/attachments/602376454491078659/659905323217322021/image0.jpg"
-                # "https://i.imgur.com/9HC22JW.png"
-                # "https://i.imgur.com/lDlR54a.gif"
-                )
+            pics_url = [
+                "https://cdn.discordapp.com/attachments/688598474861707304/689666020834803712/unknown.png",
+                "https://cdn.discordapp.com/attachments/602376454491078659/659905323217322021/image0.jpg"
+            ]
+            ranpic = random.choice(pics_url)
+            embed.set_image(url=ranpic)
             embed.colour = discord.Colour.orange()
         elif ranflip == "Tails":
             pics_url = [
