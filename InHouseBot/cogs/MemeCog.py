@@ -193,6 +193,15 @@ class MemeCog(commands.Cog):
             "<https://imgur.com/a/Sy65OZd>"
             )
     
+    @commands.command()
+    async def pinecone(self, ctx):
+        """ Vincent draw a pinecone """
+        embed = discord.Embed(colour=discord.Colour.dark_magenta())
+        embed.set_image(
+            url="https://cdn.discordapp.com/attachments/611413760266993675/691195233349927002/unknown.png"
+        )
+        await ctx.send(embed=embed)
+    
     @commands.command(aliases=["getfuckedtruc"])
     async def truc(self, ctx):
         """ Get fucked Truc """
