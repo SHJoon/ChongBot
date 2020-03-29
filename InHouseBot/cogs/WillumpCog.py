@@ -233,3 +233,4 @@ class WillumpCog(commands.Cog):
         """ Only Danny and I know what this does """
         channel = self.bot.get_channel(569646728224178184)
         await channel.send(msg)
+        

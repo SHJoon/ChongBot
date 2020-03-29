@@ -726,7 +726,7 @@ class MoneyCog(commands.Cog):
             embed.colour = discord.Colour.blue()
             await ctx.send(embed=embed)
         elif team == "red":
-            message += "**RED Team members:**"
+            message += "**Red Team members:**"
             red_team_role = guild.get_role(self.red_role_id)
             self.red_team.clear()
             for member in red_team_role.members:

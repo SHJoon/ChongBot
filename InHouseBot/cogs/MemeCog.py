@@ -275,3 +275,4 @@ class MemeCog(commands.Cog):
         embed.set_image(url="https://cdn.discordapp.com/attachments/569646728224178184/672295666923601920/unknown.png")
         embed.colour = discord.Colour.red()
         await ctx.send(embed=embed)
+        

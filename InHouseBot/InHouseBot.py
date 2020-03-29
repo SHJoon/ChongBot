@@ -168,8 +168,8 @@ async def on_raw_reaction_add(reaction):
     if not ((reaction.emoji.id in roles) or (reaction.emoji.id in queue_emojis)):
         return
     
-    guild = await bot.fetch_guild(reaction.guild_id)
-    user = await guild.fetch_member(reaction.user_id)
+    guild = bot.get_guild(reaction.guild_id)
+    user = guild.get_member(reaction.user_id)
     channel = bot.get_channel(reaction.channel_id)
     message = await channel.fetch_message(reaction.message_id)
     ctx = await bot.get_context(message)
