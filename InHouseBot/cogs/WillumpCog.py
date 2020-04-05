@@ -18,7 +18,7 @@ class WillumpCog(commands.Cog):
         bot.help_command = AliasHelpCommand()
         bot.help_command.cog = self
 
-        self._init_champs()
+        # self._init_champs()
 
         self.flip_count = 0
         # Set up our typo structs for lulcaptains()
@@ -38,7 +38,7 @@ class WillumpCog(commands.Cog):
         self.typo_replace_chance = 10
         self.typo_add_chance = 10
         self.bot = bot
-    
+    """
     def _init_champs(self):
         champion_list = open("League_Champs.txt", "r")
         self.champs = champion_list.read().split()
@@ -63,7 +63,7 @@ class WillumpCog(commands.Cog):
         support_list = open("League_Support.txt", "r")
         self.support = support_list.read().split()
         support_list.close
-
+"""
     @commands.command(pass_context=True)
     async def flip(self, ctx):
         """ Heads or Tails """
@@ -125,7 +125,7 @@ class WillumpCog(commands.Cog):
             else:
                 tail_count += 1
         await ctx.send(f"Heads:{head_count}\nTails:{tail_count}")
-    
+    """
     @commands.group(aliases=["champions", "champ", "champs"])
     async def champion(self, ctx):
         """ Print out random support champ for select role """
@@ -151,7 +151,7 @@ class WillumpCog(commands.Cog):
     @champion.command(aliases = ["sup", "supp"])
     async def support(self, ctx):
         await ctx.send(random.choice(self.support))
-
+"""
     @commands.command(pass_context=True)
     async def choose(self, ctx, *choices: str):
         """ Randomly choose from your own provided list of choices """

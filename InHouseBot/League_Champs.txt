@@ -7,7 +7,7 @@ Anivia
 Annie
 Aphelios
 Ashe
-Aurelion
+Aurelion Sol
 Azir
 Bard
 Blitzcrank
@@ -79,7 +79,7 @@ Nautilus
 Neeko
 Nidalee
 Nocturne
-Nunu
+Nunu and Willump
 Olaf
 Orianna
 Ornn
