@@ -128,7 +128,7 @@ class WillumpCog(commands.Cog):
     """
     @commands.group(aliases=["champions", "champ", "champs"])
     async def champion(self, ctx):
-        """ Print out random support champ for select role """
+        # Print out random support champ for select role 
         if ctx.invoked_subcommand is None:
             await ctx.send(random.choice(self.champs))
     
