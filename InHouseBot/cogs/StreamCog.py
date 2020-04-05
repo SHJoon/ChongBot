@@ -171,3 +171,6 @@ class StreamCog(commands.Cog):
                     msg += f"{member.name}: <{url}>\n"
         await ctx.send(msg)"""
         
+    @commands.command()
+    async def test(self, ctx):
+        print(self.cache)
