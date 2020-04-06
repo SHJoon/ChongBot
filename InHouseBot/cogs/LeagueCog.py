@@ -219,5 +219,5 @@ class LeagueCog(commands.Cog):
     @champion.command(aliases=["4fun","4fun4"])
     async def fun(self, ctx):
         chmp = random.choice(self.champs_list)
-        rl = random.choice(["Top, Jungle, Mid, Bot, Support"])
+        rl = random.choice(["Top", "Jungle", "Mid", "Bot", "Support"])
         await ctx.send(f"{chmp} {rl}")
