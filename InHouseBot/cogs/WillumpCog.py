@@ -18,8 +18,6 @@ class WillumpCog(commands.Cog):
         bot.help_command = AliasHelpCommand()
         bot.help_command.cog = self
 
-        # self._init_champs()
-
         self.flip_count = 0
         # Set up our typo structs for lulcaptains()
         self.keyboard_array = [
@@ -38,32 +36,7 @@ class WillumpCog(commands.Cog):
         self.typo_replace_chance = 10
         self.typo_add_chance = 10
         self.bot = bot
-    """
-    def _init_champs(self):
-        champion_list = open("League_Champs.txt", "r")
-        self.champs = champion_list.read().split()
-        champion_list.close
 
-        top_list = open("League_Top.txt", "r")
-        self.top = top_list.read().split()
-        top_list.close
-
-        jungle_list = open("League_Jungle.txt", "r")
-        self.jungle = jungle_list.read().split()
-        jungle_list.close
-
-        middle_list = open("League_Middle.txt", "r")
-        self.middle = middle_list.read().split()
-        middle_list.close
-
-        bottom_list = open("League_Bottom.txt", "r")
-        self.bottom = bottom_list.read().split()
-        bottom_list.close
-
-        support_list = open("League_Support.txt", "r")
-        self.support = support_list.read().split()
-        support_list.close
-"""
     @commands.command(pass_context=True)
     async def flip(self, ctx):
         """ Heads or Tails """
@@ -125,33 +98,7 @@ class WillumpCog(commands.Cog):
             else:
                 tail_count += 1
         await ctx.send(f"Heads:{head_count}\nTails:{tail_count}")
-    """
-    @commands.group(aliases=["champions", "champ", "champs"])
-    async def champion(self, ctx):
-        # Print out random support champ for select role 
-        if ctx.invoked_subcommand is None:
-            await ctx.send(random.choice(self.champs))
-    
-    @champion.command()
-    async def top(self, ctx):
-        await ctx.send(random.choice(self.top))
 
-    @champion.command(aliases = ["jg"])
-    async def jungle(self, ctx):
-        await ctx.send(random.choice(self.jungle))
-
-    @champion.command(aliases = ["mid"])
-    async def middle(self, ctx):
-        await ctx.send(random.choice(self.middle))
-
-    @champion.command(aliases = ["adc"])
-    async def bot(self, ctx):
-        await ctx.send(random.choice(self.bottom))
-
-    @champion.command(aliases = ["sup", "supp"])
-    async def support(self, ctx):
-        await ctx.send(random.choice(self.support))
-"""
     @commands.command(pass_context=True)
     async def choose(self, ctx, *choices: str):
         """ Randomly choose from your own provided list of choices """

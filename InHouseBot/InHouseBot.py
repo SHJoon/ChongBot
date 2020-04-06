@@ -7,6 +7,7 @@ from discord.ext import commands, tasks
 from cogs.WillumpCog import WillumpCog
 from cogs.QueueCog import QueueCog
 from cogs.MemeCog import MemeCog
+from cogs.LeagueCog import LeagueCog
 
 # Change this to whatever prefix you'd like
 prefixes = ["!", "."]
@@ -91,7 +92,7 @@ async def on_ready():
     channel = bot.get_channel(569974088932655134)
     await channel.send('Bot has been reset.')
 
-def levenshtein(msg1, msg2):
+async def levenshtein(msg1, msg2):
     rows = len(msg1) + 1
     cols = len(msg2) + 1
     distance = [[0 for x in range(cols)] for x in range(rows)]
@@ -124,7 +125,7 @@ async def on_message(message):
     # Capitalize the message for easier comparison
     new_message_upper = new_message.upper()
     if new_message_upper.startswith("HTOWN"):
-        if(levenshtein(new_message_upper, "HTOWNLET'SGETIT!") <= 2):
+        if(await levenshtein(new_message_upper, "HTOWNLET'SGETIT!") <= 2):
             await message.add_reaction("\U0001F680")
             await message.add_reaction("\U0001F1FC")
     elif message.content.upper() == "W":
@@ -227,6 +228,7 @@ elif os.path.isfile("key"):
 bot.add_cog(WillumpCog(bot))
 bot.add_cog(QueueCog(bot))
 bot.add_cog(MemeCog(bot))
+bot.add_cog(LeagueCog(bot))
 
 if ("GOOGLE_OAUTH_JSON" in os.environ) or (os.path.isfile("InHouseTest.json")):
     from cogs.StreamCog import StreamCog
