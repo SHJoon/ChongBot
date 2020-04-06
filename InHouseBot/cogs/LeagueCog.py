@@ -194,31 +194,30 @@ class LeagueCog(commands.Cog):
     @commands.group(aliases = ["champ", "champs", "champions"])
     async def champion(self, ctx):
         if ctx.invoked_subcommand is None:
-            print(self.champs_list)
             await ctx.send(random.choice(self.champs_list))
 
     @champion.command()
     async def top(self, ctx):
-        print(self.top_list)
         await ctx.send(random.choice(self.top_list))
 
     @champion.command(aliases = ["jg"])
     async def jungle(self, ctx):
-        print(self.jungle_list)
         await ctx.send(random.choice(self.jungle_list))
         
     @champion.command(aliases = ["mid"])
     async def middle(self, ctx):
-        print(self.middle_list)
         await ctx.send(random.choice(self.middle_list))
         
     @champion.command(aliases = ["bot", "adc"])
     async def bottom(self, ctx):
-        print(self.bottom_list)
         await ctx.send(random.choice(self.bottom_list))
         
-    @champion.command(aliases = ["sup", "supp764538 12t"])
+    @champion.command(aliases = ["sup", "supp", "spt"])
     async def support(self, ctx):
-        print(self.support_list)
         await ctx.send(random.choice(self.support_list))
-        
+    
+    @champion.command(aliases=["4fun","4fun4"])
+    async def fun(self, ctx):
+        chmp = random.choice(self.champs_list)
+        rl = random.choice(["Top, Jungle, Mid, Bot, Support"])
+        await ctx.send(f"{chmp} {rl}")
