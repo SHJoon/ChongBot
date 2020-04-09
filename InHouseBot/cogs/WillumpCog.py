@@ -233,4 +233,13 @@ class WillumpCog(commands.Cog):
         """ Only Danny and I know what this does """
         channel = self.bot.get_channel(569646728224178184)
         await channel.send(msg)
-        
+    
+    @commands.command(aliases = ["reward", "rewards"])
+    async def cashout(self, ctx):
+        await ctx.send(
+            "You can cashout NunuBucks for the following:\
+            \n30,000 NB - Custom emote for the server\
+            \n50,000 NB - Meme command(image/text format)\
+            \n70,000 ~ 100,000 NB - Utility command (price depends on the difficulty of implementation)\
+            \n\nMessage one of the mods for the request!"
+        )
