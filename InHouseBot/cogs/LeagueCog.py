@@ -65,6 +65,8 @@ class LeagueCog(commands.Cog):
         else:
             await ctx.send(random.choice(self.champs_list))
 
+# WIP
+"""
     @commands.group()
     async def topchamp(self, ctx):
         if ctx.invoked_subcommand is None:
@@ -89,7 +91,7 @@ class LeagueCog(commands.Cog):
     @topchamp.command(aliases = ["sup", "supp", "spt"])
     async def support(self, ctx, num = 10):
         await ctx.send("test4")
-
+"""
 # Test command, but saved to show example of how to retrieve images from websites
 """
     @commands.command()
