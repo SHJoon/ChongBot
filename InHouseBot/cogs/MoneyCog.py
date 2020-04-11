@@ -349,8 +349,11 @@ class MoneyCog(commands.Cog):
             guild = ctx.guild
             userlist = []
             for row in self.cache[1:]:
-                user = discord.utils.get(guild.members, id=int(row[SHEET_ID_IDX - 1]))
-                userlist.append(user)
+                if int(row[SHEET_GAMES_IDX - 1]) < 5:
+                    continue
+                else:
+                    user = discord.utils.get(guild.members, id=int(row[SHEET_ID_IDX - 1]))
+                    userlist.append(user)
             random.shuffle(userlist)
             for idx, user in enumerate(userlist):
                 message += f"**#{idx+1}**: {user.name}\n"
@@ -698,7 +701,7 @@ class MoneyCog(commands.Cog):
             if topic not in self.side_bets:
                 await ctx.send("That is not one of the choice for sidebets!")
                 return
-                
+
             temp_cache = copy.deepcopy(self.cache)
             guild = ctx.guild
             msg = ""
