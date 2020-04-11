@@ -3,6 +3,7 @@ import itertools
 import discord
 import asyncio
 from discord.ext import commands
+import heapq
 
 # Figuring out how the !help command gets automatically registered and invoked
 # is actually a good excercise in reading source code Howard
@@ -243,3 +244,12 @@ class WillumpCog(commands.Cog):
             \n70,000 ~ 100,000 NB - Utility command (price depends on the difficulty of implementation)\
             \n\nMessage one of the mods for the request!"
         )
+
+    @commands.command()
+    async def test(self, ctx):
+        H = [5,61,2,97,5,32,10,9,8,7,1,2,3,4,56,8,6,10]
+        heapq._heapify_max(H)
+        print(H)
+        for _ in range(len(H)):
+            heapq._heappop_max(H)
+            print(H)

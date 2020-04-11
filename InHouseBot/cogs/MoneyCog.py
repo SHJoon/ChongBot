@@ -119,6 +119,8 @@ class MoneyCog(commands.Cog):
 
         self.side_bets = {}
         self.side_bets_msg = None
+        
+        self.lock = asyncio.Lock()
 
     def _init_sheet(self):
         if "GOOGLE_OAUTH_JSON" in os.environ:
@@ -271,29 +273,30 @@ class MoneyCog(commands.Cog):
     async def cmd_join(self, ctx, member:discord.Member=None):
         """ Join our currency database! """
         user = userid = money_rank = mmr_rank = None
-        temp_cache = copy.deepcopy(self.cache)
-        if member is not None:
-            if await self.is_in_database(str(member.id)):
-                await ctx.send(f"{member.name} is already part of our database!")
-                return
-            user = member.name
-            userid = member.id
-        else:
-            author = ctx.message.author
-            if await self.is_in_database(str(author.id)):
-                await ctx.send("You have already joined our currency database!")
-                return
-            user = author.name
-            userid = author.id
-        
-        userlist = [user, str(userid), "1000", "1400", 0, 0, 0, 0]
-        temp_cache.append(userlist)
-        await self.calculate_ranks(ctx, temp_cache)
-        money_rank, mmr_rank = await self.get_ranks(temp_cache, userid)
-        userlist = [user, str(userid), "1000", "1400", money_rank, mmr_rank, 0, 0]
-        temp_cache[-1] = userlist
-        await self.update_whole_sheet(temp_cache)
-        self.cache = temp_cache
+        async with self.lock:
+            temp_cache = copy.deepcopy(self.cache)
+            if member is not None:
+                if await self.is_in_database(str(member.id)):
+                    await ctx.send(f"{member.name} is already part of our database!")
+                    return
+                user = member.name
+                userid = member.id
+            else:
+                author = ctx.message.author
+                if await self.is_in_database(str(author.id)):
+                    await ctx.send("You have already joined our currency database!")
+                    return
+                user = author.name
+                userid = author.id
+            
+            userlist = [user, str(userid), "1000", "1400", 0, 0, 0, 0]
+            temp_cache.append(userlist)
+            await self.calculate_ranks(ctx, temp_cache)
+            money_rank, mmr_rank = await self.get_ranks(temp_cache, userid)
+            userlist = [user, str(userid), "1000", "1400", money_rank, mmr_rank, 0, 0]
+            temp_cache[-1] = userlist
+            await self.update_whole_sheet(temp_cache)
+            self.cache = temp_cache
 
     @commands.command(aliases = ["$", "money", "fund", "funds", "cash", "mmr"])
     async def profile(self, ctx, person:discord.Member=None):
@@ -343,10 +346,10 @@ class MoneyCog(commands.Cog):
             key = cmd[1]
             message = ""
             title = f"{key} Rank"
-            server = ctx.guild
+            guild = ctx.guild
             userlist = []
             for row in self.cache[1:]:
-                user = discord.utils.get(server.members, id=int(row[SHEET_ID_IDX - 1]))
+                user = discord.utils.get(guild.members, id=int(row[SHEET_ID_IDX - 1]))
                 userlist.append(user)
             random.shuffle(userlist)
             for idx, user in enumerate(userlist):
@@ -390,30 +393,36 @@ class MoneyCog(commands.Cog):
     @retry_authorize(gspread.exceptions.APIError)
     async def cmd_add(self, ctx, member:discord.Member, money:int):
         """ (ADMIN) Add money to target member """
-        temp_cache = copy.deepcopy(self.cache)
-        if await self.is_in_database(str(member.id)):
-            if await self.is_positive_money(ctx, money):
-                for idx, row in enumerate(temp_cache):
-                    if row[SHEET_ID_IDX - 1] == str(member.id):
-                        current_money = int(row[SHEET_MONEY_IDX - 1])
-                        new_money = current_money + money
-                        row[SHEET_MONEY_IDX - 1] = new_money
-                        break
-        else:
-            await ctx.send("The member is not part of the database yet!")
-            return
-        await self.calculate_ranks(ctx, temp_cache)
-        await self.update_whole_sheet(temp_cache)
-        await ctx.send(f"{member.name} has been given {money} NunuBucks.")
-        self.cache = temp_cache
+        async with self.lock:
+            temp_cache = copy.deepcopy(self.cache)
+            if await self.is_in_database(str(member.id)):
+                if await self.is_positive_money(ctx, money):
+                    for idx, row in enumerate(temp_cache):
+                        if row[SHEET_ID_IDX - 1] == str(member.id):
+                            current_money = int(row[SHEET_MONEY_IDX - 1])
+                            new_money = current_money + money
+                            row[SHEET_MONEY_IDX - 1] = new_money
+                            break
+            else:
+                await ctx.send("The member is not part of the database yet!")
+                return
+            await self.calculate_ranks(ctx, temp_cache)
+            await self.update_whole_sheet(temp_cache)
+            await ctx.send(f"{member.name} has been given {money} NunuBucks.")
+            self.cache = temp_cache
     
     @is_approved()
     @commands.command(name="remove$")
     @retry_authorize(gspread.exceptions.APIError)
     async def cmd_remove(self, ctx, member:discord.Member, money:int):
         """ (ADMIN) Remove money from target member """
-        temp_cache = copy.deepcopy(self.cache)
-        if await self.is_in_database(str(member.id)):
+        async with self.lock:
+            temp_cache = copy.deepcopy(self.cache)
+
+            if not await self.is_in_database(str(member.id)):
+                await ctx.send("The member is not part of the database yet!")
+                return
+
             if await self.is_positive_money(ctx, money):
                 for idx, row in enumerate(temp_cache):
                     if row[SHEET_ID_IDX - 1] == str(member.id):
@@ -421,120 +430,123 @@ class MoneyCog(commands.Cog):
                         new_money = current_money - money
                         row[SHEET_MONEY_IDX - 1] = new_money
                         break
-        else:
-            await ctx.send("The member is not part of the database yet!")
-            return
-        await self.calculate_ranks(ctx, temp_cache)
-        await self.update_whole_sheet(temp_cache)
-        await ctx.send(f"{member.name} has been deducted {money} NunuBucks.")
-        self.cache = temp_cache
+                    
+            await self.calculate_ranks(ctx, temp_cache)
+            await self.update_whole_sheet(temp_cache)
+            await ctx.send(f"{member.name} has been deducted {money} NunuBucks.")
+            self.cache = temp_cache
     
     @commands.command()
     @retry_authorize(gspread.exceptions.APIError)
     async def give(self, ctx, member:discord.Member, money:int):
         """ Give some of your money to select person (!give @person amount)"""
-        temp_cache = copy.deepcopy(self.cache)
-        if await self.is_positive_money(ctx, money):
-            current_money = await self.get_current_money(ctx)
-            if await self.has_enough_money(ctx, current_money, money):
-                if await self.is_in_database(str(ctx.message.author.id)):
-                    if await self.is_in_database(str(member.id)):
-                        author = ctx.message.author
-                        for idx, row in enumerate(temp_cache):
-                            # Deduct amount from command invoker
-                            if row[SHEET_ID_IDX - 1] == str(author.id):
-                                row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) - money
-                            # Give amount to target person
-                            if row[SHEET_ID_IDX - 1] == str(member.id):
-                                row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + money
-                    else:
-                        await ctx.send("The person is not in the database yet!")
-                        return
-                else:
-                    await ctx.send("You're not in the database yet! Use `!join$` now!")
-                    return
-            else:
+        async with self.lock:
+            temp_cache = copy.deepcopy(self.cache)
+            if not await self.is_positive_money(ctx, money):
                 return
-        await self.calculate_ranks(ctx, temp_cache)
-        await self.update_whole_sheet(temp_cache)
-        await ctx.send(f"{ctx.author.name} has given {member.name} {money} NunuBucks.")
-        self.cache = temp_cache
+
+            current_money = await self.get_current_money(ctx)
+
+            if not await self.has_enough_money(ctx, current_money, money):
+                return
+            elif not await self.is_in_database(str(ctx.message.author.id)):
+                await ctx.send("You're not in the database yet! Use `!join$` now!")
+                return
+            elif not await self.is_in_database(str(member.id)):
+                await ctx.send("The person is not in the database yet!")
+                return
+
+            author = ctx.message.author
+            for idx, row in enumerate(temp_cache):
+                # Deduct amount from command invoker
+                if row[SHEET_ID_IDX - 1] == str(author.id):
+                    row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) - money
+                # Give amount to target person
+                if row[SHEET_ID_IDX - 1] == str(member.id):
+                    row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + money
+
+            await self.calculate_ranks(ctx, temp_cache)
+            await self.update_whole_sheet(temp_cache)
+            await ctx.send(f"{ctx.author.name} has given {member.name} {money} NunuBucks.")
+            self.cache = temp_cache
     
     @commands.command()
     async def bet(self, ctx, team:str = "", money:int = 0):
         """ Bet on the team you think will win! (!bet team amount) """
-        if self.broke:
-            author = ctx.message.author
-            if await self.is_in_database(str(author.id)):
-                if self.bet_toggle:
-                    # Betting amount has to be greater than 0.
-                    if await self.is_positive_money(ctx, money):
-                        # Give error if betting amount is more than how much you own.
-                        current_money = await self.get_current_money(ctx)
-                        if team.lower() == "blue":
-                            # If you're in Red Team, you cannot bet for Blue Team.
-                            for member in self.red_team:
-                                if author.id == member.id:
-                                    await ctx.send("You cannot bet on the opposing team!")
-                                    return
-                            # For replacing existing bet, return the money.
-                            if author.id in self.blue_team_bet:
-                                for member_id, bet in self.blue_team_bet.items():
-                                    if author.id == member_id:
-                                        for row in self.cache:
-                                            if row[SHEET_ID_IDX - 1] == str(author.id):
-                                                if money > (current_money + bet):
-                                                    await ctx.send("You don't have enough money to bet that amount!")
-                                                    return
-                                                row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + bet
-                            else:
-                                if money > current_money:
-                                    await ctx.send("You don't have enough money to bet that amount!")
-                                    return
-
-                            # Add the author to a list/dict for blue team, with how much they bet.
-                            self.blue_team_bet[author.id] = money
-                            for row in self.cache:
-                                if row[SHEET_ID_IDX - 1] == str(author.id):
-                                    row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) - money
-
-                        elif team.lower() == "red":
-                            # If you're in Blue Team, you cannot bet for Red Team.
-                            for member in self.blue_team:
-                                if author.id == member.id:
-                                    await ctx.send("You cannot bet on the opposing team!")
-                                    return
-                            # For replacing existing bet, return the money first, then put in the new bet.
-                            if author.id in self.red_team_bet:
-                                for member_id, bet in self.red_team_bet.items():
-                                    if author.id == member_id:
-                                        for row in self.cache:
-                                            if row[SHEET_ID_IDX - 1] == str(author.id):
-                                                if money > (current_money + bet):
-                                                    await ctx.send("You don't have enough money to bet that amount!")
-                                                    return
-                                                row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + bet
-                            else:
-                                if current_money < money:
-                                    await ctx.send("You don't have enough money to bet that amount!")
-                                    return
-
-                            # Add the author to a list/dict for red team, with how much they bet.
-                            self.red_team_bet[author.id] = money
-                            for row in self.cache:
-                                if row[SHEET_ID_IDX - 1] == str(author.id):
-                                    row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) - money
-                        elif team == "":
-                            await ctx.send("You need to choose a team to bet on! For example, `!bet 500 Blue`")
-                        else:
-                            await ctx.send("Team choices are either Blue or Red.")
-                        await ctx.invoke(self.bets)
-                else:
-                    await ctx.send("You need to bet within betting time to be able to bet!")
-            else:
-                await ctx.send("You're not in the database yet! Use `!join$` now!")
-        else:
+        if not self.broke:
             await ctx.send("You need to finalize the team with `!break` to start betting!")
+            return
+        
+        author = ctx.message.author
+        if not await self.is_in_database(str(author.id)):
+            await ctx.send("You're not in the database yet! Use `!join$` now!")
+            return    
+        elif not self.bet_toggle:
+            await ctx.send("You need to bet within betting time to be able to bet!")
+            return
+        elif not await self.is_positive_money(ctx, money):
+            return
+
+        # Give error if betting amount is more than how much you own.
+        current_money = await self.get_current_money(ctx)
+        if team.lower() == "blue":
+            # If you're in Red Team, you cannot bet for Blue Team.
+            for member in self.red_team:
+                if author.id == member.id:
+                    await ctx.send("You cannot bet on the opposing team!")
+                    return
+            # For replacing existing bet, return the money.
+            if author.id in self.blue_team_bet:
+                for member_id, bet in self.blue_team_bet.items():
+                    if author.id == member_id:
+                        for row in self.cache:
+                            if row[SHEET_ID_IDX - 1] == str(author.id):
+                                if money > (current_money + bet):
+                                    await ctx.send("You don't have enough money to bet that amount!")
+                                    return
+                                row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + bet
+            else:
+                if money > current_money:
+                    await ctx.send("You don't have enough money to bet that amount!")
+                    return
+
+            # Add the author to a list/dict for blue team, with how much they bet.
+            self.blue_team_bet[author.id] = money
+            for row in self.cache:
+                if row[SHEET_ID_IDX - 1] == str(author.id):
+                    row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) - money
+
+        elif team.lower() == "red":
+            # If you're in Blue Team, you cannot bet for Red Team.
+            for member in self.blue_team:
+                if author.id == member.id:
+                    await ctx.send("You cannot bet on the opposing team!")
+                    return
+            # For replacing existing bet, return the money first, then put in the new bet.
+            if author.id in self.red_team_bet:
+                for member_id, bet in self.red_team_bet.items():
+                    if author.id == member_id:
+                        for row in self.cache:
+                            if row[SHEET_ID_IDX - 1] == str(author.id):
+                                if money > (current_money + bet):
+                                    await ctx.send("You don't have enough money to bet that amount!")
+                                    return
+                                row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + bet
+            else:
+                if current_money < money:
+                    await ctx.send("You don't have enough money to bet that amount!")
+                    return
+
+            # Add the author to a list/dict for red team, with how much they bet.
+            self.red_team_bet[author.id] = money
+            for row in self.cache:
+                if row[SHEET_ID_IDX - 1] == str(author.id):
+                    row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) - money
+        elif team == "":
+            await ctx.send("You need to choose a team to bet on! For example, `!bet 500 Blue`")
+        else:
+            await ctx.send("Team choices are either Blue or Red.")
+        await ctx.invoke(self.bets)
 
     @is_approved()
     @commands.command(aliases=["payout"])
@@ -544,166 +556,169 @@ class MoneyCog(commands.Cog):
         if not self.broke:
             await ctx.send("You need to finalize the team with `!break` to start betting!")
             return
-        winning_team = None
-        server = ctx.guild
-        msg = ""
-        temp_cache = copy.deepcopy(self.cache)
-        if team.lower() == "blue":
-            temp_blue_bets = copy.deepcopy(self.blue_team_bet)
-            # Give the Blue team members their winnings.
-            # Additionally, calculate the new MMR of each players
-            for row in temp_cache:
-                # Blue team when blue win
-                for member in self.blue_team:
-                    if str(member.id) == row[SHEET_ID_IDX - 1]:
-                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + self.blue_winnings
-                        old_mmr = float(row[SHEET_MMR_IDX - 1])
-                        new_mmr = old_mmr + (32 * (1 - self.blue_team_win))
-                        row[SHEET_MMR_IDX - 1] = new_mmr
-                        row[SHEET_GAMES_IDX - 1] = int(row[SHEET_GAMES_IDX - 1]) + 1
-                        row[SHEET_WINS_IDX - 1] = int(row[SHEET_WINS_IDX - 1]) + 1
-                # Red team when blue win
-                for member in self.red_team:
-                    if str(member.id) == row[SHEET_ID_IDX - 1]:
-                        old_mmr = float(row[SHEET_MMR_IDX - 1])
-                        new_mmr = old_mmr + (32 * (0 - (1 - self.blue_team_win)))
-                        row[SHEET_MMR_IDX - 1] = new_mmr
-                        row[SHEET_GAMES_IDX - 1] = int(row[SHEET_GAMES_IDX - 1]) + 1
-            # Grab the list/dict for blue team, calculate how much they won, and distribute accordingly.
-            for member_id in temp_blue_bets:
-                temp_blue_bets[member_id] *= (1 + self.blue_multiplier)
-                member = discord.utils.get(server.members, id=member_id)
-                msg += f"{member.name}: {int(temp_blue_bets[member_id])}\n"
+        async with self.lock:
+            winning_team = None
+            guild = ctx.guild
+            msg = ""
+            temp_cache = copy.deepcopy(self.cache)
+            if team.lower() == "blue":
+                temp_blue_bets = copy.deepcopy(self.blue_team_bet)
+                # Give the Blue team members their winnings.
+                # Additionally, calculate the new MMR of each players
                 for row in temp_cache:
-                    if row[SHEET_ID_IDX - 1] == str(member_id):
-                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + int(temp_blue_bets[member_id])
-            winning_team = "Blue Team"
-        elif team.lower() == "red":
-            temp_red_bets = copy.deepcopy(self.red_team_bet)
-            # Give the Red team members their winnings.
-            for row in temp_cache:
-                # Red team when red win
-                for member in self.red_team:
-                    if str(member.id) == row[SHEET_ID_IDX - 1]:
-                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + self.red_winnings
-                        old_mmr = float(row[SHEET_MMR_IDX - 1])
-                        new_mmr = old_mmr + (32 * (1 - (1 - self.blue_team_win)))
-                        row[SHEET_MMR_IDX - 1] = new_mmr
-                        row[SHEET_GAMES_IDX - 1] = int(row[SHEET_GAMES_IDX - 1]) + 1
-                        row[SHEET_WINS_IDX - 1] = int(row[SHEET_WINS_IDX - 1]) + 1
-                # Blue team when red win
-                for member in self.blue_team:
-                    if str(member.id) == row[SHEET_ID_IDX - 1]:
-                        old_mmr = float(row[SHEET_MMR_IDX - 1])
-                        new_mmr = old_mmr + (32 * (0 - self.blue_team_win))
-                        row[SHEET_MMR_IDX - 1] = new_mmr
-                        row[SHEET_GAMES_IDX - 1] = int(row[SHEET_GAMES_IDX - 1]) + 1
-            # Grab the list/dict for red team, calculate how much they won, and distribute accordingly.
-            for member_id in temp_red_bets:
-                temp_red_bets[member_id] *= (1 + self.red_multiplier)
-                member = discord.utils.get(server.members, id=member_id)
-                msg += f"{member.name}: {int(temp_red_bets[member_id])}\n"
+                    # Blue team when blue win
+                    for member in self.blue_team:
+                        if str(member.id) == row[SHEET_ID_IDX - 1]:
+                            row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + self.blue_winnings
+                            old_mmr = float(row[SHEET_MMR_IDX - 1])
+                            new_mmr = old_mmr + (32 * (1 - self.blue_team_win))
+                            row[SHEET_MMR_IDX - 1] = new_mmr
+                            row[SHEET_GAMES_IDX - 1] = int(row[SHEET_GAMES_IDX - 1]) + 1
+                            row[SHEET_WINS_IDX - 1] = int(row[SHEET_WINS_IDX - 1]) + 1
+                    # Red team when blue win
+                    for member in self.red_team:
+                        if str(member.id) == row[SHEET_ID_IDX - 1]:
+                            old_mmr = float(row[SHEET_MMR_IDX - 1])
+                            new_mmr = old_mmr + (32 * (0 - (1 - self.blue_team_win)))
+                            row[SHEET_MMR_IDX - 1] = new_mmr
+                            row[SHEET_GAMES_IDX - 1] = int(row[SHEET_GAMES_IDX - 1]) + 1
+                # Grab the list/dict for blue team, calculate how much they won, and distribute accordingly.
+                for member_id in temp_blue_bets:
+                    temp_blue_bets[member_id] *= (1 + self.blue_multiplier)
+                    member = discord.utils.get(guild.members, id=member_id)
+                    msg += f"{member.name}: {int(temp_blue_bets[member_id])}\n"
+                    for row in temp_cache:
+                        if row[SHEET_ID_IDX - 1] == str(member_id):
+                            row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + int(temp_blue_bets[member_id])
+                winning_team = "Blue Team"
+            elif team.lower() == "red":
+                temp_red_bets = copy.deepcopy(self.red_team_bet)
+                # Give the Red team members their winnings.
                 for row in temp_cache:
-                    if row[SHEET_ID_IDX - 1] == str(member_id):
-                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + int(temp_red_bets[member_id])
-            winning_team = "Red Team"
-        else:
-            await ctx.send("The possible choices are either Blue or Red! For example: `!win Blue`")
-            return
-        if msg == "":
-            msg = "No payout this time!"
-        await self.calculate_ranks(ctx, temp_cache)
-        await self.update_whole_sheet(temp_cache)
-        message = await ctx.send(f"{winning_team} has won! Now distributing the payout...")
-        avatar = message.author.avatar_url
-        embed = discord.Embed(title="Bet Payouts",description=msg, colour = discord.Colour.gold())
-        embed.set_thumbnail(url=avatar)
-        await ctx.send(embed=embed)
+                    # Red team when red win
+                    for member in self.red_team:
+                        if str(member.id) == row[SHEET_ID_IDX - 1]:
+                            row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + self.red_winnings
+                            old_mmr = float(row[SHEET_MMR_IDX - 1])
+                            new_mmr = old_mmr + (32 * (1 - (1 - self.blue_team_win)))
+                            row[SHEET_MMR_IDX - 1] = new_mmr
+                            row[SHEET_GAMES_IDX - 1] = int(row[SHEET_GAMES_IDX - 1]) + 1
+                            row[SHEET_WINS_IDX - 1] = int(row[SHEET_WINS_IDX - 1]) + 1
+                    # Blue team when red win
+                    for member in self.blue_team:
+                        if str(member.id) == row[SHEET_ID_IDX - 1]:
+                            old_mmr = float(row[SHEET_MMR_IDX - 1])
+                            new_mmr = old_mmr + (32 * (0 - self.blue_team_win))
+                            row[SHEET_MMR_IDX - 1] = new_mmr
+                            row[SHEET_GAMES_IDX - 1] = int(row[SHEET_GAMES_IDX - 1]) + 1
+                # Grab the list/dict for red team, calculate how much they won, and distribute accordingly.
+                for member_id in temp_red_bets:
+                    temp_red_bets[member_id] *= (1 + self.red_multiplier)
+                    member = discord.utils.get(guild.members, id=member_id)
+                    msg += f"{member.name}: {int(temp_red_bets[member_id])}\n"
+                    for row in temp_cache:
+                        if row[SHEET_ID_IDX - 1] == str(member_id):
+                            row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + int(temp_red_bets[member_id])
+                winning_team = "Red Team"
+            else:
+                await ctx.send("The possible choices are either Blue or Red! For example: `!win Blue`")
+                return
+            if msg == "":
+                msg = "No payout this time!"
+            await self.calculate_ranks(ctx, temp_cache)
+            await self.update_whole_sheet(temp_cache)
+            message = await ctx.send(f"{winning_team} has won! Now distributing the payout...")
+            avatar = message.author.avatar_url
+            embed = discord.Embed(title="Bet Payouts",description=msg, colour = discord.Colour.gold())
+            embed.set_thumbnail(url=avatar)
+            await ctx.send(embed=embed)
 
-        blue_team_role = server.get_role(self.blue_role_id)
-        for member in blue_team_role.members:
-            await member.remove_roles(blue_team_role)
-        red_team_role = server.get_role(self.red_role_id)
-        for member in red_team_role.members:
-            await member.remove_roles(red_team_role)
+            blue_team_role = guild.get_role(self.blue_role_id)
+            for member in blue_team_role.members:
+                await member.remove_roles(blue_team_role)
+            red_team_role = guild.get_role(self.red_role_id)
+            for member in red_team_role.members:
+                await member.remove_roles(red_team_role)
 
-        self.broke = False
-        self.blue_multiplier = 0
-        self.red_multiplier = 0
-        self.blue_team_bet.clear()
-        self.red_team_bet.clear()
-        self.blue_team.clear()
-        self.red_team.clear()
-        self.cache = temp_cache
+            self.broke = False
+            self.blue_multiplier = 0
+            self.red_multiplier = 0
+            self.blue_team_bet.clear()
+            self.red_team_bet.clear()
+            self.blue_team.clear()
+            self.red_team.clear()
+            self.cache = temp_cache
     
     @commands.command()
     async def sidebet(self, ctx, topic, money:int):
         """ Bet on which topic you think will win! (!bet topic amount) """
         topic = topic.upper()
         author = ctx.message.author
-        if await self.is_in_database(str(author.id)):
-            if await self.is_positive_money(ctx, money):
-                current_money = await self.get_current_money(ctx)
-                # For replacing existing bet, return the money
-                # Iterate through each topics
-                for bets in self.side_bets:
-                    if (author.id in self.side_bets[bets]) and (topic == bets):
-                        for member_id, bet in self.side_bets[bets].items():
-                            if author.id == member_id:
-                                for row in self.cache:
-                                    if row[SHEET_ID_IDX - 1] == str(author.id):
-                                        if money > (current_money + bet):
-                                            await ctx.send("You don't have enough money to bet that amount!")
-                                            return
-                                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + bet
-                    else:
-                        if money > current_money:
-                            await ctx.send("You don't have enough money to bet that amount!")
-                            return
-                if topic in self.side_bets:
-                    self.side_bets[topic].update({author.id:money})
-                else:
-                    self.side_bets[topic] = {author.id:money}
-                for row in self.cache:
-                    if row[SHEET_ID_IDX - 1] == str(author.id):
-                        row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) - money
-                        break
-                await ctx.invoke(self.sidebets)
-            else:
-                return
-        else:
+
+        if not await self.is_in_database(str(author.id)):
             await ctx.send("You're not in the database yet! Use `!join$` now!")
             return
+        elif not await self.is_positive_money(ctx, money):
+            return
+        
+        current_money = await self.get_current_money(ctx)
+        # For replacing existing bet, return the money
+        # Iterate through each topics
+        for bets in self.side_bets:
+            if (author.id in self.side_bets[bets]) and (topic == bets):
+                for member_id, bet in self.side_bets[bets].items():
+                    if author.id == member_id:
+                        for row in self.cache:
+                            if row[SHEET_ID_IDX - 1] == str(author.id):
+                                if money > (current_money + bet):
+                                    await ctx.send("You don't have enough money to bet that amount!")
+                                    return
+                                row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + bet
+            else:
+                if money > current_money:
+                    await ctx.send("You don't have enough money to bet that amount!")
+                    return
+        if topic in self.side_bets:
+            self.side_bets[topic].update({author.id:money})
+        else:
+            self.side_bets[topic] = {author.id:money}
+        for row in self.cache:
+            if row[SHEET_ID_IDX - 1] == str(author.id):
+                row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) - money
+                break
+        await ctx.invoke(self.sidebets)
     
     @is_approved()
     @commands.command()
     @retry_authorize(gspread.exceptions.APIError)
     async def sidewin(self, ctx, topic):
         """ (ADMIN) Decide on who the winner is, and payout accordingly for side bets! """
-        topic = topic.upper()
-        if topic not in self.side_bets:
-            await ctx.send("That is not one of the choice for sidebets!")
-            return
-        temp_cache = copy.deepcopy(self.cache)
-        server = ctx.guild
-        msg = ""
-        for member_id, bet in self.side_bets[topic].items():
-            for row in temp_cache:
-                if row[SHEET_ID_IDX - 1] == str(member_id):
-                    payout = bet * 2
-                    row[SHEET_MONEY_IDX - 1] = str(int(row[SHEET_MONEY_IDX - 1]) + (payout))
-                    member = discord.utils.get(server.members, id=member_id)
-                    msg += f"{member.name}: {payout}\n"
+        async with self.lock:
+            topic = topic.upper()
+            if topic not in self.side_bets:
+                await ctx.send("That is not one of the choice for sidebets!")
+                return
+                
+            temp_cache = copy.deepcopy(self.cache)
+            guild = ctx.guild
+            msg = ""
+            for member_id, bet in self.side_bets[topic].items():
+                for row in temp_cache:
+                    if row[SHEET_ID_IDX - 1] == str(member_id):
+                        payout = bet * 2
+                        row[SHEET_MONEY_IDX - 1] = str(int(row[SHEET_MONEY_IDX - 1]) + (payout))
+                        member = discord.utils.get(guild.members, id=member_id)
+                        msg += f"{member.name}: {payout}\n"
 
-        await self.calculate_ranks(ctx, temp_cache)
-        await self.update_whole_sheet(temp_cache)
-        message = await ctx.send(f"Winner: **{topic}**. Distributing payout(s)...")
-        avatar = message.author.avatar_url
-        embed = discord.Embed(title="Side Bet Payouts",description=msg, colour = discord.Colour.dark_gold())
-        embed.set_thumbnail(url=avatar)
-        await ctx.send(embed=embed)
-        self.side_bets.clear()
-        self.cache = temp_cache
+            await self.calculate_ranks(ctx, temp_cache)
+            await self.update_whole_sheet(temp_cache)
+            message = await ctx.send(f"Winner: **{topic}**. Distributing payout(s)...")
+            avatar = message.author.avatar_url
+            embed = discord.Embed(title="Side Bet Payouts",description=msg, colour = discord.Colour.dark_gold())
+            embed.set_thumbnail(url=avatar)
+            await ctx.send(embed=embed)
+            self.side_bets.clear()
+            self.cache = temp_cache
 
     @is_approved()
     @commands.command(name="register")
@@ -856,7 +871,7 @@ class MoneyCog(commands.Cog):
     @commands.command()
     async def bets(self, ctx):
         """ Show the list of bets """
-        server = ctx.guild
+        guild = ctx.guild
         embed = discord.Embed()
         if self.bets_msg is not None:
             await self.bets_msg.delete()
@@ -871,14 +886,14 @@ class MoneyCog(commands.Cog):
 
         message = "**Blue Team Bets**"
         for member_id, bet_amt in self.blue_team_bet.items():
-            member = discord.utils.get(server.members, id=member_id)
+            member = discord.utils.get(guild.members, id=member_id)
             name = member.nick if member.nick else member.name
             message += f"\n{name}: {bet_amt}"
         embed.add_field(name="\u200b",value = message,inline=True)
         
         message = "**Red Team Bets**"
         for member_id, bet_amt in self.red_team_bet.items():
-            member = discord.utils.get(server.members, id=member_id)
+            member = discord.utils.get(guild.members, id=member_id)
             name = member.nick if member.nick else member.name
             message += f"\n{name}: {bet_amt}"
         embed.add_field(name="\u200b",value = message,inline=True)
@@ -891,7 +906,7 @@ class MoneyCog(commands.Cog):
     @commands.command()
     async def sidebets(self, ctx):
         """ Show the list of side bets """
-        server = ctx.guild
+        guild = ctx.guild
         embed = discord.Embed ()
         if self.side_bets_msg is not None:
             await self.side_bets_msg.delete()
@@ -899,7 +914,7 @@ class MoneyCog(commands.Cog):
         for topic in self.side_bets:
             message = ""
             for member_id, bet_amt in self.side_bets[topic].items():
-                member = discord.utils.get(server.members, id=member_id)
+                member = discord.utils.get(guild.members, id=member_id)
                 name = member.nick if member.nick else member.name
                 message += f"\n{name}: {bet_amt}"
             embed.add_field(name=topic,value = message,inline=True)
