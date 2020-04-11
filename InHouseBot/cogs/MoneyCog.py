@@ -508,6 +508,8 @@ class MoneyCog(commands.Cog):
                                     await ctx.send("You don't have enough money to bet that amount!")
                                     return
                                 row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + bet
+                                break
+                        break
             else:
                 if money > current_money:
                     await ctx.send("You don't have enough money to bet that amount!")
@@ -535,6 +537,8 @@ class MoneyCog(commands.Cog):
                                     await ctx.send("You don't have enough money to bet that amount!")
                                     return
                                 row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + bet
+                                break
+                        break
             else:
                 if current_money < money:
                     await ctx.send("You don't have enough money to bet that amount!")
@@ -568,9 +572,10 @@ class MoneyCog(commands.Cog):
                 temp_blue_bets = copy.deepcopy(self.blue_team_bet)
                 # Give the Blue team members their winnings.
                 # Additionally, calculate the new MMR of each players
-                for row in temp_cache:
-                    # Blue team when blue win
-                    for member in self.blue_team:
+
+                # Blue team when blue win
+                for member in self.blue_team:
+                    for row in temp_cache:
                         if str(member.id) == row[SHEET_ID_IDX - 1]:
                             row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + self.blue_winnings
                             old_mmr = float(row[SHEET_MMR_IDX - 1])
@@ -578,13 +583,16 @@ class MoneyCog(commands.Cog):
                             row[SHEET_MMR_IDX - 1] = new_mmr
                             row[SHEET_GAMES_IDX - 1] = int(row[SHEET_GAMES_IDX - 1]) + 1
                             row[SHEET_WINS_IDX - 1] = int(row[SHEET_WINS_IDX - 1]) + 1
-                    # Red team when blue win
-                    for member in self.red_team:
+                            break
+                # Red team when blue win
+                for member in self.red_team:
+                    for row in temp_cache:
                         if str(member.id) == row[SHEET_ID_IDX - 1]:
                             old_mmr = float(row[SHEET_MMR_IDX - 1])
                             new_mmr = old_mmr + (32 * (0 - (1 - self.blue_team_win)))
                             row[SHEET_MMR_IDX - 1] = new_mmr
                             row[SHEET_GAMES_IDX - 1] = int(row[SHEET_GAMES_IDX - 1]) + 1
+                            break
                 # Grab the list/dict for blue team, calculate how much they won, and distribute accordingly.
                 for member_id in temp_blue_bets:
                     temp_blue_bets[member_id] *= (1 + self.blue_multiplier)
@@ -593,13 +601,14 @@ class MoneyCog(commands.Cog):
                     for row in temp_cache:
                         if row[SHEET_ID_IDX - 1] == str(member_id):
                             row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + int(temp_blue_bets[member_id])
+                            break
                 winning_team = "Blue Team"
             elif team.lower() == "red":
                 temp_red_bets = copy.deepcopy(self.red_team_bet)
                 # Give the Red team members their winnings.
-                for row in temp_cache:
-                    # Red team when red win
-                    for member in self.red_team:
+                # Red team when red win
+                for member in self.red_team:
+                    for row in temp_cache:
                         if str(member.id) == row[SHEET_ID_IDX - 1]:
                             row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + self.red_winnings
                             old_mmr = float(row[SHEET_MMR_IDX - 1])
@@ -607,13 +616,16 @@ class MoneyCog(commands.Cog):
                             row[SHEET_MMR_IDX - 1] = new_mmr
                             row[SHEET_GAMES_IDX - 1] = int(row[SHEET_GAMES_IDX - 1]) + 1
                             row[SHEET_WINS_IDX - 1] = int(row[SHEET_WINS_IDX - 1]) + 1
-                    # Blue team when red win
-                    for member in self.blue_team:
+                            break
+                # Blue team when red win
+                for member in self.blue_team:
+                    for row in temp_cache:
                         if str(member.id) == row[SHEET_ID_IDX - 1]:
                             old_mmr = float(row[SHEET_MMR_IDX - 1])
                             new_mmr = old_mmr + (32 * (0 - self.blue_team_win))
                             row[SHEET_MMR_IDX - 1] = new_mmr
                             row[SHEET_GAMES_IDX - 1] = int(row[SHEET_GAMES_IDX - 1]) + 1
+                            break
                 # Grab the list/dict for red team, calculate how much they won, and distribute accordingly.
                 for member_id in temp_red_bets:
                     temp_red_bets[member_id] *= (1 + self.red_multiplier)
@@ -622,6 +634,7 @@ class MoneyCog(commands.Cog):
                     for row in temp_cache:
                         if row[SHEET_ID_IDX - 1] == str(member_id):
                             row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + int(temp_red_bets[member_id])
+                            break
                 winning_team = "Red Team"
             else:
                 await ctx.send("The possible choices are either Blue or Red! For example: `!win Blue`")
@@ -677,6 +690,9 @@ class MoneyCog(commands.Cog):
                                     await ctx.send("You don't have enough money to bet that amount!")
                                     return
                                 row[SHEET_MONEY_IDX - 1] = int(row[SHEET_MONEY_IDX - 1]) + bet
+                                break
+                        break
+                break
             else:
                 if money > current_money:
                     await ctx.send("You don't have enough money to bet that amount!")
@@ -712,6 +728,7 @@ class MoneyCog(commands.Cog):
                         row[SHEET_MONEY_IDX - 1] = str(int(row[SHEET_MONEY_IDX - 1]) + (payout))
                         member = discord.utils.get(guild.members, id=member_id)
                         msg += f"{member.name}: {payout}\n"
+                        break
 
             await self.calculate_ranks(ctx, temp_cache)
             await self.update_whole_sheet(temp_cache)
