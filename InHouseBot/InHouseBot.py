@@ -166,7 +166,7 @@ extra_roles = {699173571783819354:699171129306382386,# Valorant
 
 main_role_msg_id = 649464520179187765
 sub_role_msg_id = 649464528102490123
-extra_role_msg_id = None
+extra_role_msg_id = 699179766271443044
 
 # queue_emojis = [join_id, drop_id]
 queue_emojis = [668410201099206680,668410288667885568]
@@ -175,7 +175,7 @@ queue_emojis = [668410201099206680,668410288667885568]
 async def on_raw_reaction_add(reaction):
     if reaction.user_id == bot.user.id:
         return
-    if not ((reaction.emoji.id in roles) or (reaction.emoji.id in queue_emojis)):
+    if not ((reaction.emoji.id in roles) or (reaction.emoji.id in queue_emojis) or (reaction.emoji.id in extra_roles)):
         return
     
     guild = bot.get_guild(reaction.guild_id)
@@ -199,6 +199,9 @@ async def on_raw_reaction_add(reaction):
         emojiID = roles.get(reaction.emoji.id)
         id = emojiID[1]
         await user.add_roles(guild.get_role(id))
+    elif reaction.message_id == extra_role_msg_id:
+        emojiID = extra_roles.get(reaction.emoji.id)
+        await user.add_roles(guild.get_role(emojiID))
     else:
         return
 
@@ -206,7 +209,7 @@ async def on_raw_reaction_add(reaction):
 async def on_raw_reaction_remove(reaction):
     if reaction.user_id == bot.user.id:
         return
-    if not reaction.emoji.id in roles:
+    if not ((reaction.emoji.id in roles) or (reaction.emoji.id in extra_roles)):
         return
     
     guild = await bot.fetch_guild(reaction.guild_id)
@@ -220,6 +223,9 @@ async def on_raw_reaction_remove(reaction):
         emojiID = roles.get(reaction.emoji.id)
         id = emojiID[1]
         await user.remove_roles(guild.get_role(id))
+    elif reaction.message_id == extra_role_msg_id:
+        emojiID = extra_roles.get(reaction.emoji.id)
+        await user.remove_roles(guild.get_role(emojiID))
     else:
         return
 
