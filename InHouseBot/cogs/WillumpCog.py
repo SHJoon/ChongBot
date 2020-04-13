@@ -241,15 +241,24 @@ class WillumpCog(commands.Cog):
             "You can cashout NunuBucks for the following:\
             \n30,000 NB - Custom emote for the server\
             \n50,000 NB - Meme command(image/text format)\
-            \n70,000 ~ 100,000 NB - Utility command (price depends on the difficulty of implementation)\
+            \n70,000 ~ 150,000 NB - Utility command (price depends on the difficulty of implementation)\
             \n\nMessage one of the mods for the request!"
         )
 
     @commands.command()
-    async def test(self, ctx):
-        H = [5,61,2,97,5,32,10,9,8,7,1,2,3,4,56,8,6,10]
-        heapq._heapify_max(H)
-        print(H)
-        for _ in range(len(H)):
-            heapq._heappop_max(H)
-            print(H)
+    async def poiu(self, ctx):
+        message = await ctx.send(
+            "React to any of your additional interests!\
+                \n<:AnimalCrossing:699175867833909268> Animal Crossing\
+                \n<:csgo:699173595070595142> CS:GO\
+                \n<:meleefox:699174587996307969> Super Smash Bros. Melee\
+                \n<:d20:699173955939991572> Tabletop Simulator\
+                \n<:tft:699173548065030184> TFT\
+                \n<:valorant:699173571783819354> Valorant\n\
+                \n**NOTE** Choose as many roles as you want!")
+        await message.add_reaction("<:AnimalCrossing:699175867833909268>")
+        await message.add_reaction("<:csgo:699173595070595142>")
+        await message.add_reaction("<:meleefox:699174587996307969>")
+        await message.add_reaction("<:d20:699173955939991572>")
+        await message.add_reaction("<:tft:699173548065030184>")
+        await message.add_reaction("<:valorant:699173571783819354>")

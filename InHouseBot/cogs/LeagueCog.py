@@ -46,9 +46,7 @@ class LeagueCog(commands.Cog):
     @commands.group(aliases = ["champ", "champs", "champions"])
     async def champion(self, ctx, role = None):
         """ Randomly choose a champ for you """
-        if role is None:
-            await ctx.send(random.choice(self.champs_list))
-        elif role in ("top"):
+        if role in ("top"):
             await ctx.send(random.choice(self.top_list))
         elif role in ("jungle", "jg", "jung"):
             await ctx.send(random.choice(self.jungle_list))
@@ -67,7 +65,7 @@ class LeagueCog(commands.Cog):
 
 # WIP
 """
-    @commands.group()
+    @commands.group(aliases=["topchamps", "topchampion", "topchampions"])
     async def topchamp(self, ctx):
         if ctx.invoked_subcommand is None:
             await ctx.send("L")
