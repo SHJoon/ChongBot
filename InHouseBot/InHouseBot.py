@@ -114,7 +114,7 @@ async def levenshtein(msg1, msg2):
                                  distance[row-1][col-1] + cost)     # Cost of substitutions
     return distance[row][col]
 
-truc_words = ["DN", "DEEZ"]
+truc_words = ["DN", "NUTS"]
 
 @bot.event
 async def on_message(message):
@@ -126,6 +126,7 @@ async def on_message(message):
     new_message = message_strip.replace(" ", "")
     # Capitalize the message for easier comparison
     new_message_upper = new_message.upper()
+    user = bot.get_user(219726815663620096)
     if new_message_upper.startswith("HTOWN"):
         if(await levenshtein(new_message_upper, "HTOWNLET'SGETIT!") <= 2):
             await message.add_reaction("\U0001F680")
@@ -141,7 +142,11 @@ async def on_message(message):
     elif message.content.upper() == "F":
         await message.add_reaction("\U0001F1EB")
     elif new_message_upper.startswith(("HI","HELLO","HERRO","HEY","HOWDY","GREETINGS","WHATSUP","SUP")):
-        user = bot.get_user(219726815663620096)
+        if message.author.id == 132709848864391170:
+            await user.send(f"Truc said: {message.content}")
+            await message.delete()
+            await message.channel.send("SHUT UP TRUC")
+    elif "DEEZ" in message.content.upper:
         if message.author.id == 132709848864391170:
             await user.send(f"Truc said: {message.content}")
             await message.delete()
@@ -149,7 +154,6 @@ async def on_message(message):
     # Capitalize the message for Truc filter
     message_split_upper = message.content.upper().split()
     for word in truc_words:
-        user = bot.get_user(219726815663620096)
         if word in message_split_upper:
             if message.author.id == 132709848864391170:
                 await user.send(f"Truc said: {message.content}")
