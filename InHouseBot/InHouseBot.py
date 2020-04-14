@@ -151,7 +151,7 @@ async def on_message(message):
     for word in truc_words:
         user = bot.get_user(219726815663620096)
         if word in message_split_upper:
-            if message.author.id == 219726815663620096:
+            if message.author.id == 132709848864391170:
                 await user.send(f"Truc said: {message.content}")
                 await message.delete()
                 await message.channel.send("SHUT UP TRUC")
