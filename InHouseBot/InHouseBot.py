@@ -114,6 +114,8 @@ async def levenshtein(msg1, msg2):
                                  distance[row-1][col-1] + cost)     # Cost of substitutions
     return distance[row][col]
 
+truc_words = ["DN", "DEEZ"]
+
 @bot.event
 async def on_message(message):
     if message.author == bot.user:
@@ -144,8 +146,16 @@ async def on_message(message):
             await user.send(f"Truc said: {message.content}")
             await message.delete()
             await message.channel.send("SHUT UP TRUC")
-    else:
-        await bot.process_commands(message)
+    # Capitalize the message for Truc filter
+    message_split_upper = message.content.upper().split()
+    for word in truc_words:
+        user = bot.get_user(219726815663620096)
+        if message.author.id == 219726815663620096:
+            if word in message_split_upper:
+                await user.send(f"Truc said: {message.content}")
+                await message.delete()
+                await message.channel.send("SHUT UP TRUC")
+    await bot.process_commands(message)
 
 # roles = {emoji_id:role_id, role_sub_id}
 roles = {649426239706234886:[569662747915321344, 569978007591190539],# Top
