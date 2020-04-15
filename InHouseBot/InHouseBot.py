@@ -146,7 +146,7 @@ async def on_message(message):
             await user.send(f"Truc said: {message.content}")
             await message.delete()
             await message.channel.send("SHUT UP TRUC")
-    elif "DEEZ" in message.content.upper:
+    elif "DEEZ" in message.content.upper():
         if message.author.id == 132709848864391170:
             await user.send(f"Truc said: {message.content}")
             await message.delete()
