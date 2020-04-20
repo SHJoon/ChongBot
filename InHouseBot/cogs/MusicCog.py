@@ -72,8 +72,6 @@ class MusicCog(commands.Cog):
         if voice and voice.is_connected():
             await voice.disconnect()
             # await ctx.send(f"Bot has left {channel}")
-        else:
-            # await ctx.send(f"Bot was not in a channel")
 
     @commands.command(aliases=["p"])
     async def play(self, ctx, url: str):
