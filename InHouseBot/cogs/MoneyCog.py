@@ -120,6 +120,10 @@ class MoneyCog(commands.Cog):
         self.side_bets = {}
         self.side_bets_msg = None
         
+        # Lock is implemented due to the structural design of the currency system
+        # Due to the oauth reauthorization system, temporary cache is used for every command
+        # that directly accesses google spreadsheet. Without the lock, using these commands
+        # in sequence too quick can create many bugs
         self.lock = asyncio.Lock()
 
     def _init_sheet(self):
