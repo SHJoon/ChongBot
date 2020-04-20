@@ -10,6 +10,9 @@ class MusicCog(commands.Cog):
         self.bot = bot
         self.lock = asyncio.Lock()
 
+        if not discord.opus.is_loaded():
+            discord.opus.load_opus('libopus.so')
+
         self.songq = []
         self.voice = None
     
