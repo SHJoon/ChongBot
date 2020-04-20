@@ -146,8 +146,8 @@ class MusicCog(commands.Cog):
             await ctx.send("No music playing")
 
     @commands.command()
-    """ Queue up music (Youtube link only for now) """
     async def qu(self, ctx, url: str):
+        """ Queue up music (Youtube link only for now) """
         self.songq.append(url)
 
     @commands.command()
