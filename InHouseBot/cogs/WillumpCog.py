@@ -246,24 +246,28 @@ class WillumpCog(commands.Cog):
         )
 
     @commands.command(hidden=True)
-    async def poiu(self, ctx):
+    async def ilovdandan(self, ctx):
+        # Command to change "React for role" feature message
         guild = ctx.guild
-        chn = guild.get_channel(649323021433307147)
-        msg = await chn.fetch_message(699179766271443044)
-        await msg.edit(
-            content="React to any of your additional interests!\
-                \n<:AnimalCrossing:699175867833909268> Animal Crossing\
-                \n<:csgo:699173595070595142> CS:GO\
-                \n<:minecraft:700461362006196257> Minecraft\
-                \n<:meleefox:699174587996307969> Super Smash Bros. Melee\
-                \n<:d20:699173955939991572> Tabletop Simulator\
-                \n<:tft:699173548065030184> TFT\
-                \n<:valorant:699173571783819354> Valorant\n\
-                \n**NOTE** Choose as many roles as you want!")
-        await msg.add_reaction("<:AnimalCrossing:699175867833909268>")
-        await msg.add_reaction("<:csgo:699173595070595142>")
-        await msg.add_reaction("<:minecraft:700461362006196257>")
-        await msg.add_reaction("<:meleefox:699174587996307969>")
-        await msg.add_reaction("<:d20:699173955939991572>")
-        await msg.add_reaction("<:tft:699173548065030184>")
-        await msg.add_reaction("<:valorant:699173571783819354>")
+        try:
+            chn = guild.get_channel(649323021433307147)
+            msg = await chn.fetch_message(699179766271443044)
+            await msg.edit(
+                content="React to any of your additional interests!\
+                    \n<:AnimalCrossing:699175867833909268> Animal Crossing\
+                    \n<:csgo:699173595070595142> CS:GO\
+                    \n<:minecraft:700461362006196257> Minecraft\
+                    \n<:meleefox:699174587996307969> Super Smash Bros. Melee\
+                    \n<:d20:699173955939991572> Tabletop Simulator\
+                    \n<:tft:699173548065030184> TFT\
+                    \n<:valorant:699173571783819354> Valorant\n\
+                    \n**NOTE** Choose as many roles as you want!")
+            await msg.add_reaction("<:AnimalCrossing:699175867833909268>")
+            await msg.add_reaction("<:csgo:699173595070595142>")
+            await msg.add_reaction("<:minecraft:700461362006196257>")
+            await msg.add_reaction("<:meleefox:699174587996307969>")
+            await msg.add_reaction("<:d20:699173955939991572>")
+            await msg.add_reaction("<:tft:699173548065030184>")
+            await msg.add_reaction("<:valorant:699173571783819354>")
+        except:
+            await ctx.send("Doesn't work in this server.")

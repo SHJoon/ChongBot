@@ -7,11 +7,19 @@ import shutil
 class MusicCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.songq = {}
+        self.songq = []
+        self.voice = None
+    
+    def check_q(self, ctx):
+        if self.songq is None:
+            return
+        else:
+            song = self.songq.pop(0)
+            await ctx.invoke(self.play, song)
+            return
     
     @commands.command()
     async def j(self, ctx):
-        global voice
         channel = ctx.message.author.voice.channel
         voice = discord.utils.get(self.bot.voice_clients, guild = ctx.guild)
 
@@ -19,17 +27,7 @@ class MusicCog(commands.Cog):
             await voice.move_to(channel)
         else:
             voice = await channel.connect()
-            print(f"The bot has been connected to {channel}.")
-        """
-        await voice.disconnect()
-
-        if voice and voice.is_connected():
-            await voice.move_to(channel)
-        else:
-            voice = await channel.connect()
-            print(f"The bot has been connected to {channel}.")
-        """
-        # await ctx.send(f"Joined {channel}")
+            await ctx.send(f"The bot has been connected to {channel}")
     
     @commands.command()
     async def l(self, ctx):
@@ -38,17 +36,12 @@ class MusicCog(commands.Cog):
 
         if voice and voice.is_connected():
             await voice.disconnect()
-            print(f"The bot has left {channel}")
-            # await ctx.send(f"Left {channel}")
+            await ctx.send(f"Bot has left {channel}")
         else:
-            print(f"Bot was not in a channel")
-            # await ctx.send(f"Bot was not in a channel")
+            await ctx.send(f"Bot was not in a channel")
 
-    @commands.command()
-    async def p(self, ctx, url: str):
-
-        def check_queue():
-
+    @commands.command(aliases=["p"])
+    async def play(self, ctx, url: str):
         song_there = os.path.isfile("song.mp3")
 
         try:
@@ -56,7 +49,7 @@ class MusicCog(commands.Cog):
                 os.remove("song.mp3")
                 print("Removed old song file")
         except PermissionError:
-            print("Trying to delete, but it's being played")
+            await ctx.invoke(self.qu, url)
             return
         
         print("Getting everything ready")
@@ -83,7 +76,7 @@ class MusicCog(commands.Cog):
                 print(f"Renamed File: {file}")
                 os.rename(file, "song.mp3")
         
-        voice.play(discord.FFmpegPCMAudio("song.mp3"), after=lambda e: print(f"{name} has finished playing"))
+        voice.play(discord.FFmpegPCMAudio("song.mp3"), after=lambda e: self.check_q(ctx))
         voice.source = discord.PCMVolumeTransformer(voice.source)
         voice.source.volume = 0.04
 
@@ -104,7 +97,7 @@ class MusicCog(commands.Cog):
         else:
             print("Music not playing")
             await ctx.send("Music not playing")
-    
+
     @commands.command()
     async def resume(self, ctx):
         voice = discord.utils.get(self.bot.voice_clients, guild = ctx.guild)
@@ -127,39 +120,14 @@ class MusicCog(commands.Cog):
             await ctx.send("No music playing")
 
     @commands.command()
-    async def qu(self, ctx, url):
-        Queue_infile = os.path.isdir("./Queue")
-        if not Queue_infile:
-            os.mkdir("Queue")
-        DIR = os.path.abspath(os.path.realpath("Queue"))
-        q_num = len(os.listdir(DIR))
-        q_num += 1
-        add_queue = True
-        while add_queue:
-            if q_num in self.songq:
-                q_num += 1
-            else:
-                add_queue = False
-                self.songq[q_num] = q_num
+    async def qu(self, ctx, url: str):
+        self.songq.append(url)
+
+    @commands.command()
+    async def skip(self, ctx):
+        if self.songq is None:
+            await ctx.send("There is no queued song!")
+            return
         
-        queue_path = os.path.abspath(os.path.realpath("Queue") + f"/song{q_num}.%(ext)%")
-
-        ydl_opts = {
-            "format": "bestaudio/best",
-            "quiet": True,
-            "outtmpl": queue_path,
-            "postprocessors": [{
-                "key": "FFmpegExtractAudio",
-                "preferredcodec": "mp3",
-                "preferredquality": "192"
-            }]
-        }
-
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-            print("Downloading audio")
-            ydl.download([url])
-
-        await ctx.send(f"Adding song {q_num} to the queue")
-
-        print("Song added to q")
-        
+        song = self.songq.pop(0)
+        await ctx.invoke(self.play, song)
