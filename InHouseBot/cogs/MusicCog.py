@@ -115,7 +115,7 @@ class MusicCog(commands.Cog):
             voice.source.volume = 0.07
 
             nname = name.rsplit("-", 1)
-            await ctx.send(f"**Now playing:** {nname[0]}")
+            # await ctx.send(f"**Now playing:** {nname[0]}")
 
     @commands.command()
     async def pause(self, ctx):
