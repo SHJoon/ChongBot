@@ -9,7 +9,7 @@ class MusicCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.lock = asyncio.Lock()
-        
+
         if not discord.opus.is_loaded():
             discord.opus.load_opus('libopus.so')
 
@@ -183,21 +183,20 @@ class MusicCog(commands.Cog):
 
         if self.voice and self.voice.is_playing():
             self.voice.source.volume = new_vol
-        print("here")
         self.volume = new_vol
 
     @commands.command(aliases=["odin","odinrush", "pillarmen"])
     async def pillar(self, ctx):
-        await ctx.invoke(self.play, "https://www.youtube.com/watch?v=XUhVCoTsBaM")
+        await ctx.invoke(self.play, "https://www.youtube.com/watch?v=XUhVCoTsBaM", 0.15)
     
     @commands.command()
     async def bonesaw(self, ctx):
-        await ctx.invoke(self.play, "https://www.youtube.com/watch?v=powBr8Hobbk", 0.1)
+        await ctx.invoke(self.play, "https://www.youtube.com/watch?v=jjOXQMFn5mM", 0.4)
 
     @commands.command(name="3minutes")
     async def threeminutes(self, ctx):
-        await ctx.invoke(self.play, "https://www.youtube.com/watch?v=AI-LvOYc5Gc", 0.1)
+        await ctx.invoke(self.play, "https://www.youtube.com/watch?v=AI-LvOYc5Gc", 0.7)
     
     @commands.command()
     async def yessir(self, ctx):
-        await ctx.invoke(self.play, "https://www.youtube.com/watch?v=7Rhb-1TmJOo", 0.1)
+        await ctx.invoke(self.play, "https://www.youtube.com/watch?v=7Rhb-1TmJOo", 0.2)
