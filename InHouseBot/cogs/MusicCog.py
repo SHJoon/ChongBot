@@ -187,7 +187,7 @@ class MusicCog(commands.Cog):
 
     @commands.command(aliases=["odin","odinrush", "pillarmen"])
     async def pillar(self, ctx):
-        await ctx.invoke(self.play, "https://www.youtube.com/watch?v=XUhVCoTsBaM", 0.15)
+        await ctx.invoke(self.play, "https://www.youtube.com/watch?v=XUhVCoTsBaM", 0.08)
     
     @commands.command()
     async def bonesaw(self, ctx):
