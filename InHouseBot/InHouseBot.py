@@ -22,6 +22,7 @@ async def change_status():
     await bot.wait_until_ready()
     activities = ["Playing", "Watching", "Listening"]
     set_type = random.choice(activities)
+
     if set_type == "Playing":
         phrases = [
             "with Chong's feelings",
