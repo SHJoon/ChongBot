@@ -52,10 +52,6 @@ class MusicCog(commands.Cog):
             self.voice.play(discord.FFmpegPCMAudio("song.mp3"), after=lambda e: self.check_q(ctx))
             self.voice.source = discord.PCMVolumeTransformer(self.voice.source)
             self.voice.source.volume = 0.07
-
-            print(name)
-
-            nname = name.rsplit("-", 1)
     
     @commands.command(hidden=True)
     async def j(self, ctx):
@@ -200,3 +196,11 @@ class MusicCog(commands.Cog):
     @commands.command()
     async def yessir(self, ctx):
         await ctx.invoke(self.play, "https://www.youtube.com/watch?v=7Rhb-1TmJOo", 0.2)
+
+    @commands.command()
+    async def skinman(self, ctx):
+        await ctx.invoke(self.play, "https://youtu.be/IU513suJZzY?t=105")
+    
+    @commands.command()
+    async def skeletonman(self, ctx):
+        await ctx.invoke(self.play, "https://www.youtube.com/watch?v=IU513suJZzY")
