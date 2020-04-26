@@ -199,7 +199,7 @@ class MusicCog(commands.Cog):
 
     @commands.command()
     async def skinman(self, ctx):
-        await ctx.invoke(self.play, "https://youtu.be/IU513suJZzY?t=105")
+        await ctx.invoke(self.play, "https://www.youtube.com/watch?v=hlQsrW-c7uw")
     
     @commands.command()
     async def skeletonman(self, ctx):
