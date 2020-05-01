@@ -44,7 +44,7 @@ class LeagueCog(commands.Cog):
                 role_list.append(cid_lookup[int(cid)])
     
     @commands.group(aliases = ["champ", "champs", "champions"])
-    async def champion(self, ctx, role = None):
+    async def champion(self, ctx, role = "None"):
         """ Randomly choose a champ for you """
         if role in ("top"):
             await ctx.send(random.choice(self.top_list))
