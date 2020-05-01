@@ -9,10 +9,10 @@ class MusicCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.lock = asyncio.Lock()
-        """
+        
         if not discord.opus.is_loaded():
             discord.opus.load_opus('libopus.so')
-        """
+        
         self.songq = []
         self.voice = None
         self.volume = 0.08
