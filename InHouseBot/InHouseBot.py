@@ -23,6 +23,7 @@ async def change_status():
     activities = ["Playing", "Watching", "Listening"]
     set_type = random.choice(activities)
 
+
     if set_type == "Playing":
         phrases = [
             "with Chong's feelings",

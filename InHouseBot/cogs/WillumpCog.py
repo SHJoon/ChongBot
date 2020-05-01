@@ -271,3 +271,18 @@ class WillumpCog(commands.Cog):
             await msg.add_reaction("<:valorant:699173571783819354>")
         except:
             await ctx.send("Doesn't work in this server.")
+"""
+    @commands.command(hidden = True)
+    async def test(self, ctx, link, ttl, img:str):
+        try:
+            embed = discord.Embed(title=ttl, url=link, colour = discord.Colour.red())
+            # embed.set_footer(text="This is footer")
+            embed.set_image(url=img)
+            # embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/629458377193422849/699722125153402980/unknown.png")
+            # embed.add_field(name = "Field 1", value = "fld 1", inline=True)
+            # embed.add_field(name = "Field 2", value = "fld 2", inline=True)
+            # embed.add_field(name = "Field 3", value = "fld 3", inline=False)
+        except:
+            await ctx.send("The invocation context is `!test title imageurl`.")
+        await ctx.send(embed=embed)
+"""
