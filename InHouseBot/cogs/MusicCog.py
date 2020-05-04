@@ -187,7 +187,7 @@ class MusicCog(commands.Cog):
             await ctx.invoke(self.j)
 
             self.voice = discord.utils.get(self.bot.voice_clients, guild = ctx.guild)
-            print(os.listdir())
+            print(os.listdir("./InHouseBot"))
 
             self.voice.play(discord.FFmpegPCMAudio(os.path.join("..", "custom_songs", f"{name}.mp3")))
             self.voice.source = discord.PCMVolumeTransformer(self.voice.source)
