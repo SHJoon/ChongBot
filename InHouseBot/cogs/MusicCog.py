@@ -15,7 +15,7 @@ class MusicCog(commands.Cog):
         
         self.songq = []
         self.voice = None
-        self.volume = 0.08
+        self.volume = 0.15
         self.volume_control = None
         self.voice_source = None
     
@@ -103,6 +103,7 @@ class MusicCog(commands.Cog):
                 ydl.download([url])
             
             for file in os.listdir("./"):
+                print(file)
                 if file.endswith(".mp3"):
                     name = file
                     os.rename(file, "song.mp3")
@@ -180,28 +181,45 @@ class MusicCog(commands.Cog):
         if self.voice and self.voice.is_playing():
             self.voice.source.volume = new_vol
         self.volume = new_vol
+    
+    async def playcustom(self, ctx, name, volume=0):
+        async with self.lock:
+            await ctx.invoke(self.j)
+
+            self.voice = discord.utils.get(self.bot.voice_clients, guild = ctx.guild)
+
+            self.voice.play(discord.FFmpegPCMAudio(f".\\custom_songs\\{name}.mp3"))
+            self.voice.source = discord.PCMVolumeTransformer(self.voice.source)
+
+            set_volume = None
+            if volume == 0:
+                set_volume = self.volume
+            else:
+                set_volume = volume
+
+            self.voice.source.volume = set_volume
 
     @commands.command(aliases=["odin","odinrush", "pillarmen"])
     async def pillar(self, ctx):
-        await ctx.invoke(self.play, "https://www.youtube.com/watch?v=XUhVCoTsBaM", 0.08)
+        await self.playcustom(ctx, "ZZZZPillar", 0.08)
     
     @commands.command()
     async def bonesaw(self, ctx):
-        await ctx.invoke(self.play, "https://www.youtube.com/watch?v=jjOXQMFn5mM", 0.4)
+        await self.playcustom(ctx, "ZZZZBonesaw", 0.4)
 
     @commands.command(name="3minutes")
     async def threeminutes(self, ctx):
-        await ctx.invoke(self.play, "https://www.youtube.com/watch?v=AI-LvOYc5Gc", 0.7)
+        await self.playcustom(ctx, "ZZZZ3Minutes", 0.7)
     
     @commands.command()
     async def yessir(self, ctx):
-        await ctx.invoke(self.play, "https://www.youtube.com/watch?v=7Rhb-1TmJOo", 0.2)
+        await self.playcustom(ctx, "ZZZZYessir", 0.2)
 
     @commands.command()
     async def skinman(self, ctx):
-        await ctx.invoke(self.play, "https://www.youtube.com/watch?v=hlQsrW-c7uw")
+        await self.playcustom(ctx, "ZZZZSkinman")
     
     @commands.command()
     async def skeletonman(self, ctx):
-        await ctx.invoke(self.play, "https://www.youtube.com/watch?v=IU513suJZzY")
+        await self.playcustom(ctx, "ZZZZSkeleton")
         
