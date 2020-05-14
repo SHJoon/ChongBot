@@ -165,7 +165,7 @@ async def on_message(message):
                 break
     await bot.process_commands(message)
 
-# roles = {emoji_id:role_id, role_sub_id}
+# roles = {emoji_id:[role_id, role_sub_id]}
 roles = {649426239706234886:[569662747915321344, 569978007591190539],# Top
 649426253056573450:[569662812344025089, 569978157663387658],# Jungle
 649426225961500713:[569662844556148741, 569977972929462283],# Mid

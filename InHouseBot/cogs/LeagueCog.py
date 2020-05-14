@@ -12,13 +12,13 @@ class LeagueCog(commands.Cog):
         self.client = httpx.AsyncClient()
 
     def _init_champ(self):
-        patch = 10.9
-        champ_req = httpx.get(f"https://api.op.lol/tierlist/5/?lane=default&patch={patch}&tier=platinum_plus&queue=420&region=all")
-        top_req = httpx.get(f"https://api.op.lol/tierlist/5/?lane=top&patch={patch}&tier=platinum_plus&queue=420&region=all")
-        jungle_req = httpx.get(f"https://api.op.lol/tierlist/5/?lane=jungle&patch={patch}&tier=platinum_plus&queue=420&region=all")
-        middle_req = httpx.get(f"https://api.op.lol/tierlist/5/?lane=middle&patch={patch}&tier=platinum_plus&queue=420&region=all")
-        bottom_req = httpx.get(f"https://api.op.lol/tierlist/5/?lane=bottom&patch={patch}&tier=platinum_plus&queue=420&region=all")
-        support_req = httpx.get(f"https://api.op.lol/tierlist/5/?lane=support&patch={patch}&tier=platinum_plus&queue=420&region=all")
+        self.patch = 10.10
+        champ_req = httpx.get(f"https://api.op.lol/tierlist/5/?lane=default&patch={self.patch}&tier=platinum_plus&queue=420&region=all")
+        top_req = httpx.get(f"https://api.op.lol/tierlist/5/?lane=top&patch={self.patch}&tier=platinum_plus&queue=420&region=all")
+        jungle_req = httpx.get(f"https://api.op.lol/tierlist/5/?lane=jungle&patch={self.patch}&tier=platinum_plus&queue=420&region=all")
+        middle_req = httpx.get(f"https://api.op.lol/tierlist/5/?lane=middle&patch={self.patch}&tier=platinum_plus&queue=420&region=all")
+        bottom_req = httpx.get(f"https://api.op.lol/tierlist/5/?lane=bottom&patch={self.patch}&tier=platinum_plus&queue=420&region=all")
+        support_req = httpx.get(f"https://api.op.lol/tierlist/5/?lane=support&patch={self.patch}&tier=platinum_plus&queue=420&region=all")
 
         self.champ_resp = champ_req.json()
         self.top_resp = top_req.json()
@@ -62,42 +62,4 @@ class LeagueCog(commands.Cog):
             await ctx.send(f"{chmp} {rl}")
         else:
             await ctx.send(random.choice(self.champs_list))
-
-# WIP
-"""
-    @commands.group(aliases=["topchamps", "topchampion", "topchampions"])
-    async def topchamp(self, ctx):
-        if ctx.invoked_subcommand is None:
-            await ctx.send("L")
     
-    @topchamp.command()
-    async def top(self, ctx, num = 10):
-        await ctx.send("test")
-    
-    @topchamp.command(aliases = ["jg", "jung"])
-    async def jungle(self, ctx, num = 10):
-        await ctx.send("test1")
-
-    @topchamp.command(aliases = ["mid"])
-    async def middle(self, ctx, num = 10):
-        await ctx.send("test2")
-
-    @topchamp.command(aliases = ["bot", "adc"])
-    async def bottom(self, ctx, num = 10):
-        await ctx.send("test3")
-
-    @topchamp.command(aliases = ["sup", "supp", "spt"])
-    async def support(self, ctx, num = 10):
-        await ctx.send("test4")
-"""
-# Test command, but saved to show example of how to retrieve images from websites
-"""
-    @commands.command()
-    async def test(self, ctx):
-        # ico_req = await self.client.get("https://zeal.gg/favicon.ico")
-        # io_handle = io.BytesIO(ico_req.content)
-        # await ctx.send(file=discord.File(io_handle))
-        embed = discord.Embed()
-        embed.set_image(url = "https://opgg-static.akamaized.net/images/gnb/img/icon-navi-lol.png")
-        await ctx.send(embed=embed)
-"""

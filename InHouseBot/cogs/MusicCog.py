@@ -10,8 +10,9 @@ class MusicCog(commands.Cog):
         self.bot = bot
         self.lock = asyncio.Lock()
         
-        if not discord.opus.is_loaded():
-            discord.opus.load_opus('libopus.so')
+        if "BOT_KEY" in os.environ:
+            if not discord.opus.is_loaded():
+                discord.opus.load_opus('libopus.so')
         
         self.songq = []
         self.voice = None
@@ -103,7 +104,6 @@ class MusicCog(commands.Cog):
                 ydl.download([url])
             
             for file in os.listdir("./"):
-                print(file)
                 if file.endswith(".mp3"):
                     name = file
                     os.rename(file, "song.mp3")
