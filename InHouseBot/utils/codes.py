@@ -395,3 +395,12 @@ item_lookup = {
     3907:"Spellbinder",
     3916:"Oblivion Orb",
 }
+
+urls = {
+    "all":"https://lolalytics.com/lol/tierlist",
+    "top":"https://lolalytics.com/lol/tierlist?lane=top",
+    "jungle":"https://lolalytics.com/lol/tierlist?lane=jungle",
+    "mid":"https://lolalytics.com/lol/tierlist?lane=middle",
+    "bot":"https://lolalytics.com/lol/tierlist?lane=bottom",
+    "sup":"https://lolalytics.com/lol/tierlist?lane=support"
+}
