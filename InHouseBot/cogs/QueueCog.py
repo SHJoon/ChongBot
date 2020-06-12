@@ -93,7 +93,10 @@ class QueueCog(commands.Cog):
         """ See who's up next! """
         server = ctx.guild
         if self.queuemsg is not None:
-            await self.queuemsg.delete()
+            try:
+                await self.queuemsg.delete()
+            except Exception:
+                pass
         message = f"**Gaming time**: {self.qtime}\n"
         for place, member_id in enumerate(self.queue):
             member = discord.utils.get(server.members, id=member_id)

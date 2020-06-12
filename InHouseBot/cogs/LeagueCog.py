@@ -12,7 +12,7 @@ class LeagueCog(commands.Cog):
         self.client = httpx.AsyncClient()
 
     def _init_champ(self):
-        self.patch = "10.11"
+        self.patch = "10.12"
         champ_req = httpx.get(f"https://api.op.lol/tierlist/5/?lane=default&patch={self.patch}&tier=platinum_plus&queue=420&region=all")
         top_req = httpx.get(f"https://api.op.lol/tierlist/5/?lane=top&patch={self.patch}&tier=platinum_plus&queue=420&region=all")
         jungle_req = httpx.get(f"https://api.op.lol/tierlist/5/?lane=jungle&patch={self.patch}&tier=platinum_plus&queue=420&region=all")
