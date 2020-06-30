@@ -188,7 +188,7 @@ sub_role_msg_id = 649464528102490123
 extra_role_msg_id = 699179766271443044
 
 # queue_emojis = [join_id, drop_id]
-queue_emojis = [668410201099206680,668410288667885568]
+queue_emojis = [668410201099206680,668410288667885568,727428376331157585]
 
 @bot.event
 async def on_raw_reaction_add(reaction):
@@ -208,6 +208,9 @@ async def on_raw_reaction_add(reaction):
         return
     elif reaction.emoji.id == 668410288667885568:
         await ctx.invoke(bot.get_command("forceremove"),user)
+        return
+    elif reaction.emoji.id == 727428376331157585:
+        await ctx.invoke(bot.get_command("queue"))
         return
 
     if reaction.message_id == main_role_msg_id:
