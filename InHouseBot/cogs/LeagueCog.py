@@ -15,7 +15,7 @@ class LeagueCog(commands.Cog):
         self.version_num = httpx.get("https://ddragon.leagueoflegends.com/api/versions.json").json()
         self.patch_num = self.version_num[0].split(".")
         self.patch = f"{self.patch_num[0]}.{self.patch_num[1]}"
-        print(self.patch)
+        self.patch = "10.13"
         champ_req = httpx.get(f"https://api.op.lol/tierlist/5/?lane=default&patch={self.patch}&tier=platinum_plus&queue=420&region=all")
         top_req = httpx.get(f"https://api.op.lol/tierlist/5/?lane=top&patch={self.patch}&tier=platinum_plus&queue=420&region=all")
         jungle_req = httpx.get(f"https://api.op.lol/tierlist/5/?lane=jungle&patch={self.patch}&tier=platinum_plus&queue=420&region=all")
