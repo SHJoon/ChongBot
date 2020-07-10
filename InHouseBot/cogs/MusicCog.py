@@ -201,25 +201,29 @@ class MusicCog(commands.Cog):
 
     @commands.command(aliases=["odin","odinrush", "pillarmen"])
     async def pillar(self, ctx):
-        await self.playcustom(ctx, "ZZZZPillar", 0.08)
+        await self.playcustom(ctx, "Pillar", 0.08)
     
     @commands.command()
     async def bonesaw(self, ctx):
-        await self.playcustom(ctx, "ZZZZBonesaw", 0.4)
+        await self.playcustom(ctx, "Bonesaw", 0.4)
 
     @commands.command(name="3minutes")
     async def threeminutes(self, ctx):
-        await self.playcustom(ctx, "ZZZZ3Minutes", 0.7)
+        await self.playcustom(ctx, "3Minutes", 0.7)
     
     @commands.command()
     async def yessir(self, ctx):
-        await self.playcustom(ctx, "ZZZZYessir", 0.2)
+        await self.playcustom(ctx, "Yessir", 0.2)
 
     @commands.command()
     async def skinman(self, ctx):
-        await self.playcustom(ctx, "ZZZZSkinman")
+        await self.playcustom(ctx, "Skinman")
     
     @commands.command()
     async def skeletonman(self, ctx):
-        await self.playcustom(ctx, "ZZZZSkeleton")
+        await self.playcustom(ctx, "Skeleton")
+    
+    @commands.command()
+    async def nyanpasu(self, ctx):
+        await self.playcustom(ctx, "NyanPasu")
         
