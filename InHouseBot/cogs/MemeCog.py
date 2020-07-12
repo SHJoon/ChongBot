@@ -141,7 +141,7 @@ class MemeCog(commands.Cog):
             "https://media.discordapp.net/attachments/569646728224178184/611036013715783710/In-House_meme.png?width=902&height=866"
         )
     
-    @commands.command()
+    @commands.command(hidden=True)
     async def amar(self, ctx):
         """ 4amar """
         embed = discord.Embed(colour=discord.Colour.purple())
