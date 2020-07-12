@@ -141,6 +141,13 @@ class MemeCog(commands.Cog):
             "https://media.discordapp.net/attachments/569646728224178184/611036013715783710/In-House_meme.png?width=902&height=866"
         )
     
+    @commands.command()
+    async def amar(self, ctx):
+        """ 4amar """
+        embed = discord.Embed(colour=discord.Colour.purple())
+        embed.set_image(url="https://cdn.discordapp.com/attachments/219726377648128001/731764897804714024/wait_its_all.jpg")
+        await ctx.send(embed=embed)
+    
     @commands.command(hidden=True)
     async def anees(self, ctx):
         """ FREE PALASTINE """
@@ -166,17 +173,15 @@ class MemeCog(commands.Cog):
     @commands.command(aliases=["boobsareass", "evelyn"])
     async def evelynn(self, ctx):
         """ hmm... """
-        embed = discord.Embed()
+        embed = discord.Embed(colour=discord.Colour.purple())
         embed.set_image(url="https://cdn.discordapp.com/attachments/629458377193422849/660287429680562176/unknown.png")
-        embed.colour = discord.Colour.purple()
         await ctx.send(embed=embed)
 
     @commands.command(hidden=True)
     async def ksaper(self, ctx):
         """ Who the hell """
-        embed = discord.Embed()
+        embed = discord.Embed(colour=discord.Colour.purple())
         embed.set_image(url="https://cdn.discordapp.com/attachments/569646728224178184/651570847546343424/4c856b92b38200175aa1c923ed729021.png")
-        embed.colour = discord.Colour.purple()
         await ctx.send(f"Did some bimbo 1st, 2nd, or 3rd pick Ksaper?!?!",embed=embed)
 
     @commands.command(aliases=["flame"],hidden=True)
@@ -271,16 +276,14 @@ class MemeCog(commands.Cog):
     @commands.command(aliases=["king"])
     async def wadetendo(self, ctx):
         """ WADETENDO KING """
-        embed = discord.Embed()
+        embed = discord.Embed(colour=discord.Colour.red())
         embed.set_image(url="https://cdn.discordapp.com/attachments/569646728224178184/672295666923601920/unknown.png")
-        embed.colour = discord.Colour.red()
         await ctx.send(embed=embed)
     
     @commands.command(aliases = ["wolffy", "w01ffy"])
     async def wolfy(self, ctx):
         """ Peen Queen """
-        embed = discord.Embed()
+        embed = discord.Embed(colour=discord.Colour.dark_teal())
         embed.set_image(url="https://cdn.discordapp.com/attachments/569646728224178184/730320894576033862/unknown.png")
-        embed.colour = discord.Colour.dark_teal()
         await ctx.send(embed=embed)
         
