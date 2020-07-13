@@ -231,3 +231,7 @@ class MusicCog(commands.Cog):
     async def midnighthaiti(self, ctx):
         await self.playcustom(ctx, "MidnightHaiti")
         
+    @commands.command()
+    async def bababooey(self, ctx):
+        await self.playcustom(ctx, "Bababooey")
+        
