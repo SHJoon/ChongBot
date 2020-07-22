@@ -188,7 +188,7 @@ class MusicCog(commands.Cog):
 
             self.voice = discord.utils.get(self.bot.voice_clients, guild = ctx.guild)
 
-            self.voice.play(discord.FFmpegPCMAudio(os.path.join("custom_songs", f"{name}.mp3")))
+            self.voice.play(discord.FFmpegPCMAudio(os.path.join(".", "InHouseBot", "custom_songs", f"{name}.mp3")))
             self.voice.source = discord.PCMVolumeTransformer(self.voice.source)
 
             set_volume = None
