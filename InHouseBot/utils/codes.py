@@ -63,6 +63,7 @@ cid_lookup = {
     7: "Leblanc",
     64: "Lee Sin",
     89: "Leona",
+    876: "Lillia",
     127: "Lissandra",
     236: "Lucian",
     117: "Lulu",
