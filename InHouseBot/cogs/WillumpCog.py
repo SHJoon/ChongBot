@@ -237,6 +237,7 @@ class WillumpCog(commands.Cog):
     
     @commands.command(aliases = ["reward", "rewards"])
     async def cashout(self, ctx):
+        """ Shows what you can spend NunuBucks on """
         await ctx.send(
             "You can cashout NunuBucks for the following:\
             \n30,000 NB - Custom emote for the server\
@@ -261,6 +262,7 @@ class WillumpCog(commands.Cog):
                     \n<:d20:699173955939991572> Tabletop Simulator\
                     \n<:tft:699173548065030184> TFT\
                     \n<:valorant:699173571783819354> Valorant\n\
+                    \n <:Gamer:736072194056257537> Gamer (Choose this role if you would like to be pinged for norm/casual League games)\n\
                     \n**NOTE** Choose as many roles as you want!")
             await msg.add_reaction("<:AnimalCrossing:699175867833909268>")
             await msg.add_reaction("<:csgo:699173595070595142>")
@@ -269,5 +271,6 @@ class WillumpCog(commands.Cog):
             await msg.add_reaction("<:d20:699173955939991572>")
             await msg.add_reaction("<:tft:699173548065030184>")
             await msg.add_reaction("<:valorant:699173571783819354>")
+            await msg.add_reaction("<:Gamer:736072194056257537>")
         except:
             await ctx.send("Doesn't work in this server.")

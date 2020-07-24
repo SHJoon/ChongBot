@@ -120,6 +120,14 @@ class MemeCog(commands.Cog):
         """ The boys are back in town again """
         await ctx.send("https://i.imgflip.com/36j064.jpg")
 
+    @commands.command()
+    async def boys3(self, ctx):
+        """ The boys are back in town again... again """
+        if random.randrange(50) == 49:
+            await ctx.send("https://cdn.discordapp.com/attachments/629458377193422849/660295904133120015/unknown.png")
+        else:
+            await ctx.send("https://cdn.discordapp.com/attachments/629458377193422849/660290417199415318/image0.png")
+
     @commands.command(hidden=True)
     async def cool(self, ctx):
         """ See if you are cool or not! """
