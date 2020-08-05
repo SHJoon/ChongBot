@@ -261,7 +261,7 @@ class WillumpCog(commands.Cog):
                     \n<:meleefox:699174587996307969> Super Smash Bros. Melee\
                     \n<:d20:699173955939991572> Tabletop Simulator\
                     \n<:tft:699173548065030184> TFT\
-                    \n<:valorant:699173571783819354> Valorant\n\
+                    \n<:valorant:699173571783819354> Valorant\
                     \n <:Gamer:736072194056257537> Gamer (Choose this role if you would like to be pinged for norm/casual League games)\n\
                     \n**NOTE** Choose as many roles as you want!")
             await msg.add_reaction("<:AnimalCrossing:699175867833909268>")
