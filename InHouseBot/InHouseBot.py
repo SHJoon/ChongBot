@@ -7,7 +7,7 @@ from discord.ext import commands, tasks
 from cogs.WillumpCog import WillumpCog
 from cogs.QueueCog import QueueCog
 from cogs.MemeCog import MemeCog
-from cogs.LeagueCog import LeagueCog
+# from cogs.LeagueCog import LeagueCog
 from cogs.MusicCog import MusicCog
 
 # Change this to whatever prefix you'd like
@@ -266,7 +266,7 @@ elif os.path.isfile("key"):
 bot.add_cog(WillumpCog(bot))
 bot.add_cog(QueueCog(bot))
 bot.add_cog(MemeCog(bot))
-bot.add_cog(LeagueCog(bot))
+# bot.add_cog(LeagueCog(bot))
 bot.add_cog(MusicCog(bot))
 
 if ("GOOGLE_OAUTH_JSON" in os.environ) or (os.path.isfile("InHouseTest.json")):
