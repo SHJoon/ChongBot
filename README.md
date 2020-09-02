@@ -1,4 +1,4 @@
-# ChongBot
+# InHouseBot
 
 Used to be ChongBot, now called InHouseBot
 
