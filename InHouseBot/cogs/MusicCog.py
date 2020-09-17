@@ -238,3 +238,7 @@ class MusicCog(commands.Cog):
     @commands.command(aliases=['ohhi', 'oh'])
     async def garbage(self, ctx):
         await self.playcustom(ctx, "garbage")
+
+    @commands.command()
+    async def sus(self, ctx):
+        await self.playcustom(ctx, "police")
