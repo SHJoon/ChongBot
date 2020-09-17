@@ -242,3 +242,7 @@ class MusicCog(commands.Cog):
     @commands.command()
     async def sus(self, ctx):
         await self.playcustom(ctx, "police")
+
+    @commands.command(aliases=['openup'])
+    async def fbi(self, ctx):
+        await self.playcustom(ctx, "fbi")
