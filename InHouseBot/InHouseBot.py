@@ -8,13 +8,17 @@ from cogs.WillumpCog import WillumpCog
 from cogs.QueueCog import QueueCog
 from cogs.MemeCog import MemeCog
 # from cogs.LeagueCog import LeagueCog
-from cogs.MusicCog import MusicCog
+# from cogs.MusicCog import MusicCog
 
+# Intents needed to be specified to retrieve server member informations
+intents = discord.Intents.default()
+intents.members = True
 # Change this to whatever prefix you'd like
 prefixes = ["!", "."]
 # Instantiate our bot
 bot = commands.Bot(command_prefix=prefixes,
                     case_insensitive=True,
+                    intents=intents
                     )
 
 @tasks.loop(seconds=30)
@@ -92,8 +96,8 @@ async def on_ready():
     # I want to get notified when the bot resets
     user = bot.get_user(219726815663620096)
     await user.send('Bot has been reset.')
-    channel = bot.get_channel(569974088932655134)
-    await channel.send('Bot has been reset.')
+    # channel = bot.get_channel(569974088932655134)
+    # await channel.send('Bot has been reset.')
 
 async def levenshtein(msg1, msg2):
     rows = len(msg1) + 1
@@ -267,7 +271,7 @@ bot.add_cog(WillumpCog(bot))
 bot.add_cog(QueueCog(bot))
 bot.add_cog(MemeCog(bot))
 # bot.add_cog(LeagueCog(bot))
-bot.add_cog(MusicCog(bot))
+# bot.add_cog(MusicCog(bot))
 
 if ("GOOGLE_OAUTH_JSON" in os.environ) or (os.path.isfile("InHouseTest.json")):
     from cogs.StreamCog import StreamCog
