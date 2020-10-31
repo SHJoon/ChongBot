@@ -171,7 +171,4 @@ class QueueCog(commands.Cog):
         """ Tries to get a game ready """
         self.qtime = _time
         await ctx.send("Time for some 10 mens! Join the lobby @here")
-    
-    @commands.command()
-    async def test(self, ctx):
-        await ctx.send("Hello")
+        

@@ -30,7 +30,6 @@ async def change_status():
 
     if set_type == "Playing":
         phrases = [
-            "with Chong's feelings",
             "with Nunu",
             "Truc Simulator 2019",
             "with the boys",
@@ -44,17 +43,10 @@ async def change_status():
         )
     elif set_type == "Watching":
         phrases = [
-            "WWE Smackdown",
-            "Chong's toilet",
             "not much",
             "League In-House",
             "from a cave",
-            "furry convention",
-            "cute anime girls",
             "the boys",
-            "Danny pooping",
-            "chair porn",
-            "RuPaul's Drag Race",
             "missed Morgana Q's"
         ]
         phrase = random.choice(phrases)
@@ -67,7 +59,6 @@ async def change_status():
             "Worst Mecaniks reading",
             "Jackzilla casting",
             "the inner voice",
-            "Fuck Truc by the Boys",
             "Boyz II Men"
         ]
         phrase = random.choice(phrases)
@@ -75,29 +66,15 @@ async def change_status():
             activity=discord.Activity(type=discord.ActivityType.listening, name=phrase)
         )
 
-@tasks.loop(hours=10, minutes=30)
-async def say_phrases():
-    await bot.wait_until_ready()
-    phrases = ["troi duc oi", "What a champ", "Bet", "die duck guy",
-    "<:grabhandL:668730434984869888> <:thereallickle:670051941296111616> <:grabhandR:668730456333877248>"]
-    channel = bot.get_channel(611413760266993675)
-    phrase = random.choice(phrases)
-    await channel.send(phrase)
-
 @bot.event
 async def on_ready():
     print(bot.user.name)
     print(bot.user.id)
     change_status.start()
 
-    # Disabled, as it got a little spammy
-    # say_phrases.start()
-
     # I want to get notified when the bot resets
     user = bot.get_user(219726815663620096)
     await user.send('Bot has been reset.')
-    # channel = bot.get_channel(569974088932655134)
-    # await channel.send('Bot has been reset.')
 
 async def levenshtein(msg1, msg2):
     rows = len(msg1) + 1
@@ -120,8 +97,6 @@ async def levenshtein(msg1, msg2):
                                  distance[row][col-1] + 1,          # Cost of insertions
                                  distance[row-1][col-1] + cost)     # Cost of substitutions
     return distance[row][col]
-
-truc_words = ["DN", "NUTS"]
 
 @bot.event
 async def on_message(message):
@@ -148,25 +123,7 @@ async def on_message(message):
         await message.add_reaction("\U0001F1F1")
     elif message.content.upper() == "F":
         await message.add_reaction("\U0001F1EB")
-    # elif new_message_upper.startswith(("HI","HELLO","HERRO","HEY","HOWDY","GREETINGS","WHATSUP")):
-    #     if message.author.id == 132709848864391170:
-    #         await user.send(f"Truc said: {message.content}")
-    #         await message.delete()
-    #         await message.channel.send("SHUT UP TRUC")
-    elif "DEEZ" in message.content.upper():
-        if message.author.id == 132709848864391170:
-            await user.send(f"Truc said: {message.content}")
-            await message.delete()
-            await message.channel.send("SHUT UP TRUC")
-    # Capitalize the message for Truc filter
-    message_split_upper = message.content.upper().split()
-    for word in truc_words:
-        if word in message_split_upper:
-            if message.author.id == 132709848864391170:
-                await user.send(f"Truc said: {message.content}")
-                await message.delete()
-                await message.channel.send("SHUT UP TRUC")
-                break
+        
     await bot.process_commands(message)
 
 # roles = {emoji_id:[role_id, role_sub_id]}

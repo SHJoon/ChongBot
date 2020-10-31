@@ -53,30 +53,13 @@ class WillumpCog(commands.Cog):
         embed = discord.Embed(title=ranflip)
 
         if ranflip == "Heads":
-            pics_url = [
-                "https://cdn.discordapp.com/attachments/688598474861707304/689666020834803712/unknown.png",
-                "https://cdn.discordapp.com/attachments/602376454491078659/659905323217322021/image0.jpg"
-            ]
-            ranpic = random.choice(pics_url)
-            embed.set_image(url=ranpic)
+            embed.set_image(url="https://i.imgur.com/lDlR54a.gif")
             embed.colour = discord.Colour.orange()
         elif ranflip == "Tails":
-            pics_url = [
-                "https://cdn.discordapp.com/attachments/623390018991292426/681340369912201264/tails_gif.gif",
-                "https://cdn.discordapp.com/attachments/623390018991292426/680682916220895276/unknown.png",
-                "https://cdn.discordapp.com/attachments/663534641164320801/663956797048225804/unknown.png"
-            ]
-            # "https://i.imgur.com/grTqgib.png"
-            # "https://media0.giphy.com/media/uWcNWtfqzySDYqkORw/source.gif"
-            ranpic = random.choice(pics_url)
-            embed.set_image(url=ranpic)
+            embed.set_image(url="https://media0.giphy.com/media/uWcNWtfqzySDYqkORw/source.gif")
             embed.colour = discord.Colour.blue()
         else:
-            embed.set_image(
-                url="https://cdn.discordapp.com/attachments/224084353779630080/674848939085922364/EQEaufMUUAIM0aW.png"
-                # "https://i.imgur.com/P3EbqRH.gif"
-                # "https://lolskinshop.com/wp-content/uploads/2015/04/Poppy_2.jpg"
-            )
+            embed.set_image(url="https://lolskinshop.com/wp-content/uploads/2015/04/Poppy_2.jpg")
             embed.colour = discord.Colour.green()
         
         self.flip_count += 1
@@ -87,7 +70,7 @@ class WillumpCog(commands.Cog):
         """ Mini command to flip many times """
         member = ctx.message.author
         if num > 50000:
-            await ctx.send(f"{member.mention} YOU MONKEY TRYING TO BREAK THE BOT, 50000 FLIPS OR LESS ONLY")
+            await ctx.send(f"{member.mention} 50000 FLIPS OR LESS ONLY")
             return
         flip = ["Heads", "Tails"]
         head_count = 0
@@ -229,7 +212,7 @@ class WillumpCog(commands.Cog):
         """ Show our list of zeal.gg links """
         await ctx.send("https://zeal.gg/YyQQtnh\nhttps://zeal.gg/ytq2-rC")
 
-    @commands.command()
+    @commands.command(hidden=True)
     async def sd(self, ctx, *, msg):
         """ Only Danny and I know what this does """
         channel = self.bot.get_channel(569646728224178184)
@@ -245,32 +228,3 @@ class WillumpCog(commands.Cog):
             \n70,000 ~ 150,000 NB - Utility command (price depends on the difficulty of implementation)\
             \n\nMessage one of the mods for the request!"
         )
-
-    @commands.command(hidden=True)
-    async def ilovdandan(self, ctx):
-        # Command to change "React for role" feature message
-        guild = ctx.guild
-        try:
-            chn = guild.get_channel(649323021433307147)
-            msg = await chn.fetch_message(699179766271443044)
-            await msg.edit(
-                content="React to any of your additional interests!\
-                    \n<:AnimalCrossing:699175867833909268> Animal Crossing\
-                    \n<:csgo:699173595070595142> CS:GO\
-                    \n<:minecraft:700461362006196257> Minecraft\
-                    \n<:meleefox:699174587996307969> Super Smash Bros. Melee\
-                    \n<:d20:699173955939991572> Tabletop Simulator\
-                    \n<:tft:699173548065030184> TFT\
-                    \n<:valorant:699173571783819354> Valorant\
-                    \n <:Gamer:736072194056257537> Gamer (Choose this role if you would like to be pinged for norm/casual League games)\n\
-                    \n**NOTE** Choose as many roles as you want!")
-            await msg.add_reaction("<:AnimalCrossing:699175867833909268>")
-            await msg.add_reaction("<:csgo:699173595070595142>")
-            await msg.add_reaction("<:minecraft:700461362006196257>")
-            await msg.add_reaction("<:meleefox:699174587996307969>")
-            await msg.add_reaction("<:d20:699173955939991572>")
-            await msg.add_reaction("<:tft:699173548065030184>")
-            await msg.add_reaction("<:valorant:699173571783819354>")
-            await msg.add_reaction("<:Gamer:736072194056257537>")
-        except:
-            await ctx.send("Doesn't work in this server.")

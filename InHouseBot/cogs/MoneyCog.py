@@ -1017,15 +1017,3 @@ class MoneyCog(commands.Cog):
                         break
         self.side_bets.clear()
         await ctx.send("All the sidebets have been reset.")
-
-    @commands.command()
-    async def steal(self, ctx, member:discord.Member):
-        """ Steal money from target person (!steal @person) """
-        # We can add as many funny URL's as we want
-        image_URLs = [
-            "https://i.redd.it/1wbz4b15vcd31.jpg", "https://cdn.discordapp.com/attachments/224084353779630080/670051783820705802/image0.jpg",
-        ]
-        image_URL = random.choice(image_URLs)
-        embed = discord.Embed()
-        embed.set_image(url=image_URL)
-        await ctx.send(embed=embed)

@@ -148,25 +148,4 @@ class StreamCog(commands.Cog):
             ]
         )
         await ctx.send(msg)
-
-    # WIP
-    """
-    async def get_stream_url(self, ctx, member:discord.Member):
-        for row in self. cache:
-            if row[SHEET_ID_IDX - 1] == str(member.id):
-                return row[SHEET_URL_IDX - 1]
-        return None
-    
-    @commands.command()
-    async def test(self, ctx):
-        print("----------------------")
-        msg = "Currently Streaming:\n"
-        for member in ctx.guild.members:
-            print(member.activity)
-            if member.activity == None:
-                continue
-            if any(str(member.id) in sublist for sublist in self.cache) == True:
-                if member.activity.type == 3:
-                    url = await self.get_stream_url(ctx, member)
-                    msg += f"{member.name}: <{url}>\n"
-        await ctx.send(msg)"""
+        
