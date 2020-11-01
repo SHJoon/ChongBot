@@ -5,7 +5,8 @@ import random
 from discord.ext import commands, tasks
 
 from cogs.WillumpCog import WillumpCog
-from cogs.QueueCog import QueueCog
+# from cogs.QueueCog import QueueCog
+from cogs.NewQueueCog import NewQueueCog
 from cogs.MemeCog import MemeCog
 # from cogs.LeagueCog import LeagueCog
 # from cogs.MusicCog import MusicCog
@@ -268,7 +269,8 @@ elif os.path.isfile("key"):
 
 # Add in our cogs
 bot.add_cog(WillumpCog(bot))
-bot.add_cog(QueueCog(bot))
+# bot.add_cog(QueueCog(bot))
+bot.add_cog(NewQueueCog(bot))
 bot.add_cog(MemeCog(bot))
 # bot.add_cog(LeagueCog(bot))
 # bot.add_cog(MusicCog(bot))
