@@ -8,7 +8,7 @@ from cogs.WillumpCog import WillumpCog
 from cogs.QueueCog import QueueCog
 from cogs.MemeCog import MemeCog
 # from cogs.LeagueCog import LeagueCog
-from cogs.MusicCog import MusicCog
+# from cogs.MusicCog import MusicCog
 
 # Intents needed to be specified to retrieve server member informations
 intents = discord.Intents.default()
@@ -144,6 +144,8 @@ async def on_message(message):
         await message.add_reaction("\U0001F1F8")
         await message.add_reaction("\U0001F1F2")
         await message.add_reaction("\U0001F1ED")
+    elif "NOT LA" in message.content.upper():
+        await message.add_reaction("\U0001F3A3")
     elif message.content.upper() == "L":
         await message.add_reaction("\U0001F1F1")
     elif message.content.upper() == "F":
@@ -271,7 +273,7 @@ bot.add_cog(WillumpCog(bot))
 bot.add_cog(QueueCog(bot))
 bot.add_cog(MemeCog(bot))
 # bot.add_cog(LeagueCog(bot))
-bot.add_cog(MusicCog(bot))
+# bot.add_cog(MusicCog(bot))
 
 if ("GOOGLE_OAUTH_JSON" in os.environ) or (os.path.isfile("InHouseTest.json")):
     from cogs.StreamCog import StreamCog
