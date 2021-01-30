@@ -224,6 +224,28 @@ class WillumpCog(commands.Cog):
 
         await ctx.send(message)
     
+    @commands.command(aliases=["val"])
+    async def valorant(self, ctx):
+        agents = [
+            "Breach",
+            "Brimstone",
+            "Cypher",
+            "Jett",
+            "Killjoy",
+            "Omen", 
+            "Phoenix",
+            "Raze",
+            "Reyna",
+            "Sage",
+            "Sova",
+            "Skye",
+            "Viper",
+            "Yoru"
+            ]
+        agent = random.choice(agents)
+        
+        await ctx.send(agent)
+    
     @commands.command()
     async def sd(self, ctx, *, msg):
         """ Only Danny and I know what this does """
