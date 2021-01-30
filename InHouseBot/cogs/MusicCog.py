@@ -247,3 +247,7 @@ class MusicCog(commands.Cog):
     @commands.command(aliases=['openup'])
     async def fbi(self, ctx):
         await self.playcustom(ctx, "fbi")
+
+    @commands.command()
+    async def sail(self, ctx):
+        await self.playcustom(ctx, "Sail")
