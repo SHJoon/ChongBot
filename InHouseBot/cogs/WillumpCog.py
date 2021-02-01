@@ -242,9 +242,11 @@ class WillumpCog(commands.Cog):
             "Viper",
             "Yoru"
             ]
-        agent = random.choice(agents)
         
-        await ctx.send(agent)
+        agent_msg = await ctx.send(random.choice(agents))
+        await asyncio.sleep(180)
+        await agent_msg.delete()
+        await ctx.message.delete()
     
     @commands.command()
     async def sd(self, ctx, *, msg):
