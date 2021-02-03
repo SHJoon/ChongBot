@@ -226,6 +226,7 @@ class WillumpCog(commands.Cog):
     
     @commands.command(aliases=["val"])
     async def valorant(self, ctx):
+        """ Choose a random valorant agent. """
         agents = [
             "Breach",
             "Brimstone",

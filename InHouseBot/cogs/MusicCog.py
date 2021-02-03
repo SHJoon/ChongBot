@@ -199,6 +199,7 @@ class MusicCog(commands.Cog):
                 set_volume = volume
 
             self.voice.source.volume = set_volume
+            await ctx.message.delete()
 
     @commands.command(aliases=["odin","odinrush", "pillarmen"])
     async def pillar(self, ctx):
