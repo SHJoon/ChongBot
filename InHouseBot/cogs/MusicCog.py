@@ -16,7 +16,7 @@ class MusicCog(commands.Cog):
         
         self.songq = []
         self.voice = None
-        self.volume = 0.15
+        self.volume = 0.30
         self.volume_control = None
         self.voice_source = None
     
@@ -256,3 +256,4 @@ class MusicCog(commands.Cog):
     @commands.command(aliases=["yoniceknifedude", "knife", "dude"])
     async def yo(self, ctx):
         await self.playcustom(ctx, "knife")
+        
