@@ -256,4 +256,8 @@ class MusicCog(commands.Cog):
     @commands.command(aliases=["yoniceknifedude", "knife", "dude"])
     async def yo(self, ctx):
         await self.playcustom(ctx, "knife")
+    
+    @commands.command(aliases=["world", "domination", "dom"])
+    async def worlddomination(self, ctx):
+        await self.playcustom(ctx, "WorldDomination")
         
