@@ -169,6 +169,12 @@ async def on_message(message):
                 await message.delete()
                 await message.channel.send("SHUT UP TRUC")
                 break
+    
+    if message.content.upper() == "$WA":
+        if random.randint(1, 100) <= 3:
+            ctx = await bot.get_context(message)
+            await ctx.invoke(bot.get_command("mik"))
+
     await bot.process_commands(message)
 
 # roles = {emoji_id:[role_id, role_sub_id]}
@@ -197,11 +203,13 @@ extra_role_msg_id = 699179766271443044
 # queue_emojis = [join_id, drop_id]
 queue_emojis = [668410201099206680,668410288667885568,727428376331157585]
 
+heart_emoji = 815701810207391797
+
 @bot.event
 async def on_raw_reaction_add(reaction):
     if reaction.user_id == bot.user.id:
         return
-    if not ((reaction.emoji.id in roles) or (reaction.emoji.id in queue_emojis) or (reaction.emoji.id in extra_roles)):
+    if not ((reaction.emoji.id in roles) or (reaction.emoji.id in queue_emojis) or (reaction.emoji.id in extra_roles) or (reaction.emoji.id == heart_emoji)):
         return
     
     guild = bot.get_guild(reaction.guild_id)
@@ -209,6 +217,10 @@ async def on_raw_reaction_add(reaction):
     channel = bot.get_channel(reaction.channel_id)
     message = await channel.fetch_message(reaction.message_id)
     ctx = await bot.get_context(message)
+
+    if reaction.emoji.id == heart_emoji:
+        await ctx.invoke(bot.get_command("edit_mik"))
+        return
 
     if reaction.emoji.id == 668410201099206680:
         await ctx.invoke(bot.get_command("forceadd"),user)

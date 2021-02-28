@@ -290,3 +290,34 @@ class WillumpCog(commands.Cog):
             await msg.add_reaction("<:Gamer:736072194056257537>")
         except:
             await ctx.send("Doesn't work in this server.")
+
+    @commands.command(hidden=True)
+    async def mik(self, ctx):
+        self.mik_embed = discord.Embed(
+            title="Mikasa Ackerman",
+            description="Shingeki no Kyojin\n\
+                **982**<:kakera:815692761449103371>"
+        )
+        self.mik_embed.set_image(url="https://i.imgur.com/d2asZeC.png")
+        self.mik_embed.color = discord.Color.green()
+
+        # test_channel_id = 622142949307973642
+        waifu_channel_id = 814386182343491584
+        channel = ctx.guild.get_channel(waifu_channel_id)
+        # channel = ctx.guild.get_channel(test_channel_id)
+
+        self.msg = await channel.send(embed=self.mik_embed)
+        await self.msg.add_reaction("<:revolvingHearts:815701810207391797>")
+    
+    @commands.command(hidden=True)
+    async def edit_mik(self, ctx):
+        self.mik_embed.set_image(url="https://i.imgur.com/B0IVc3x.gif")
+        self.mik_embed.color = discord.Color.dark_red()
+
+        # test_channel_id = 622142949307973642
+        waifu_channel_id = 814386182343491584
+        channel = ctx.guild.get_channel(waifu_channel_id)
+        # channel = ctx.guild.get_channel(test_channel_id)
+
+        await self.msg.edit(embed=self.mik_embed)
+        
