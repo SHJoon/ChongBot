@@ -170,10 +170,10 @@ async def on_message(message):
                 await message.channel.send("SHUT UP TRUC")
                 break
     
-    if message.content.upper() == "$WA":
-        if random.randint(1, 100) <= 3:
-            ctx = await bot.get_context(message)
-            await ctx.invoke(bot.get_command("mik"))
+    # if message.content.upper() == "$WA":
+    #     if random.randint(1, 100) <= 3:
+    #         ctx = await bot.get_context(message)
+    #         await ctx.invoke(bot.get_command("mik"))
 
     await bot.process_commands(message)
 
