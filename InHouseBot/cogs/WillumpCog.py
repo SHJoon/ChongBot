@@ -294,11 +294,11 @@ class WillumpCog(commands.Cog):
     @commands.command(hidden=True)
     async def mik(self, ctx):
         self.mik_embed = discord.Embed(
-            title="Mikasa Ackerman",
-            description="Shingeki no Kyojin\n\
-                **982**<:kakera:815692761449103371>"
+            title="Satoru Gojou",
+            description="Jujutsu Kaisen\n\
+                **746**<:kakera:815692761449103371>"
         )
-        self.mik_embed.set_image(url="https://i.imgur.com/d2asZeC.png")
+        self.mik_embed.set_image(url="https://media.discordapp.net/attachments/472313197836107780/584195806563663882/SzcapaF.png")
         self.mik_embed.color = discord.Color.green()
 
         # test_channel_id = 622142949307973642
