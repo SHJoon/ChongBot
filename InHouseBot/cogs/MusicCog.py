@@ -260,4 +260,7 @@ class MusicCog(commands.Cog):
     @commands.command(aliases=["world", "domination", "dom"])
     async def worlddomination(self, ctx):
         await self.playcustom(ctx, "WorldDomination")
-        
+    
+    @commands.command(aliases=["yugioh"])
+    async def trap(self, ctx):
+        await self.playcustom(ctx, "trapcard", 0.2)
