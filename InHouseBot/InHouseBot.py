@@ -150,16 +150,16 @@ async def on_message(message):
         await message.add_reaction("\U0001F1F1")
     elif message.content.upper() == "F":
         await message.add_reaction("\U0001F1EB")
-    # elif new_message_upper.startswith(("HI","HELLO","HERRO","HEY","HOWDY","GREETINGS","WHATSUP")):
-    #     if message.author.id == 132709848864391170:
-    #         await user.send(f"Truc said: {message.content}")
-    #         await message.delete()
-    #         await message.channel.send("SHUT UP TRUC")
     elif "DEEZ" in message.content.upper():
         if message.author.id == 132709848864391170:
             await user.send(f"Truc said: {message.content}")
             await message.delete()
             await message.channel.send("SHUT UP TRUC")
+    elif "MORE BETTER" in message.content.upper():
+        await message.add_reaction("\U0001F1F5")
+        await message.add_reaction("\U0001F1E6")
+        await message.add_reaction("\U0001F1FC")
+        await message.add_reaction("\U0001F1EC")
     # Capitalize the message for Truc filter
     message_split_upper = message.content.upper().split()
     for word in truc_words:
@@ -170,10 +170,6 @@ async def on_message(message):
                 await message.channel.send("SHUT UP TRUC")
                 break
     
-    # if message.content.upper() == "$HA":
-    #     if random.randint(1, 100) <= 3:
-    #         ctx = await bot.get_context(message)
-    #         await ctx.invoke(bot.get_command("mik"))
 
     await bot.process_commands(message)
 
@@ -290,8 +286,8 @@ bot.add_cog(MusicCog(bot))
 if ("GOOGLE_OAUTH_JSON" in os.environ) or (os.path.isfile("InHouseTest.json")):
     from cogs.StreamCog import StreamCog
     bot.add_cog(StreamCog(bot))
-    from cogs.MoneyCog import MoneyCog
-    bot.add_cog(MoneyCog(bot))
+    # from cogs.MoneyCog import MoneyCog
+    # bot.add_cog(MoneyCog(bot))
 else:
     print("No relevant file found. StreamCog/MoneyCog is disabled.")
 
