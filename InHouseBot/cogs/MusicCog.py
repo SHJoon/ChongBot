@@ -264,3 +264,8 @@ class MusicCog(commands.Cog):
     @commands.command(aliases=["yugioh"])
     async def trap(self, ctx):
         await self.playcustom(ctx, "trapcard", 0.2)
+
+    @commands.command(aliases=["rrtrain"])
+    async def train(self, ctx):
+        await self.playcustom(ctx, "train", 0.3)
+        
