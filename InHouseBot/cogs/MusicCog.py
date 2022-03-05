@@ -268,4 +268,24 @@ class MusicCog(commands.Cog):
     @commands.command(aliases=["rrtrain"])
     async def train(self, ctx):
         await self.playcustom(ctx, "train", 0.3)
+
+    @commands.command()
+    async def hello(self, ctx):
+        await self.playcustom(ctx, "Hello")
+        
+    @commands.command(aliases=["imsorry", "sry"])
+    async def sorry(self, ctx):
+        await self.playcustom(ctx, "ImSorry")
+        
+    @commands.command()
+    async def helpme(self, ctx):
+        await self.playcustom(ctx, "HelpMe")
+        
+    @commands.command(aliases=["ty"])
+    async def thankyou(self, ctx):
+        await self.playcustom(ctx, "ThankYou")
+        
+    @commands.command(aliases=["good"])
+    async def verygood(self, ctx):
+        await self.playcustom(ctx, "VeryGood")
         
